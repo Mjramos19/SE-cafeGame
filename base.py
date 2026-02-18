@@ -1,31 +1,77 @@
 import pygame
 import sys
 
+
+class Player:
+    def __init__(self, width, height):
+        self.x, self.y = 40, 600
+        self.speed = 5
+        self.width = width
+        self.height = height
+
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.width, self.height)
+
+    def handle_movement(self, keys, collisions):
+        # Store old position in case we hit something
+        old_x, old_y = self.x, self.y
+
+        # Move
+        if keys[pygame.K_LEFT]:  self.x -= self.speed
+        if keys[pygame.K_RIGHT]: self.x += self.speed
+        if keys[pygame.K_UP]:    self.y -= self.speed
+        if keys[pygame.K_DOWN]:  self.y += self.speed
+
+        # Collision Check: If new position overlaps obstacle, move back
+        for c in collisions:
+            if self.get_rect().colliderect(c):
+                self.x, self.y = old_x, old_y
+
+    def take_order(self):
+        pass
+
+    def attempt_restock(self):
+        pass
+
+    def attempt_brew(self):
+        pass
+
+    def deliver(self):
+        pass
+
+    def render(self):
+        return pygame.draw.rect(screen, COLORS['RED'], player.get_rect())
+
+
 # 1. Initialize Pygame
 pygame.init()
 
 # Screen dimensions
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1366, 768
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Red Square Scaling Game")
+pygame.display.set_caption("Cafe Simulator")
 
 # Colors
-RED = (255, 0, 0)
-BLUE = (0, 0, 255)
-BG_COLOR = (30, 30, 30)
-
-# 2. Rect Properties
-# Red Rect: Start 1/3 up from the bottom (which is 2/3 down from the top)
-red_width, red_height = 50, 50
-red_x = WIDTH // 2
-red_y = (HEIGHT * 2) // 3  
-red_speed = 5
+COLORS = {
+    'RED': (255, 0, 0),
+    'BLUE': (0, 0, 255),
+    'BG': (30, 30, 30)
+}
 
 # Blue Rect (Static obstacle)
 blue_rect = pygame.Rect(WIDTH // 2 - 50, HEIGHT // 2 - 50, 100, 100)
 
 # Game Clock
 clock = pygame.time.Clock()
+
+# Player Initialization (Passing width and height)
+player = Player(50, 80)
+
+# organize into lists
+collisions = [blue_rect]
+
+# game state management (main_menu, running:(front, middle, back), taking_order, machine_minigame, pause_menu, shop_menu)
+GAME_STATE = 'Running'
 
 # 3. Game Loop
 while True:
@@ -37,42 +83,19 @@ while True:
 
     # Input Handling
     keys = pygame.key.get_pressed()
-    new_x, new_y = red_x, red_y
 
-    if keys[pygame.K_LEFT]:  new_x -= red_speed
-    if keys[pygame.K_RIGHT]: new_x += red_speed
-    if keys[pygame.K_UP]:    new_y -= red_speed
-    if keys[pygame.K_DOWN]:  new_y += red_speed
-
-    # 4. Scaling Logic
-    # Calculate scale factor based on Y position (higher screen = smaller size)
-    # 0.2 is the minimum scale so it doesn't disappear completely
-    scale_factor = max(0.2, (new_y / HEIGHT))
-    current_w = int(red_width * scale_factor)
-    current_h = int(red_height * scale_factor)
-
-    # Create the player rect for collision math
-    player_rect = pygame.Rect(new_x, new_y, current_w, current_h)
-
-    # 5. Collision Logic
-    # Only update position if it doesn't collide with the blue rect
-    if not player_rect.colliderect(blue_rect):
-        red_x, red_y = new_x, new_y
+    # Move player and handle collisions
+    player.handle_movement(keys, collisions)
 
     # 6. Drawing
-    screen.fill(BG_COLOR)
-    
+    screen.fill(COLORS['BG'])
+
     # Draw Blue Rect
-    pygame.draw.rect(screen, BLUE, blue_rect)
-    
-    # Draw Red Rect (using the calculated scale)
-    pygame.draw.rect(screen, RED, (red_x, red_y, current_w, current_h))
+    pygame.draw.rect(screen, COLORS['BLUE'], blue_rect)
+
+    # Draw Player Rect (Red)
+    player.render()
 
     pygame.display.flip()
-    clock.tick(60) # Limit to 60 Frames Per Second
-
-
-
-    #new line
-
+    clock.tick(60)
     
