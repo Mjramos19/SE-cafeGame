@@ -39,6 +39,6 @@ class Player:
     def deliver(self):
         pass
 
-    def render(self):
+    def render(self, screen):
         return pygame.draw.rect(screen, COLORS['RED'], player.get_rect())
 
