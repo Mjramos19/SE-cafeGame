@@ -31,6 +31,8 @@ class Entity:
 class Player(Entity):
     def __init__(self, x, y, color = PLAYER_COLOR):
         super().__init__(x, y, 28, 28, color)
+        self.activeOrders = []
+        self.foodInHand = []
 
 
     def handle_movement(self, keys, collisions):
@@ -62,14 +64,24 @@ class Player(Entity):
     def attempt_brew(self):
         pass
 
-    def deliver(self):
-        pass
+    def deliver(self, table):
+        #loops through each seat at the table in which the player is standing.
+        #If the seat is occupied, checks if food in hand matches the item ordered from that customer
+        #and delivers it if so
+        for seat in table.seats:
+            if seat.seatedCustomer != None:
+                if seat.seatedCustomer.orderedItem in self.foodInHand and seat.seatedCustomer.state != "eating":
+                    seat.seatedCustomer.state = "eating"
+                    self.foodInHand.remove(seat.seatedCustomer.orderedItem)
+
 
 
 class Table(Entity):
-    def __init__(self, x, y, w=70, h=40, color = TABLE_COLOR):
+    def __init__(self, x, y, w=70, h=40, color = TABLE_COLOR, seats = []):
         super().__init__(x, y, w, h, color)
+        self.interactionZone = pygame.Rect(self.rect.x - 20, self.rect.y - 20, self.rect.w + 40, self.rect.h + 40)
         self.open = True
+        self.seats = seats
     
     def tableOpen(self, customerLeaving):
         pass
@@ -126,6 +138,17 @@ class Register(Counter):
         #Currently placeholder black screen
         return screen.fill((0,0,0))
 
+
+#placeholder for actual machines
+class foodCounter(Counter):
+    def __init__(self, x, y, w = 40, h = 120):
+        super().__init__(x, y, w, h, REGISTER_COLOR)
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y, self.rect.w + 40, self.rect.h)
+    
+    def cookFood(self, screen):
+        #Bring up cooking screen
+        #currently placeholder black screen
+        return screen.fill((0,0,0))
     
 
 class Sink(Counter):
@@ -147,15 +170,15 @@ class NPC(Entity):
 
     def pickItem(self):
         #picks a random number and selects that item in the list
-        itemNum = random.randint(0, len(self.recipesUnlocked) - 1)
-        return self.recipesUnlocked[itemNum]
+        itemNum = random.randint(0, len(self.recipesUnlocked.keys()) - 1)
+        return list(self.recipesUnlocked.keys())[itemNum]
 
     def findSeat(self, collisions):
         #Set original coordinates for collisions
         '''old_x = self.rect.x
         old_y = self.rect.y'''
 
-        #targest seats x and y coords
+        #target seats x and y coords
         targetX, targetY = self.targetSeat.rect.x, self.targetSeat.rect.y
 
         #calculate remaining distance between customer and seat every iteration
@@ -199,6 +222,13 @@ class NPC(Entity):
         if self.rect.x - self.linePosition[0] < NPC_SPEED:
             self.rect.x = self.linePosition[0]
             self.state = "waiting"
+    
+    #Finds first open seat in collisions list and returns it. None if all occupied
+    def findFirstOpen(collisions):
+        for c in collisions:
+            if isinstance(c, Seat) and c.state == "open":
+                return c
+        return None
 
     def set_state(self, state):
         self.state = state
@@ -213,8 +243,14 @@ class NPC(Entity):
 
         #If npc's state is "moving up in line", call moveUpInLine to increment x coord until new
         #spot in line is reached.
-        if self.state == "moving up in line" and self.linePosition != None:
+        elif self.state == "moving up in line" and self.linePosition != None:
             self.moveUpInLine()
+
+        elif self.state == "eating":
+            pass
+
+        elif self.state == "leaving":
+            pass
 
         #clamp npc's to screen
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
