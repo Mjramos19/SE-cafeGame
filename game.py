@@ -11,7 +11,11 @@ REGISTER = "register"
 
 BG_COLOR = (35, 35, 45)
 
-NPC_SPAWN_EVERY_MS = 1200
+#List of line position tuples (x,y)
+#paralleled with NPCS waiting list
+linePositions = [(250,350), (280,350), (310,350), (340,350)]
+
+NPC_SPAWN_EVERY_MS = 2400
 MAX_NPCS = 10
 Max_NPC_WAITING = 4
 
@@ -38,7 +42,12 @@ def main():
         Table(520, 260),
         Table(650, 260),
         Table(780, 260),
-        Seat(800, 230)
+        Seat(780, 230),
+        Seat(830, 230),
+        Seat(650, 230),
+        Seat(700, 230),
+        Seat(520, 230),
+        Seat(570, 230),
         ]
     
     ingredients = {}
@@ -57,7 +66,6 @@ def main():
 
     running = True
     while running:
-        dt = clock.tick(FPS) / 1000.0  #seconds
         keys = pygame.key.get_pressed()
 
         for event in pygame.event.get():
@@ -66,15 +74,15 @@ def main():
 
             #if wait line is not current full and total customers not at max, spawn new customer
             if event.type == SPAWN_EVENT and len(npcs) < MAX_NPCS and len(npcsWaiting) < 4:
+                #if customers already waiting, put new one in back of line
                 if len(npcsWaiting) > 0:
-                    x = npcsWaiting[-1].x + 30
-                    y = npcsWaiting[-1].y
-                    currNPC = NPC(x, y, recipes_unlocked)
-                else:
-                    x = 250
-                    y = 350
+                    x, y = linePositions[len(npcsWaiting)][0], linePositions[len(npcsWaiting)][1]
+                    currNPC = NPC(x, y, recipes_unlocked, linePosition = linePositions[len(npcsWaiting) - 1])
+                #if customer is first in line, put them at the counter and set currrent customer to that npc
+                elif len(npcsWaiting) == 0:
+                    x, y = linePositions[0][0], linePositions[0][1]
                     #sets current customer to the one in front of the line
-                    currNPC = NPC(x, y, recipes_unlocked)
+                    currNPC = NPC(x, y, recipes_unlocked, linePosition = linePositions[len(npcsWaiting) - 1])
                     currentCust = currNPC
 
                 npcs.append(currNPC)
@@ -94,14 +102,30 @@ def main():
                 if event.key == pygame.K_ESCAPE and gameState == REGISTER:
                     gameState = PLAYING
                 
+                #Player press s while in register to take order and send customer to seat
                 if event.key == pygame.K_s and gameState == REGISTER:
                     seat = findFirstOpen(collisions)
                     if seat:
+                        #reserve open seat
                         seat.reserveSeat(currentCust)
+
+                        #set npc objects target seat
                         currentCust.set_targetSeat(seat)
+
+                        #set npc state to finding seat
                         currentCust.set_state("finding seat")
+
+                        #Remove from line
                         npcsWaiting.pop(0)
-                        seat.occupySeat(currentCust)
+                        
+                        #set every npc's line position to the next one up and change their state
+                        for i in range(0, len(npcsWaiting)):
+                            npcsWaiting[i].state = "moving up in line"
+                            npcsWaiting[i].linePosition = linePositions[i]
+
+                        #set customer in front of the line to next up
+                        if len(npcsWaiting) > 0:
+                            currentCust = npcsWaiting[0]
                         gameState = PLAYING
 
 
@@ -114,8 +138,9 @@ def main():
 
             player.render(screen)
 
+            #Update NPCS positions
             for npc in npcs:
-                npc.update(dt)
+                npc.update(collisions)
 
             #Spawn all collideable objects
             for c in collisions:
@@ -124,12 +149,14 @@ def main():
             #Spawn all npc objects
             for npc in npcs:
                 npc.render(screen)
-        
+
+            #Register interaction range
             pygame.draw.rect(screen, (255,0,0), register.interactionZone, 2)
 
             #Spawn player object
             player.render(screen)
 
+            #Spawn register object
             register.render(screen)
         
         elif gameState == REGISTER:
