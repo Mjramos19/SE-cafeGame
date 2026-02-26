@@ -1,5 +1,6 @@
+import pygame
 class Recipes:
-    def __init__(self, all_recipes: dict, unlocked_recipes: list, price: float):
+    def __init__(self, all_recipes: dict, unlocked_recipes: list, price: float, image_key):
         """
         all_recipes: dict of recipe_name -> list of ingredients
         unlocked_recipes: list of recipe names currently available
@@ -7,6 +8,12 @@ class Recipes:
         self.all_recipes = all_recipes
         self.unlocked = unlocked_recipes
         self.price = price
+
+        try:
+            self.image = IMAGE_LIBRARY[image_key]
+        except:
+            self.image = pygame.Surface((50, 50))
+            self.image.fill(pygame.Color("white"))
 
     def match_ingredients_to_recipie(self, ingredients: list):
         """
