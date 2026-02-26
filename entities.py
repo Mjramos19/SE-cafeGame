@@ -156,12 +156,10 @@ class Sink(Counter):
         pass
 
 
-
-
 class NPC(Entity):
-    def __init__(self, x, y, recipesUnlockedList, linePosition):
+    def __init__(self, x, y, recipesUnlockedDict, linePosition):
         super().__init__(x, y, 22, 22, NPC_COLOR)
-        self.recipesUnlocked = recipesUnlockedList
+        self.recipesUnlocked = recipesUnlockedDict
         self.orderedItem = self.pickItem()
         self.state = "waiting"
         self.targetSeat = None

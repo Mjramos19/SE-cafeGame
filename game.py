@@ -132,7 +132,7 @@ def main():
 
                         #set npc objects target seat
                         currentCust.set_targetSeat(seat)
-
+                        
                         #set npc state to finding seat
                         currentCust.set_state("finding seat")
 
