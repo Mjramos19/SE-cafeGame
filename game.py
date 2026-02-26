@@ -1,5 +1,3 @@
-from pygame import KEYDOWN
-
 from classes import GameObject, Player, Table, Counter, Customer, Register, Seat
 import constants
 from constants import *
