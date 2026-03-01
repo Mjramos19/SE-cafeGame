@@ -1,6 +1,7 @@
 import random
 import sys
-import pygame
+import pygame1
+
 
 WIDTH, HEIGHT = 900, 550
 
