@@ -145,7 +145,6 @@ def main():
                         c4.rect.x, c4.rect.y = 500, 487
                         c5.rect.x, c5.rect.y = 664, 487
 
--
                 if event.key == OPEN_RECIPE_MENU_KEY:
                     RecipeView = RECIPE_VIEW_MENU
 
