@@ -100,20 +100,8 @@ def main():
 
     # Other entities (Customers)
     customers = []
-    customersWaiting = []
-    DebugMode = True
-
-    GameState = "PLAYING"
-    CafeView = "FRONT"
-
-
-    RecipeView = RECIPE_VIEW_NONE
-    selected_recipe = None
-	
-
-    # Other entities (Customers)
-    customers = []
-    customersWaiting = []
+    customersWaiting = [
+	[]
 
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
@@ -352,193 +340,24 @@ def main():
         for m in machines:
             m.update()
 
-        clock.tick(FPS)
+      
 
-        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-                if event.key == pygame.K_1:
-                    if DebugMode == False:
-                        DebugMode = True
-                    else:
-                        DebugMode = False
+		if RecipeView == RECIPE_VIEW_MENU:
+			screen.fill(UI_BG_COLOR)
 
-                if event.key == pygame.K_r:  # R clears the customers for testing
-                    customers.clear()
+			x = RECIPE_START_X
+			y = RECIPE_START_Y
 
-                if event.key == pygame.K_q:
-                    if CafeView == "FRONT":
-                        CafeView = "MIDDLE"
-                        player.rect.x, player.rect.y = 20, 520
-                        c1.rect.x, c1.rect.y = 1014, 615
-                        c2.rect.x, c2.rect.y = 849, 615
-                        c3.rect.x, c3.rect.y = 685, 615
-                        c4.rect.x, c4.rect.y = 522, 615
-                        c5.rect.x, c5.rect.y = 357, 615
-                    else:
-                        CafeView = "FRONT"
-                        player.rect.x, player.rect.y = 1005, 520
-                        c1.rect.x, c1.rect.y = 7, 487
-                        c2.rect.x, c2.rect.y = 172, 487
-                        c3.rect.x, c3.rect.y = 336, 487
-                        c4.rect.x, c4.rect.y = 500, 487
-                        c5.rect.x, c5.rect.y = 664, 487
+			for recipe in RECIPES_UNLOCKED:
+				recipe_img = constants.IMAGE_LIBRARY.get(recipe)
+				if recipe_img:
+					recipe_img = pygame.transform.smoothscale(
+						recipe_img, RECIPE_ICON_SIZE
+					)
+					screen.blit(recipe_img, (x, y))
 
-                if event.key == OPEN_RECIPE_MENU_KEY:
-                    RecipeView = RECIPE_VIEW_MENU
-
-                if event.key == CLOSE_MENU_KEY:
-                    RecipeView = RECIPE_VIEW_NONE
-                    selected_recipe = None
-
-                # if player presses e inside registers collission zone, and there is a customer, take order
-                if event.key == pygame.K_e and player.rect.colliderect(register1.interactionZone): # and register1.customerWaiting:
-                    GameState = "REGISTER"
-                if event.key == pygame.K_ESCAPE and GameState == "REGISTER":
-                    GameState = "PLAYING"
-
-
-                if event.key == pygame.K_s and GameState == "REGISTER":
-
-                    seat = findFirstOpen(seats)  # find open seat
-
-                    if seat:
-                        # reserve open seat
-                        seat.reserveSeat(currentCust)
-
-                        # set Customer objects target seat
-                        currentCust.set_targetSeat(seat)
-
-                        # set Customer state to finding seat
-                        currentCust.set_state("finding seat")
-
-                        # Remove from line
-                        customersWaiting.pop(0)
-
-                        # set every Customer's line position to the next one up and change their state
-                        for i in range(0, len(customersWaiting)):
-                            customersWaiting[i].state = "moving up in line"
-                            customersWaiting[i].linePosition = LINE_POSITIONS[i]
-
-                        # set customer in front of the line to next up
-                        if len(customersWaiting) > 0:
-                            currentCust = customersWaiting[0]
-                        GameState = "PLAYING"
-
-                        
-                
-            # if wait line is not current full and total customers not at max, spawn new customer
-            if event.type == SPAWN_EVENT and len(customers) < MAX_CUSTOMERS and len(
-                    customersWaiting) < MAX_CUSTOMERS_WAITING:
-
-                # Calculate the index for the new customer
-                index = len(customersWaiting)
-                base_x, base_y = LINE_POSITIONS[index]
-
-                # Center the spawn coordinates
-                spawn_x = base_x - 60
-                spawn_y = base_y - 64
-
-                # Create the customer using the key "customer" from your IMAGE_LIBRARY
-                currCustomer = Customer(spawn_x, spawn_y, "customer", RECIPES_UNLOCKED, linePosition=LINE_POSITIONS[index])
-
-                if index == 0:
-                    currentCust = currCustomer
-
-                all_sprites.add(currCustomer)
-                customer_group.add(currCustomer)
-
-                # Add to tracking lists
-                customers.append(currCustomer)
-                customersWaiting.append(currCustomer)
-                register1.setWaiting()
-
-
-        if GameState == "PLAYING":
-
-            if CafeView == "FRONT":
-                temp_cols = list(front_collisions)
-                for c in customers:
-                    temp_cols.append(c.get_foot_rect())
-                player.handle_movement(keys, temp_cols)
-
-                # handles all layering with renders
-                screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
-
-                depth_list = customers + [player]
-                depth_list.sort(key=lambda obj: obj.rect.bottom)
-
-                if player.rect.bottom < 610:
-                    for entity in depth_list:
-                        entity.render(screen)
-                    screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
-                else:
-                    for c in customers:
-                        c.render(screen)
-                    screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
-                    # 3. Draw the player last (on top of everything)
-                    player.render(screen)
-
-
-                if DebugMode == True:
-                    for c in front_counters:
-                        pygame.draw.rect(screen, (250, 0, 0), c)
-                    pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
-                    for c in front_collisions:
-                        pygame.draw.rect(screen, (255, 255, 0), c, 2)
-
-            elif CafeView == "MIDDLE":
-                player.handle_movement(keys, middle_collisions)
-                screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
-                player.render(screen)
-                screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
-
-                if DebugMode == True:
-                    for c in middle_collisions:
-                        pygame.draw.rect(screen, (255, 255, 0), c, 2)
-                    for c in middle_counters:
-                        pygame.draw.rect(screen, (250, 0, 0), c)
-
-            else:
-                player.handle_movement(keys, back_collisions)
-                screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
-                player.render(screen)
-                screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
-
-                if DebugMode == True:
-                    for c in back_collisions:
-                        pygame.draw.rect(screen, (255, 255, 0), c, 2)
-                    for c in middle_counters:
-                        pygame.draw.rect(screen, (250, 0, 0), c)
-
-
-            if RecipeView == RECIPE_VIEW_MENU:
-                screen.fill(UI_BG_COLOR)
-
-                x = RECIPE_START_X
-                y = RECIPE_START_Y
-
-                for recipe in RECIPES_UNLOCKED:
-                    recipe_img = constants.IMAGE_LIBRARY.get(recipe)
-                    if recipe_img:
-                        recipe_img = pygame.transform.smoothscale(
-                            recipe_img, RECIPE_ICON_SIZE
-                        )
-                        screen.blit(recipe_img, (x, y))
-
-                    x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
+				x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
             
- 
-            '''these things run while playing'''
-
-            for c in customers:
-                c.update(seats)
-
-
-            if DebugMode == True:
-                pygame.draw.rect(screen, (255, 255, 0), player.get_foot_rect(), 2)
-
-        elif GameState == "REGISTER":
-            register1.take_order(screen)
-
 
         clock.tick(FPS)
 
@@ -578,13 +397,6 @@ def change_counters_pos(view):
         c5.rect.x, c5.rect.y = 664, 487
 
 
-# Finds first open seat in collisions list and returns it. None if all occupied
-
-def findFirstOpen(seats):
-    for c in seats:
-        if isinstance(c, Seat) and c.state == "open":
-            return c
-    return None
-
 if __name__ == "__main__":
     main()
+
