@@ -30,7 +30,8 @@ class Player(GameObject, pygame.sprite.Sprite):
 
         self.foot_w = (18 * 4)
         self.foot_h = (8 * 4)
-
+        self.activeOrders = []
+        self.foodInHand = []
         self.top_inventory = []
         self.ti_rect = pygame.Rect(10,340, 50,50)
         self.bottom_inventory = []
@@ -76,7 +77,14 @@ class Player(GameObject, pygame.sprite.Sprite):
         pass
 
     def deliver(self):
-        pass
+        #loops through each seat at the table in which the player is standing.
+        #If the seat is occupied, checks if food in hand matches the item ordered from that customer
+        #and delivers it if so
+        for seat in table.seats:
+            if seat.seatedCustomer != None:
+                if seat.seatedCustomer.orderedItem in self.foodInHand and seat.seatedCustomer.state != "eating":
+                    seat.seatedCustomer.state = "eating"
+                    self.foodInHand.remove(seat.seatedCustomer.orderedItem)
 
     def render(self, screen):
         screen.blit(self.sprite, self.rect)
@@ -85,8 +93,10 @@ class Player(GameObject, pygame.sprite.Sprite):
 
 # dirty table aspect - states - money collection
 class Table(GameObject):
-    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR):
+    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats = []):
         super().__init__(x, y, w, h, color)
+        self.open = True
+        self.seats = seats
         self.open = True
 
 
@@ -131,7 +141,7 @@ class Register(Counter):
     def __init__(self, x, y, iz_y, w=150, h=90):
         super().__init__(x, y, w, h, REGISTER_COLOR)
         self.placeable = False
-
+        self.customerWaiting = False
         # interaction box for register
         self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
 
@@ -142,10 +152,15 @@ class Register(Counter):
         self.order_screen = IMAGE_LIBRARY["order_screen"]
         self.customer_image = IMAGE_LIBRARY["customer"] #place holder
         self.customer_rect = pygame.Rect(500,200,100,418)
+        if self.customerWaiting == True:
+            pass  # change register image to display icon
 
 
     def setWaiting(self):
-        Register.customerWaiting = True
+        self.customerWaiting = True
+
+    def setOpen(self):
+        self.customerWaiting = False
 
     def take_order(self, screen, currentCust=None):
         '''A function that brings up the order taking screen.'''
