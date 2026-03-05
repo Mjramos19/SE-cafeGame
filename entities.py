@@ -2,6 +2,7 @@ import random
 import sys
 import pygame
 
+
 WIDTH, HEIGHT = 900, 550
 
 PLAYER_COLOR = (80, 180, 255)
