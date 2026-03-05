@@ -31,6 +31,11 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_w = (18 * 4)
         self.foot_h = (8 * 4)
 
+        self.top_inventory = []
+        self.ti_rect = pygame.Rect(10,340, 50,50)
+        self.bottom_inventory = []
+        self.bi_rect = pygame.Rect(10,410, 50,50)
+
 
     def get_foot_rect(self):
         '''A function that returns a rectangle that only covers the feet area of the player sprite.'''
@@ -75,7 +80,8 @@ class Player(GameObject, pygame.sprite.Sprite):
 
     def render(self, screen):
         screen.blit(self.sprite, self.rect)
-
+        pygame.draw.rect(screen, (0,0,0), self.ti_rect)
+        pygame.draw.rect(screen, (0,0,0), self.bi_rect)
 
 # dirty table aspect - states - money collection
 class Table(GameObject):
@@ -120,24 +126,40 @@ class Counter(GameObject):
 
 class Register(Counter):
     '''A Register is a child of Counter that handles player interation within the zone and customer lineup behavior, whether a customer is at the register.'''
-    def __init__(self, x, y, w=150, h=90):
+    # this variable is shared amongst both register objects
+    customerWaiting = False
+    def __init__(self, x, y, iz_y, w=150, h=90):
         super().__init__(x, y, w, h, REGISTER_COLOR)
         self.placeable = False
-        self.customerWaiting = False
-        # interaction box for register
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 110, self.rect.w, self.rect.h)
 
-        if self.customerWaiting == True:
-            pass  # change register image to display icon
+        # interaction box for register
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
+
+        self.icon = IMAGE_LIBRARY["register_icon"]
+        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
+
+        # order screen variables
+        self.order_screen = IMAGE_LIBRARY["order_screen"]
+        self.customer_image = IMAGE_LIBRARY["customer"] #place holder
+        self.customer_rect = pygame.Rect(500,200,100,418)
 
 
     def setWaiting(self):
-        self.customerWaiting = True
+        Register.customerWaiting = True
 
-    def take_order(self, screen):
+    def take_order(self, screen, currentCust=None):
         '''A function that brings up the order taking screen.'''
-        # bring up order taking screen - Currently placeholder black screen
-        return screen.fill((0, 0, 0))
+        # bring up order taking screen - learn to crop customer to rectangle
+        screen.blit(self.order_screen, (0,0))
+        screen.blit(self.customer_image, self.customer_rect)
+
+
+
+
+
+    def render(self, screen):
+        if Register.customerWaiting == True:
+            screen.blit(self.icon, self.icon_rect)
 
 
 class Sink(Counter):

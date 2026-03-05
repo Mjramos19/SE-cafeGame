@@ -1,29 +1,39 @@
+
+
+#   pylint --errors-only main.py
+#   pycodestyle --statistics main.py
+#   pdoc -o ./html main.py
+
+
+
 from classes import GameObject, Player, Table, Counter, Customer, Register, Seat
 import constants
 from constants import *
 import sys
 import pygame
+import time
 
 pygame.init()
 screen = pygame.display.set_mode((1366, 768))
 
-
-
 constants.IMAGE_LIBRARY["player"] = pygame.image.load("Cafe_Game_Art/player.png").convert_alpha()
 constants.IMAGE_LIBRARY["customer"] = pygame.image.load("Cafe_Game_Art/Customer.png").convert_alpha()
+constants.IMAGE_LIBRARY["order_screen"] = pygame.image.load("Cafe_Game_Art/order_screen.png").convert()
 constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg2"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2.png").convert()
 constants.IMAGE_LIBRARY["bg2_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2_top.png").convert_alpha()
+constants.IMAGE_LIBRARY["register_icon"] = pygame.image.load("Cafe_Game_Art/register_icon.png").convert_alpha()
 
 # Pre-scale all images in the library them once
 constants.IMAGE_LIBRARY["player"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player"], (120, 268))
 constants.IMAGE_LIBRARY["customer"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["customer"], (120, 268))
+constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1_top"], (1366, 768))
 constants.IMAGE_LIBRARY["bg2"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg2"], (1366, 768))
 constants.IMAGE_LIBRARY["bg2_top"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg2_top"], (1366, 768))
-
+constants.IMAGE_LIBRARY["register_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["register_icon"], ((17*2), (33*2)))
 
 
 # front room collision rects
@@ -45,8 +55,8 @@ s1, s2, s3, s4, s5, s6 = Seat(38, 243), Seat(253, 243), Seat(445, 243), Seat(660
 
 
 # build two registers - one for customers, the other dependent on the first and will display icon, can take order from both and will update the other
-register1 = Register(829, 487)
-# register2 = Register(200, 150)
+register1 = Register(829, 487, 110)
+register2 = Register(193, 615, 10)
 
 currentCust = None
 currCustomer = None
@@ -60,7 +70,7 @@ back_collisions = [menu_rect]
 # all interactable spots each scene (counters, register, sink, chairs, doors)
 front_counters = [c1, c2, c3, c4, c5, register1, s1, s2, s3, s4, s5, s6]
 seats = [s1, s2, s3, s4, s5, s6]
-middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10]
+middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, register2]
 back_shelves = []
 
 
@@ -70,6 +80,7 @@ def main():
     global Customer, currentCust
     pygame.display.set_caption("Cafe Sim")
     clock = pygame.time.Clock()
+    START_TIME = pygame.time.get_ticks()
     font = pygame.font.SysFont(None, 22)
 
     DebugMode = True
@@ -93,6 +104,9 @@ def main():
     player = Player(40, 600, "player")
     all_sprites.add(player)
 
+    # orders list
+    orders = []
+
 
     running = True
     while running:
@@ -101,13 +115,15 @@ def main():
         screen.fill((0, 0, 0))
         keys = pygame.key.get_pressed()
 
+        current_time = pygame.time.get_ticks()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.MOUSEMOTION:
+            if event.type == pygame.MOUSEMOTION and DebugMode==True:
                 m_x, m_y = pygame.mouse.get_pos()
-                #print(f"Mouse position: X={m_x}, Y={m_y}")
+                print(f"Mouse position: X={m_x}, Y={m_y}")
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
@@ -119,48 +135,43 @@ def main():
                 if event.key == pygame.K_r:  # R clears the customers for testing
                     customers.clear()
 
-                if event.key == pygame.K_q:
+                if event.key == pygame.K_q and GameState=="PLAYING":
                     if CafeView == "FRONT":
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 20, 520
-                        c1.rect.x, c1.rect.y = 1014, 615
-                        c2.rect.x, c2.rect.y = 849, 615
-                        c3.rect.x, c3.rect.y = 685, 615
-                        c4.rect.x, c4.rect.y = 522, 615
-                        c5.rect.x, c5.rect.y = 357, 615
+                        change_counters_pos(CafeView)
                     else:
                         CafeView = "FRONT"
                         player.rect.x, player.rect.y = 1005, 520
-                        c1.rect.x, c1.rect.y = 7, 487
-                        c2.rect.x, c2.rect.y = 172, 487
-                        c3.rect.x, c3.rect.y = 336, 487
-                        c4.rect.x, c4.rect.y = 500, 487
-                        c5.rect.x, c5.rect.y = 664, 487
+                        change_counters_pos(CafeView)
 
-                # if player presses e inside registers collission zone, and there is a customer, take order
-                if event.key == pygame.K_e and player.rect.colliderect(register1.interactionZone): # and register1.customerWaiting:
-                    GameState = "REGISTER"
+                # if player presses e inside registers collision zone, and there is a customer, take order
+                if event.key == pygame.K_e:
+                    if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
+                        GameState = "REGISTER"
+                    if player.rect.colliderect(register2.interactionZone) and register2.customerWaiting:
+                        GameState = "REGISTER"
+
                 if event.key == pygame.K_ESCAPE and GameState == "REGISTER":
                     GameState = "PLAYING"
 
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
 
+                    orders.insert(0, currentCust.orderedItem)
+                    time.sleep(1)
+
                     seat = findFirstOpen(seats)  # find open seat
 
                     if seat:
                         # reserve open seat
                         seat.reserveSeat(currentCust)
-
                         # set Customer objects target seat
                         currentCust.set_targetSeat(seat)
-
                         # set Customer state to finding seat
                         currentCust.set_state("finding seat")
-
                         # Remove from line
                         customersWaiting.pop(0)
-
                         # set every Customer's line position to the next one up and change their state
                         for i in range(0, len(customersWaiting)):
                             customersWaiting[i].state = "moving up in line"
@@ -171,7 +182,6 @@ def main():
                             currentCust = customersWaiting[0]
                         GameState = "PLAYING"
 
-                        
                 
             # if wait line is not current full and total customers not at max, spawn new customer
             if event.type == SPAWN_EVENT and len(customers) < MAX_CUSTOMERS and len(
@@ -222,6 +232,8 @@ def main():
                     for c in customers:
                         c.render(screen)
                     screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
+                    if currentCust != None and currentCust.state == "waiting":
+                        register1.render(screen)
                     # 3. Draw the player last (on top of everything)
                     player.render(screen)
 
@@ -237,6 +249,8 @@ def main():
                 player.handle_movement(keys, middle_collisions)
                 screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
                 player.render(screen)
+                if currentCust != None and currentCust.state == "waiting":
+                    register2.render(screen)
                 screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
                 if DebugMode == True:
@@ -244,6 +258,8 @@ def main():
                         pygame.draw.rect(screen, (255, 255, 0), c, 2)
                     for c in middle_counters:
                         pygame.draw.rect(screen, (250, 0, 0), c)
+                    pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
+
 
             else:
                 player.handle_movement(keys, back_collisions)
@@ -262,6 +278,13 @@ def main():
             for c in customers:
                 c.update(seats)
 
+            mx, my = pygame.mouse.get_pos()
+            if player.ti_rect.collidepoint((mx, my)):
+                inventory = font.render(f'{player.top_inventory}', True, (250, 0, 0))
+                screen.blit(inventory, (mx+10, my))
+            if player.bi_rect.collidepoint((mx, my)):
+                inventory = font.render(f'{player.bottom_inventory}', True, (250, 0, 0))
+                screen.blit(inventory, (mx+10, my))
 
             if DebugMode == True:
                 pygame.draw.rect(screen, (255, 255, 0), player.get_foot_rect(), 2)
@@ -272,8 +295,11 @@ def main():
 
         clock.tick(FPS)
 
-        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()}", True, (230, 230, 230))
+        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
         screen.blit(text, (10, 10))
+        orders_text = font.render(f'Orders: {orders}', True, (250, 0, 0))
+        screen.blit(orders_text, (10, 25))
+
 
         pygame.display.flip()
 
@@ -288,6 +314,21 @@ def findFirstOpen(seats):
         if isinstance(c, Seat) and c.state == "open":
             return c
     return None
+
+
+def change_counters_pos(view):
+    if view == "MIDDLE":
+        c1.rect.x, c1.rect.y = 1014, 615
+        c2.rect.x, c2.rect.y = 849, 615
+        c3.rect.x, c3.rect.y = 685, 615
+        c4.rect.x, c4.rect.y = 522, 615
+        c5.rect.x, c5.rect.y = 357, 615
+    elif view == "FRONT":
+        c1.rect.x, c1.rect.y = 7, 487
+        c2.rect.x, c2.rect.y = 172, 487
+        c3.rect.x, c3.rect.y = 336, 487
+        c4.rect.x, c4.rect.y = 500, 487
+        c5.rect.x, c5.rect.y = 664, 487
 
 if __name__ == "__main__":
     main()
