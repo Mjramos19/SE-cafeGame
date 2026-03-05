@@ -141,7 +141,7 @@ class Register(Counter):
     def __init__(self, x, y, iz_y, w=150, h=90):
         super().__init__(x, y, w, h, REGISTER_COLOR)
         self.placeable = False
-        self.customerWaiting = False
+    
         # interaction box for register
         self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
 
@@ -152,23 +152,15 @@ class Register(Counter):
         self.order_screen = IMAGE_LIBRARY["order_screen"]
         self.customer_image = IMAGE_LIBRARY["customer"] #place holder
         self.customer_rect = pygame.Rect(500,200,100,418)
-        if self.customerWaiting == True:
-            pass  # change register image to display icon
-
 
     def setWaiting(self):
-        self.customerWaiting = True
-
-    def setOpen(self):
-        self.customerWaiting = False
+        Register.customerWaiting = True
 
     def take_order(self, screen, currentCust=None):
         '''A function that brings up the order taking screen.'''
         # bring up order taking screen - learn to crop customer to rectangle
         screen.blit(self.order_screen, (0,0))
         screen.blit(self.customer_image, self.customer_rect)
-
-
 
 
 
@@ -297,4 +289,5 @@ class Customer(GameObject, pygame.sprite.Sprite):
         return pygame.Rect(foot_x, foot_y, self.foot_w, self.foot_h)
 
     def __str__(self):
+
         return f'State: {self.state}, Target Seat: {self.targetSeat}'
