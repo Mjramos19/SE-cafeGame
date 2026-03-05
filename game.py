@@ -4,6 +4,7 @@ import constants
 from constants import *
 import sys
 import pygame
+from button import Button 
 
 pygame.init()
 screen = pygame.display.set_mode((1366, 768))
@@ -54,7 +55,7 @@ register1 = Register(829, 487)
 
 currentCust = None
 currCustomer = None
-
+current_screen = "game"   
 
 # all collision lists for handling perspectives
 front_collisions = [menu_rect, counter3_rect, wall_rect2]
@@ -67,7 +68,8 @@ seats = [s1, s2, s3, s4, s5, s6]
 middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10]
 back_shelves = []
 
-
+# Recipe menu button     
+recipe_button = Button(1135, 343, 60, 77, "Recipe", "RECIPE_MENU")
 
 
 def main():
@@ -108,11 +110,13 @@ def main():
 
         screen.fill((0, 0, 0))
         keys = pygame.key.get_pressed()
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			running = False
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
+		elif event.type == pygame.MOUSEBUTTONDOWN:
+			if recipe_button.is_clicked(event.pos):
+				print("Recipe button pressed")
             if event.type == pygame.MOUSEMOTION:
                 m_x, m_y = pygame.mouse.get_pos()
                 #print(f"Mouse position: X={m_x}, Y={m_y}")
@@ -239,7 +243,7 @@ def main():
                     screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
                     # 3. Draw the player last (on top of everything)
                     player.render(screen)
-
+		recipe_button.draw(screen)
 
                 if DebugMode == True:
                     for c in front_counters:
