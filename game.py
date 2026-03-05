@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 
 #   pylint --errors-only main.py
@@ -86,7 +85,6 @@ machines = [grinder, espresso_mach, steamer]
 
 def main():
     global Customer, currentCust
-    global Customer, currentCust
     pygame.display.set_caption("Cafe Sim")
     clock = pygame.time.Clock()
     START_TIME = pygame.time.get_ticks()
@@ -103,8 +101,20 @@ def main():
     # Other entities (Customers)
     customers = []
     customersWaiting = []
+    DebugMode = True
 
-    # Spawn timer
+    GameState = "PLAYING"
+    CafeView = "FRONT"
+
+
+    RecipeView = RECIPE_VIEW_NONE
+    selected_recipe = None
+	
+
+    # Other entities (Customers)
+    customers = []
+    customersWaiting = []
+
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
@@ -122,9 +132,6 @@ def main():
 
     running = True
     while running:
-        # These are universal events no matter the state
-
-        screen.fill((0, 0, 0))
         # These are universal events no matter the state
 
         screen.fill((0, 0, 0))
@@ -348,163 +355,6 @@ def main():
         clock.tick(FPS)
 
         text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-        screen.blit(text, (10, 10))
-        orders_text = font.render(f'Orders: {orders}', True, (250, 0, 0))
-        screen.blit(orders_text, (10, 25))
-
-
-        pygame.display.flip()
-
-    pygame.quit()
-    sys.exit()
-
-
-# Finds first open seat in collisions list and returns it. None if all occupied
-
-def findFirstOpen(seats):
-    for c in seats:
-        if isinstance(c, Seat) and c.state == "open":
-            return c
-    return None
-
-
-def change_counters_pos(view):
-    if view == "MIDDLE":
-        c1.rect.x, c1.rect.y = 1014, 615
-        c2.rect.x, c2.rect.y = 849, 615
-        c3.rect.x, c3.rect.y = 685, 615
-        c4.rect.x, c4.rect.y = 522, 615
-        c5.rect.x, c5.rect.y = 357, 615
-    elif view == "FRONT":
-        c1.rect.x, c1.rect.y = 7, 487
-        c2.rect.x, c2.rect.y = 172, 487
-        c3.rect.x, c3.rect.y = 336, 487
-        c4.rect.x, c4.rect.y = 500, 487
-        c5.rect.x, c5.rect.y = 664, 487
-
-if __name__ == "__main__":
-    main()
-=======
-# My edits to the game.py file from the main branch. Added logic for the recipes
-from classes import GameObject, Player, Table, Counter, Customer, Register, Seat
-import constants
-from constants import *
-import sys
-import pygame
-
-pygame.init()
-screen = pygame.display.set_mode((1366, 768))
-
-
-
-constants.IMAGE_LIBRARY["player"] = pygame.image.load("Cafe_Game_Art/player.png").convert_alpha()
-constants.IMAGE_LIBRARY["customer"] = pygame.image.load("Cafe_Game_Art/Customer.png").convert_alpha()
-constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
-constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
-constants.IMAGE_LIBRARY["bg2"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2.png").convert()
-constants.IMAGE_LIBRARY["bg2_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2_top.png").convert_alpha()
-
-
-
-
-# Pre-scale all images in the library them once
-constants.IMAGE_LIBRARY["player"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player"], (120, 268))
-constants.IMAGE_LIBRARY["customer"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["customer"], (120, 268))
-constants.IMAGE_LIBRARY["bg1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1"], (1366, 768))
-constants.IMAGE_LIBRARY["bg1_top"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1_top"], (1366, 768))
-constants.IMAGE_LIBRARY["bg2"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg2"], (1366, 768))
-constants.IMAGE_LIBRARY["bg2_top"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg2_top"], (1366, 768))
-
-
-
-# front room collision rects
-counter3_rect = pygame.Rect(0, 590, 983, 50)
-wall_rect2 = pygame.Rect(0, 293, 1400, 10)
-
-# behind counter / middle collision rects
-counter1_rect = pygame.Rect(187, 336, 983, 50)
-counter2_rect = pygame.Rect(187, 718, 983, 50)
-wall_rect = pygame.Rect(0, 333, 1400, 10)
-menu_rect = pygame.Rect(1150, 0, 100, 800)
-
-# builds all counters (about 165 apart from each other)
-c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 = (Counter(7, 487), Counter(172, 487), Counter(336, 487),
-                                           Counter(500, 487), Counter(664, 487), Counter(193, 234),
-                                           Counter(358, 234), Counter(522, 234), Counter(686, 234), Counter(850, 234))
-
-s1, s2, s3, s4, s5, s6 = Seat(38, 243), Seat(253, 243), Seat(445, 243), Seat(660, 243), Seat(850, 243), Seat(1064, 243)
-
-
-# build two registers - one for customers, the other dependent on the first and will display icon, can take order from both and will update the other
-register1 = Register(829, 487)
-# register2 = Register(200, 150)
-
-currentCust = None
-currCustomer = None
-
-
-# all collision lists for handling perspectives
-front_collisions = [menu_rect, counter3_rect, wall_rect2]
-middle_collisions = [menu_rect, counter1_rect, counter2_rect, wall_rect]
-back_collisions = [menu_rect]
-
-# all interactable spots each scene (counters, register, sink, chairs, doors)
-front_counters = [c1, c2, c3, c4, c5, register1, s1, s2, s3, s4, s5, s6]
-seats = [s1, s2, s3, s4, s5, s6]
-middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10]
-back_shelves = []
-
-
-
-
-def main():
-    global Customer, currentCust
-    pygame.display.set_caption("Cafe Sim")
-    clock = pygame.time.Clock()
-    font = pygame.font.SysFont(None, 22)
-
-    DebugMode = True
-
-    GameState = "PLAYING"
-    CafeView = "FRONT"
-
-
-    RecipeView = RECIPE_VIEW_NONE
-    selected_recipe = None
-	
-
-    # Other entities (Customers)
-    customers = []
-    customersWaiting = []
-
-    # Spawn timer
-    SPAWN_EVENT = pygame.USEREVENT + 1
-    pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
-
-    all_sprites = pygame.sprite.Group()
-    customer_group = pygame.sprite.Group()
-
-    # Player
-    player = Player(40, 600, "player")
-    all_sprites.add(player)
-
-
-    running = True
-    while running:
-        # These are universal events no matter the state
-
-        screen.fill((0, 0, 0))
-        keys = pygame.key.get_pressed()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-
-            if event.type == pygame.MOUSEMOTION:
-                m_x, m_y = pygame.mouse.get_pos()
-                #print(f"Mouse position: X={m_x}, Y={m_y}")
-
-            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     if DebugMode == False:
                         DebugMode = True
@@ -694,6 +544,9 @@ def main():
 
         text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()}", True, (230, 230, 230))
         screen.blit(text, (10, 10))
+        orders_text = font.render(f'Orders: {orders}', True, (250, 0, 0))
+        screen.blit(orders_text, (10, 25))
+
 
         pygame.display.flip()
 
@@ -709,6 +562,29 @@ def findFirstOpen(seats):
             return c
     return None
 
+
+def change_counters_pos(view):
+    if view == "MIDDLE":
+        c1.rect.x, c1.rect.y = 1014, 615
+        c2.rect.x, c2.rect.y = 849, 615
+        c3.rect.x, c3.rect.y = 685, 615
+        c4.rect.x, c4.rect.y = 522, 615
+        c5.rect.x, c5.rect.y = 357, 615
+    elif view == "FRONT":
+        c1.rect.x, c1.rect.y = 7, 487
+        c2.rect.x, c2.rect.y = 172, 487
+        c3.rect.x, c3.rect.y = 336, 487
+        c4.rect.x, c4.rect.y = 500, 487
+        c5.rect.x, c5.rect.y = 664, 487
+
+
+# Finds first open seat in collisions list and returns it. None if all occupied
+
+def findFirstOpen(seats):
+    for c in seats:
+        if isinstance(c, Seat) and c.state == "open":
+            return c
+    return None
+
 if __name__ == "__main__":
     main()
->>>>>>> origin/ava/recipes

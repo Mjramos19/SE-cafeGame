@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import pygame
 
 # Screen Dimensions
@@ -113,9 +112,7 @@ hot_chocolate = Ingredient("Hot Chocolate",["img"])
 INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water, ice, milk, steamed_milk, foamed_milk, cocoa_powder, hot_chocolate]
 
 # Recipe List
-RECIPES_UNLOCKED = ["Breakfast Bagel", "Breakfast Sandwich", "Iced Coffee", "Hot Coffee"]
-=======
-import pygame
+RECIPES_UNLOCKED = ["Breakfast Bagel", "Breakfast Sandwich", "Iced Coffee", "Hot Coffee"]import pygame
 
 # Screen Dimensions
 WIDTH, HEIGHT = 1366, 768
@@ -166,4 +163,3 @@ RECIPE_START_Y = 200
 # Input bindings
 OPEN_RECIPE_MENU_KEY = pygame.K_m
 CLOSE_MENU_KEY = pygame.K_ESCAPE
->>>>>>> origin/ava/recipes
