@@ -1,73 +1,38 @@
 import pygame
 
-class Recipes:
-    def __init__(self, all_recipes: dict, unlocked_recipes: list, price: float, image_key):
-        """
-        all_recipes: dict of recipe_name -> list of ingredients
-        unlocked_recipes: list of recipe names currently available
-        """
-        self.all_recipes = all_recipes
-        self.unlocked = unlocked_recipes
-        self.price = price
 
-        try:
-            self.image = IMAGE_LIBRARY[image_key]
-        except:
-            self.image = pygame.Surface((50, 50))
-            self.image.fill(pygame.Color("white"))
+class Button:
+    def __init__(self, x, y, width, height, text, target_state, action):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.target_state = target_state
+        self.font = pygame.font.SysFont(None, 22)
 
-    def match_ingredients_to_recipe(self, ingredients: list):
-        """
-        Returns the recipe name that matches the given ingredients.
-        Order does not matter. Must match exactly.
-        """
-        if not ingredients:
-            return None
 
-        for recipe_name in self.unlocked:
-            recipe_ingredients = self.all_recipes.get(recipe_name)
 
-            if recipe_ingredients and sorted(ingredients) == sorted(recipe_ingredients):
-                return recipe_name
+        self.color = (180, 180, 180)
+        self.hover_color = (220, 220, 220)
+        self.text_color = (0, 0, 0)
+        self.action = action
 
-        return None
+    def is_clicked(self, mouse_pos):
+        return self.rect.collidepoint(mouse_pos)
 
-    def get_ingredients(self, recipe_name: str):
-        """Return ingredient list for a recipe, or None if not found."""
-        return self.all_recipes.get(recipe_name)
+    def draw(self, screen):
+        mouse_pos = pygame.mouse.get_pos()
 
-    def is_unlocked(self, recipe_name):
-        """Check whether a recipe is unlocked."""
-        return recipe_name in self.unlocked
+        if self.rect.collidepoint(mouse_pos):
+            pygame.draw.rect(screen, self.hover_color, self.rect)
+        else:
+            pygame.draw.rect(screen, self.color, self.rect)
 
-    def unlock(self, recipe_name):
-        """Unlock a recipe if it exists."""
-        if recipe_name in self.all_recipes and recipe_name not in self.unlocked:
-            self.unlocked.append(recipe_name)
+        text_surface = self.font.render(self.text, True, self.text_color)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect)
 
-    def lock(self, recipe_name):
-        """Lock a recipe."""
-        if recipe_name in self.unlocked:
-            self.unlocked.remove(recipe_name)
+    def handle_event(self, event, current_state):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                return self.target_state
 
-    def get_unlocked(self):
-        """Return a copy of unlocked recipes."""
-        return list(self.unlocked)
-    def get_price(self):
-        """Return the price of the recipe."""
-        return self.price
-
-    '''class Recipes:
-        def __init__(self, all_recipes: dict, unlocked: list, images: dict):
-            self.all_recipes = all_recipes
-            self.unlocked = unlocked
-            self.images = images
-
-        def match(self, ingredients: list):
-            for recipe in self.unlocked:
-                if sorted(ingredients) == sorted(self.all_recipes[recipe]):
-                    return recipe
-            return None
-
-        def get_image(self, recipe_name):
-            return self.images.get(recipe_name)'''
+        return current_state

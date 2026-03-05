@@ -226,7 +226,7 @@ def main():
                     for c in customers:
                         temp_cols.append(c.get_foot_rect())
                     player.handle_movement(keys, temp_cols)
-    
+
                     # handles all layering with renders
                     screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
 
