@@ -5,6 +5,7 @@ from constants import INGREDIENTS, Ingredient
 
 
 class Machine(GameObject, pygame.sprite.Sprite):
+    """Base class for all machines in the cafe. Handles state management, timing, and interaction zones."""
     def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, w=150, h=90):
         pygame.sprite.Sprite.__init__(self)
 
@@ -20,7 +21,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
         if machine_input in INGREDIENTS:
             self.input = machine_input
-        self.outputs = [o for o in outputs if o in INGREDIENTS]
+        self.outputs = [ingredient for ingredient in outputs if ingredient in INGREDIENTS]
 
         if isinstance(num_outputs, int):
             self.num_outputs = num_outputs
@@ -34,9 +35,9 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.selected_output = None
 
         # Interaction zone sits directly in front of (below) the machine.
-        # Height of 200 ensures the zone reaches past the counter collision into the
+        # Height of 150 ensures the zone reaches past the counter collision into the
         # area where the player can actually stand (~y=392 in the MIDDLE view).
-        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 200)
+        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 150)
         self.start_button = pygame.Rect(self.x + 20, self.y + 5, self.w - 45, self.h - 45)
 
     def is_player_nearby(self, player):
@@ -73,6 +74,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         screen.blit(hint, (cx - hint.get_width() // 2, 700))
 
     def add(self, ingredient):
+        """Add an ingredient to the machine. If the ingredient is valid for this machine, transition to full state."""
         if not isinstance(ingredient, Ingredient):
             print(f"cannot add {ingredient} to {self.name}.")
         else:
@@ -99,9 +101,11 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 self.contents = [self.selected_output] * self.num_outputs
 
     def select_output(self, index=0):
+        """Select which output to produce if the machine has multiple options. Defaults to the first output."""
         return self.outputs[0]
 
     def remove_output(self):
+        """Remove one item from the machine's contents and return it. If no contents remain, transition back to empty state."""
         if self.state != "ready":
             print("nothing is brewed")
         else:
@@ -109,6 +113,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 return self.contents.pop()
 
     def render(self, screen, debug=False):
+        """Draw the machine and (optionally) its interaction zone for debugging."""
         screen.blit(self.sprite, self.rect)
         if debug:
             pygame.draw.rect(screen, (255, 255, 0), self.interaction_zone, 2)

@@ -69,6 +69,7 @@ grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground
 espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot],            1, 5)
 steamer        = Machine(522, 234, "Milk Steamer",     milk,             [steamed_milk, foamed_milk], 1, 4)
 machines = [grinder, espresso_mach, steamer]
+grinder.add(bag_coffee_beans)  # LAVISHA TEMP: pre-load ingredient for testing
 
 
 
@@ -152,7 +153,7 @@ def main():
                 if event.key == pygame.K_ESCAPE and GameState == "REGISTER":
                     GameState = "PLAYING"
 
-#LAVISHA - if player presses e near a machine, open machine UI. If they press e again while in the machine UI, run the machine or collect output depending on the state. Pressing escape will exit the machine UI.
+#LAVISHA- if player presses e near a machine, open machine UI. If they press e again while in the machine UI, run the machine or collect output depending on the state. Pressing escape will exit the machine UI.
                 if event.key == pygame.K_e and CafeView == "MIDDLE" and GameState == "PLAYING":
                     for m in machines:
                         if m.is_player_nearby(player):
