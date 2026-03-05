@@ -1,4 +1,5 @@
 from classes import GameObject, Player, Table, Counter, Customer, Register, Seat
+from machines import Machine
 import constants
 from constants import *
 import sys
@@ -63,6 +64,12 @@ seats = [s1, s2, s3, s4, s5, s6]
 middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10]
 back_shelves = []
 
+#LAVISHA Three machines placed at the back-counter positions (matching c6, c7, c8 widths: 150x90)
+grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee],            1, 3)
+espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot],            1, 5)
+steamer        = Machine(522, 234, "Milk Steamer",     milk,             [steamed_milk, foamed_milk], 1, 4)
+machines = [grinder, espresso_mach, steamer]
+
 
 
 
@@ -76,6 +83,8 @@ def main():
 
     GameState = "PLAYING"
     CafeView = "FRONT"
+    #LAVISHA
+    active_machine = None
 
 
     # Other entities (Customers)
@@ -143,6 +152,27 @@ def main():
                 if event.key == pygame.K_ESCAPE and GameState == "REGISTER":
                     GameState = "PLAYING"
 
+#LAVISHA - if player presses e near a machine, open machine UI. If they press e again while in the machine UI, run the machine or collect output depending on the state. Pressing escape will exit the machine UI.
+                if event.key == pygame.K_e and CafeView == "MIDDLE" and GameState == "PLAYING":
+                    for m in machines:
+                        if m.is_player_nearby(player):
+                            active_machine = m
+                            GameState = "MACHINE"
+                            break
+
+                if event.key == pygame.K_ESCAPE and GameState == "MACHINE":
+                    GameState = "PLAYING"
+                    active_machine = None
+
+                if event.key == pygame.K_e and GameState == "MACHINE" and active_machine:
+                    if active_machine.state == "full":
+                        active_machine.run_machine()
+                    elif active_machine.state == "ready":
+                        result = active_machine.remove_output()
+                        if result:
+                            print(f"Collected: {result.name}")
+                        if not active_machine.contents:
+                            active_machine.state = "empty"
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
 
@@ -236,8 +266,17 @@ def main():
             elif CafeView == "MIDDLE":
                 player.handle_movement(keys, middle_collisions)
                 screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
+                #LAVISHA - render machines and interaction prompts if player is nearby
+                for m in machines:
+                    m.render(screen, debug=DebugMode)
                 player.render(screen)
                 screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
+
+#LAVISHA - render machines and interaction prompts if player is nearby
+                for m in machines:
+                    if m.is_player_nearby(player):
+                        label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
+                        screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
 
                 if DebugMode == True:
                     for c in middle_collisions:
@@ -269,6 +308,13 @@ def main():
         elif GameState == "REGISTER":
             register1.take_order(screen)
 
+#LAVISHA - if in machine UI, render the machine's mini-game mode (which will display prompts based on state and allow player to interact with it using e and escape)
+        elif GameState == "MACHINE" and active_machine:
+            active_machine.mini_game_mode(screen, font)
+
+        # Update machine timers every frame regardless of game state
+        for m in machines:
+            m.update()
 
         clock.tick(FPS)
 
