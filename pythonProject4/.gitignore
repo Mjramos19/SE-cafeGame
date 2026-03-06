@@ -1,0 +1,13 @@
+# Python Virtual Environemnt
+.venv/
+venv/
+ENV/
+
+.idea/
+*.iml
+
+__pycache__/
+*.pyc
+
+*.Identifier
+.DS_Store
