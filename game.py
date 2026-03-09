@@ -210,6 +210,9 @@ def main():
                             active_machine.state = "empty"
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
+                    if currentCust is None:
+                        return
+                    
                     orders.insert(0, currentCust.orderedItem)
                     time.sleep(1)
 
