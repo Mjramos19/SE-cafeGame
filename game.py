@@ -9,6 +9,7 @@ from constants import *
 import sys
 import pygame
 import time
+from button import Button
 
 pygame.init()
 screen = pygame.display.set_mode((1366, 768))
@@ -73,6 +74,7 @@ register2 = Register(193, 615, 10)
 
 currentCust = None
 currCustomer = None
+current_screen = "game"
 
 # all collision lists for handling perspectives
 front_collisions = [menu_rect, counter3_rect, wall_rect2]
@@ -90,6 +92,12 @@ grinder = Machine(193, 234, "Coffee Grinder", bag_coffee_beans, [ground_coffee],
 espresso_mach = Machine(358, 234, "Espresso Machine", ground_coffee, [espresso_shot], 1, 5)
 steamer = Machine(522, 234, "Milk Steamer", milk, [steamed_milk, foamed_milk], 1, 4)
 machines = [grinder, espresso_mach, steamer]
+
+def open_recipe_menu():
+    global CafeView
+    CafeView = "RECIPES"
+
+recipe_button = Button(1135, 343, 60, 77, "Recipe", "RECIPE_MENU", open_recipe_menu)
 
 
 def main():
@@ -132,22 +140,37 @@ def main():
         keys = pygame.key.get_pressed()
 
         current_time = pygame.time.get_ticks()
-
+        current_screen = "game"
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.MOUSEMOTION and DebugMode == True:
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1 and recipe_button.is_clicked(event.pos):
+                    current_screen = "recipes"
+                    CafeView = "RECIPES"
+
+
+            elif event.type == pygame.MOUSEMOTION and DebugMode==True:
                 m_x, m_y = pygame.mouse.get_pos()
                 print(f"Mouse position: X={m_x}, Y={m_y}")
 
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
+                if CafeView == "RECIPES":
+                    if event.key == pygame.K_ESCAPE:
+                        CafeView = "FRONT"
+                    # ignore other keys while in recipe menu
+                    continue
+
                 if event.key == pygame.K_1:
                     if DebugMode == False:
                         DebugMode = True
                     else:
                         DebugMode = False
 
+                if CafeView == "RECIPES" and event.key == pygame.K_ESCAPE:
+                    CafeView = "FRONT"
                 if event.key == pygame.K_r:  # R clears the customers for testing
                     customers.clear()
 
@@ -194,7 +217,6 @@ def main():
                             print(f"Collected: {result.name}")
                         if not active_machine.contents:
                             active_machine.state = "empty"
-
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     orders.insert(0, currentCust.orderedItem)
                     time.sleep(1)
@@ -222,10 +244,11 @@ def main():
 
                         GameState = "PLAYING"
 
+                
+
             # if wait line is not current full and total customers not at max, spawn new customer
-            if event.type == SPAWN_EVENT and len(customers) < MAX_CUSTOMERS and len(
-                customersWaiting
-            ) < MAX_CUSTOMERS_WAITING:
+            if event.type == SPAWN_EVENT and len(customers) < MAX_CUSTOMERS and len(customersWaiting) < MAX_CUSTOMERS_WAITING:
+
 
                 # Calculate the index for the new customer
                 index = len(customersWaiting)
@@ -256,71 +279,75 @@ def main():
                 register1.setWaiting()
 
         if GameState == "PLAYING":
-            if CafeView == "FRONT":
-                temp_cols = list(front_collisions)
-                for c in customers:
-                    temp_cols.append(c.get_foot_rect())
-                player.handle_movement(keys, temp_cols)
 
-                # handles all layering with renders
-                screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
-
-                depth_list = customers + [player]
-                depth_list.sort(key=lambda obj: obj.rect.bottom)
-
-                if player.rect.bottom < 610:
-                    for entity in depth_list:
-                        entity.render(screen)
-                    screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
-                else:
+            if CafeView == "RECIPES":
+                screen.fill((0, 0, 0))
+                font_large = pygame.font.SysFont(None, 50)
+                text = font_large.render("Recipe Menu", True, (255, 255, 255))
+                screen.blit(text, (500, 100))
+            else:
+                if CafeView == "FRONT":
+                    temp_cols = list(front_collisions)
                     for c in customers:
-                        c.render(screen)
-                    screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
+                        temp_cols.append(c.get_foot_rect())
+                    player.handle_movement(keys, temp_cols)
+
+                    # handles all layering with renders
+                    screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
+
+                    depth_list = customers + [player]
+                    depth_list.sort(key=lambda obj: obj.rect.bottom)
+
+                    if player.rect.bottom < 610:
+                        for entity in depth_list:
+                            entity.render(screen)
+                        screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
+                    else:
+                        for c in customers:
+                            c.render(screen)
+                        screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
                     if currentCust != None and currentCust.state == "waiting":
                         register1.render(screen)
-                    # 3. Draw the player last (on top of everything)
-                    player.render(screen)
+                        # 3. Draw the player last (on top of everything)
+                        player.render(screen)
+                    recipe_button.draw(screen)
 
-                if DebugMode == True:
-                    for c in front_counters:
-                        pygame.draw.rect(screen, (250, 0, 0), c)
-                    pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
-                    for c in front_collisions:
-                        pygame.draw.rect(screen, (255, 255, 0), c, 2)
+                    if DebugMode == True:
+                        for c in front_counters:
+                            pygame.draw.rect(screen, (250, 0, 0), c)
+                        pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
+                        for c in front_collisions:
+                            pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
-            elif CafeView == "MIDDLE":
-                player.handle_movement(keys, middle_collisions)
-                screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
-
-                # LAVISHA - render machines and interaction prompts if player is nearby
+                elif CafeView == "MIDDLE":
+                    player.handle_movement(keys, middle_collisions)
+                    screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
+                #LAVISHA - render machines and interaction prompts if player is nearby
                 for m in machines:
                     m.render(screen, debug=DebugMode)
-
-                player.render(screen)
-
+                    player.render(screen)
                 if currentCust != None and currentCust.state == "waiting":
                     register2.render(screen)
+                    screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
-                screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
-
-                # LAVISHA - render machines and interaction prompts if player is nearby
+    #LAVISHA - render machines and interaction prompts if player is nearby
                 for m in machines:
                     if m.is_player_nearby(player):
                         label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
                         screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
 
                 if DebugMode == True:
-                    for c in middle_collisions:
-                        pygame.draw.rect(screen, (255, 255, 0), c, 2)
-                    for c in middle_counters:
-                        pygame.draw.rect(screen, (250, 0, 0), c)
+                        for c in middle_collisions:
+                            pygame.draw.rect(screen, (255, 255, 0), c, 2)
+                        for c in middle_counters:
+                            pygame.draw.rect(screen, (250, 0, 0), c)
                     pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
 
-            else:
-                player.handle_movement(keys, back_collisions)
-                screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
-                player.render(screen)
-                screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
+                else:
+                    player.handle_movement(keys, back_collisions)
+                    screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
+                    player.render(screen)
+                    screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
                 if DebugMode == True:
                     for c in back_collisions:
@@ -369,15 +396,40 @@ def main():
                     recipe_img = pygame.transform.smoothscale(recipe_img, RECIPE_ICON_SIZE)
                     screen.blit(recipe_img, (x, y))
 
-                x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
+				x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
+            
+
+
+            if current_screen == "recipes":
+                # Draw black popup screen
+                screen.fill((0, 0, 0))  # black background
+
+                # Draw Recipe Menu text
+                font = pygame.font.SysFont(None, 50)
+                text = font.render("Recipe Menu", True, (255, 255, 255))
+                screen.blit(text, (500, 100))
+
+                # Handle ESC to exit recipe screen
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            current_screen = "game"
+
+            '''these things run while playing'''
+
+            for c in customers:
+                c.update(seats)
+
+            if DebugMode == True:
+                pygame.draw.rect(screen, (255, 255, 0), player.get_foot_rect(), 2)
+
+        elif GameState == "REGISTER":
+            register1.take_order(screen)
 
         clock.tick(FPS)
 
-        text = font.render(
-            f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()}",
-            True,
-            (230, 230, 230),
-        )
+        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()}", True,
+                           (230, 230, 230))
         screen.blit(text, (10, 10))
 
         orders_text = font.render(f"Orders: {orders}", True, (250, 0, 0))
@@ -410,6 +462,7 @@ def change_counters_pos(view):
         c3.rect.x, c3.rect.y = 336, 487
         c4.rect.x, c4.rect.y = 500, 487
         c5.rect.x, c5.rect.y = 664, 487
+
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import pygame
+
 class Recipes:
     def __init__(self, all_recipes: dict, unlocked_recipes: list, price: float, image_key):
         """
@@ -15,7 +16,7 @@ class Recipes:
             self.image = pygame.Surface((50, 50))
             self.image.fill(pygame.Color("white"))
 
-    def match_ingredients_to_recipie(self, ingredients: list):
+    def match_ingredients_to_recipe(self, ingredients: list):
         """
         Returns the recipe name that matches the given ingredients.
         Order does not matter. Must match exactly.
@@ -55,3 +56,18 @@ class Recipes:
     def get_price(self):
         """Return the price of the recipe."""
         return self.price
+
+    '''class Recipes:
+        def __init__(self, all_recipes: dict, unlocked: list, images: dict):
+            self.all_recipes = all_recipes
+            self.unlocked = unlocked
+            self.images = images
+
+        def match(self, ingredients: list):
+            for recipe in self.unlocked:
+                if sorted(ingredients) == sorted(self.all_recipes[recipe]):
+                    return recipe
+            return None
+
+        def get_image(self, recipe_name):
+            return self.images.get(recipe_name)'''
