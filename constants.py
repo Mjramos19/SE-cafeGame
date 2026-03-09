@@ -18,6 +18,7 @@ REGISTER_COLOR = (0, 0, 0)
 COUNTER_COLOR = (140, 110, 70)
 SEAT_COLOR = (0, 0, 0)
 NPC_COLOR = (255, 220, 80)
+UI_BG_COLOR = (30, 30, 30)
 
 # This dictionary starts empty and will be filled in game.py
 # This prevents classes.py from trying to import game.py

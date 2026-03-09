@@ -1,4 +1,5 @@
 import pygame
+from constants import IMAGE_LIBRARY
 
 class Recipes:
     def __init__(self, all_recipes: dict, unlocked_recipes: list, price: float, image_key):

@@ -76,6 +76,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         if not isinstance(ingredient, Ingredient):
             print(f"cannot add {ingredient} to {self.name}.")
         else:
+            self.contents = [ingredient]
             self.state = "full"
 
     def run_machine(self, num=0):
@@ -106,7 +107,10 @@ class Machine(GameObject, pygame.sprite.Sprite):
             print("nothing is brewed")
         else:
             if len(self.contents) > 0:
-                return self.contents.pop()
+                item = self.contents.pop()
+                if len(self.contents) == 0:
+                    self.state = "empty"
+                return item
 
     def render(self, screen, debug=False):
         screen.blit(self.sprite, self.rect)
