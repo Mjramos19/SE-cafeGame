@@ -12,7 +12,8 @@ pygame.init()
 screen = pygame.display.set_mode((1366, 768))
 
 constants.IMAGE_LIBRARY["player"] = pygame.image.load("Cafe_Game_Art/player.png").convert_alpha()
-constants.IMAGE_LIBRARY["customer"] = pygame.image.load("Cafe_Game_Art/Customer.png").convert_alpha()
+constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
+constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
 constants.IMAGE_LIBRARY["order_screen"] = pygame.image.load("Cafe_Game_Art/order_screen.png").convert()
 constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
@@ -28,7 +29,8 @@ constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").
 
 # Pre-scale all images in the library them once
 constants.IMAGE_LIBRARY["player"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player"], (120, 268))
-constants.IMAGE_LIBRARY["customer"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["customer"], (120, 268))
+constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
+constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
 constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1_top"], (1366, 768))
@@ -85,7 +87,7 @@ c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 = (Counter(7, 487), Counter(172, 487), C
                                            Counter(500, 487), Counter(664, 487), Counter(193, 234),
                                            Counter(358, 234), Counter(522, 234), Counter(686, 234), Counter(850, 234))
 
-s1, s2, s3, s4, s5, s6 = Seat(38, 243), Seat(253, 243), Seat(445, 243), Seat(660, 243), Seat(850, 243), Seat(1064, 243)
+s1, s2, s3, s4, s5, s6 = Seat(57, 243, 1), Seat(252, 243, 2), Seat(464, 243, 3), Seat(660, 243, 4), Seat(869, 243, 5), Seat(1064, 243, 6)
 
 
 # build two registers - one for customers, the other dependent on the first and will display icon, can take order from both and will update the other
@@ -285,7 +287,7 @@ def main():
                 # Center the spawn coordinates
                 spawn_x, spawn_y = base_x - 60, base_y - 64
 
-                currCustomer = Customer(spawn_x, spawn_y, "customer", RECIPES_UNLOCKED, linePosition=LINE_POSITIONS[index])
+                currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED, linePosition=LINE_POSITIONS[index])
 
                 if index == 0:
                     currentCust = currCustomer

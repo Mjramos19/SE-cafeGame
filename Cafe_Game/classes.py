@@ -71,10 +71,11 @@ class Table(GameObject):
         self.open = True
 
 class Seat(GameObject):
-    def __init__(self, x, y, w=70, h=15, color=SEAT_COLOR):
+    def __init__(self, x, y, num, w=70, h=15, color=SEAT_COLOR):
         super().__init__(x, y, w, h, color)
         self.state = "open"
         self.seatedCustomer = None
+        self.num = num
 
     def get_seatX(self):
         return self.rect.x
@@ -120,7 +121,7 @@ class Register(Counter):
 
         # order screen variables
         self.order_screen = IMAGE_LIBRARY["order_screen"]
-        self.customer_image = IMAGE_LIBRARY["customer"] #place holder
+        self.customer_image = IMAGE_LIBRARY["ladybug_idle"] #place holder
         self.customer_rect = pygame.Rect(500,200,100,418)
 
 
@@ -132,9 +133,6 @@ class Register(Counter):
         # bring up order taking screen - learn to crop customer to rectangle
         screen.blit(self.order_screen, (0,0))
         screen.blit(self.customer_image, self.customer_rect)
-
-
-
 
 
     def render(self, screen):
@@ -152,11 +150,12 @@ class Sink(Counter):
 class Customer(GameObject, pygame.sprite.Sprite):
     '''The Customer class creates a customer object that walks to the register, will line up, will order a recipe, and
     will seat itself. Once the order is delivered, te customer will exit the level. A customer has a satisfaction bar determined by time.'''
-    def __init__(self, x, y, image_key, recipesUnlockedList, linePosition):
+    def __init__(self, x, y, image_keys, recipesUnlockedList, linePosition):
         pygame.sprite.Sprite.__init__(self)
 
+        self.image_keys = image_keys
         try:
-            self.sprite = IMAGE_LIBRARY[image_key]
+            self.sprite = IMAGE_LIBRARY[self.image_keys[0]]
         except:
             self.sprite = pygame.Surface((30 * 4, 67 * 4))
             self.sprite.fill((255, 0, 0))
@@ -209,6 +208,9 @@ class Customer(GameObject, pygame.sprite.Sprite):
         if distanceY < CUSTOMER_SPEED and distanceX < CUSTOMER_SPEED:
             self.rect.center = self.targetSeat.rect.center
             self.state = "seated"
+            self.sprite = IMAGE_LIBRARY[self.image_keys[1]]
+            if self.targetSeat.num % 2 != 0:
+                self.sprite = pygame.transform.flip(self.sprite, True, False)
             self.targetSeat.occupySeat(self)
 
     def moveUpInLine(self):
