@@ -34,7 +34,7 @@ constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Machines_art/WaterBoile
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Machines_art/WaterBoiler_art/WBinprogress.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Machines_art/WaterBoiler_art/WBready.png").convert_alpha()
 
-# Pre-scale all images in the library them once
+# Pre-scale all images in the library once
 constants.IMAGE_LIBRARY["player"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player"], (120, 268))
 constants.IMAGE_LIBRARY["customer"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["customer"], (120, 268))
 constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
@@ -88,22 +88,14 @@ s1, s2, s3, s4, s5, s6 = (
     Seat(850, 243),
     Seat(1064, 243),
 )
-s1, s2, s3, s4, s5, s6 = (
-    Seat(38, 243),
-    Seat(253, 243),
-    Seat(445, 243),
-    Seat(660, 243),
-    Seat(850, 243),
-    Seat(1064, 243),
-)
 
-# build two registers - one for customers, the other dependent on the first and will display icon, can take order from both and will update the other
+# build two registers - one for customers, the other dependent on the first and will display icon,
+# can take order from both and will update the other
 register1 = Register(829, 487, 110)
 register2 = Register(193, 615, 10)
 
 currentCust = None
 currCustomer = None
-current_screen = "game"
 current_screen = "game"
 
 # all collision lists for handling perspectives
@@ -147,8 +139,6 @@ recipe_button = Button(1135, 343, 60, 77, "Recipe", "RECIPE_MENU", None)
 def main():
     global Customer, currentCust, current_screen
 
-    global Customer, currentCust, current_screen
-
     pygame.display.set_caption("Cafe Sim")
     clock = pygame.time.Clock()
     START_TIME = pygame.time.get_ticks()
@@ -159,7 +149,6 @@ def main():
     GameState = "PLAYING"
     CafeView = "FRONT"
     RecipeView = RECIPE_VIEW_NONE
-    active_machine = None
     active_machine = None
 
     # Other entities (Customers)
@@ -197,22 +186,7 @@ def main():
                     RecipeView = RECIPE_VIEW_MENU
 
             elif event.type == pygame.MOUSEMOTION and DebugMode == True:
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1 and recipe_button.is_clicked(event.pos):
-                    current_screen = "recipes"
-                    RecipeView = RECIPE_VIEW_MENU
-
-            elif event.type == pygame.MOUSEMOTION and DebugMode == True:
                 m_x, m_y = pygame.mouse.get_pos()
-                #print(f"Mouse position: X={m_x}, Y={m_y}")
-                #print(f"Mouse position: X={m_x}, Y={m_y}")
-
-            elif event.type == pygame.KEYDOWN:
-                if RecipeView != RECIPE_VIEW_NONE:
-                    if event.key == pygame.K_ESCAPE:
-                        RecipeView = RECIPE_VIEW_NONE
-                        current_screen = "game"
-                    continue
 
             elif event.type == pygame.KEYDOWN:
                 if RecipeView != RECIPE_VIEW_NONE:
@@ -230,7 +204,6 @@ def main():
                 if event.key == pygame.K_r:  # R clears the customers for testing
                     customers.clear()
 
-                if event.key == pygame.K_q and GameState == "PLAYING":
                 if event.key == pygame.K_q and GameState == "PLAYING":
                     if CafeView == "FRONT":
                         CafeView = "MIDDLE"
@@ -251,9 +224,6 @@ def main():
                 if event.key == pygame.K_ESCAPE and GameState == "REGISTER":
                     GameState = "PLAYING"
 
-                # LAVISHA - if player presses e near a machine, open machine UI.
-                # If they press e again while in the machine UI, run the machine
-                # or collect output depending on the state. Pressing escape will exit the machine UI.
                 # LAVISHA - if player presses e near a machine, open machine UI.
                 # If they press e again while in the machine UI, run the machine
                 # or collect output depending on the state. Pressing escape will exit the machine UI.
@@ -281,7 +251,7 @@ def main():
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
                         return
-                    
+
                     orders.insert(0, currentCust.orderedItem)
                     time.sleep(1)
 
@@ -297,7 +267,6 @@ def main():
                         # Remove from line
                         customersWaiting.pop(0)
 
-
                         # set every Customer's line position to the next one up and change their state
                         for i in range(0, len(customersWaiting)):
                             customersWaiting[i].state = "moving up in line"
@@ -307,16 +276,9 @@ def main():
                         if len(customersWaiting) > 0:
                             currentCust = customersWaiting[0]
 
-
                         GameState = "PLAYING"
 
-
             # if wait line is not current full and total customers not at max, spawn new customer
-            if (
-                event.type == SPAWN_EVENT
-                and len(customers) < MAX_CUSTOMERS
-                and len(customersWaiting) < MAX_CUSTOMERS_WAITING
-            ):
             if (
                 event.type == SPAWN_EVENT
                 and len(customers) < MAX_CUSTOMERS
@@ -331,13 +293,6 @@ def main():
                 spawn_y = base_y - 64
 
                 # Create the customer using the key "customer" from your IMAGE_LIBRARY
-                currCustomer = Customer(
-                    spawn_x,
-                    spawn_y,
-                    "customer",
-                    RECIPES_UNLOCKED,
-                    linePosition=LINE_POSITIONS[index],
-                )
                 currCustomer = Customer(
                     spawn_x,
                     spawn_y,
@@ -383,39 +338,10 @@ def main():
                         temp_cols.append(c.get_foot_rect())
 
                     player.handle_movement(keys, temp_cols)
-            if RecipeView != RECIPE_VIEW_NONE:
-                screen.fill(UI_BG_COLOR)
-                font_large = pygame.font.SysFont(None, 50)
-                text = font_large.render("Recipe Menu", True, (255, 255, 255))
-                screen.blit(text, (500, 100))
-
-                if RecipeView == RECIPE_VIEW_MENU:
-                    x = RECIPE_START_X
-                    y = RECIPE_START_Y
-
-                    for recipe in RECIPES_UNLOCKED:
-                        recipe_img = constants.IMAGE_LIBRARY.get(recipe)
-                        if recipe_img:
-                            recipe_img = pygame.transform.smoothscale(recipe_img, RECIPE_ICON_SIZE)
-                            screen.blit(recipe_img, (x, y))
-
-                        x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
-
-            else:
-                if CafeView == "FRONT":
-                    temp_cols = list(front_collisions)
-                    for c in customers:
-                        temp_cols.append(c.get_foot_rect())
-
-                    player.handle_movement(keys, temp_cols)
 
                     # handles all layering with renders
                     screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
-                    # handles all layering with renders
-                    screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
 
-                    depth_list = customers + [player]
-                    depth_list.sort(key=lambda obj: obj.rect.bottom)
                     depth_list = customers + [player]
                     depth_list.sort(key=lambda obj: obj.rect.bottom)
 
@@ -431,28 +357,9 @@ def main():
                             register1.render(screen)
                         # 3. Draw the player last (on top of everything)
                         player.render(screen)
-                    if player.rect.bottom < 610:
-                        for entity in depth_list:
-                            entity.render(screen)
-                        screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
-                    else:
-                        for c in customers:
-                            c.render(screen)
-                        screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
-                        if currentCust != None and currentCust.state == "waiting":
-                            register1.render(screen)
-                        # 3. Draw the player last (on top of everything)
-                        player.render(screen)
 
                     recipe_button.draw(screen)
-                    recipe_button.draw(screen)
 
-                    if DebugMode == True:
-                        for c in front_counters:
-                            pygame.draw.rect(screen, (250, 0, 0), c)
-                        pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
-                        for c in front_collisions:
-                            pygame.draw.rect(screen, (255, 255, 0), c, 2)
                     if DebugMode == True:
                         for c in front_counters:
                             pygame.draw.rect(screen, (250, 0, 0), c)
@@ -474,38 +381,12 @@ def main():
                         register2.render(screen)
 
                     screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
-                elif CafeView == "MIDDLE":
-                    player.handle_movement(keys, middle_collisions)
-                    screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
 
-                    # LAVISHA - render machines and interaction prompts if player is nearby
-                    for m in machines:
-                        m.render(screen, debug=DebugMode)
-
-                    player.render(screen)
-
-                    if currentCust != None and currentCust.state == "waiting":
-                        register2.render(screen)
-
-                    screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
-
-                    # LAVISHA - render machines and interaction prompts if player is nearby
-                    for m in machines:
-                        if m.is_player_nearby(player):
-                            label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
-                            screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
-                    # LAVISHA - render machines and interaction prompts if player is nearby
                     for m in machines:
                         if m.is_player_nearby(player):
                             label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
                             screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
 
-                    if DebugMode == True:
-                        for c in middle_collisions:
-                            pygame.draw.rect(screen, (255, 255, 0), c, 2)
-                        for c in middle_counters:
-                            pygame.draw.rect(screen, (250, 0, 0), c)
-                        pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
                     if DebugMode == True:
                         for c in middle_collisions:
                             pygame.draw.rect(screen, (255, 255, 0), c, 2)
@@ -518,25 +399,12 @@ def main():
                     screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
                     player.render(screen)
                     screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
-                else:
-                    player.handle_movement(keys, back_collisions)
-                    screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
-                    player.render(screen)
-                    screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
                     if DebugMode == True:
                         for c in back_collisions:
                             pygame.draw.rect(screen, (255, 255, 0), c, 2)
                         for c in middle_counters:
                             pygame.draw.rect(screen, (250, 0, 0), c)
-                    if DebugMode == True:
-                        for c in back_collisions:
-                            pygame.draw.rect(screen, (255, 255, 0), c, 2)
-                        for c in middle_counters:
-                            pygame.draw.rect(screen, (250, 0, 0), c)
-
-            """these things run while playing"""
-            """these things run while playing"""
 
             for c in customers:
                 c.update(seats)
@@ -545,11 +413,7 @@ def main():
             if player.ti_rect.collidepoint((mx, my)):
                 inventory = font.render(f"{player.top_inventory}", True, (250, 0, 0))
                 screen.blit(inventory, (mx + 10, my))
-                inventory = font.render(f"{player.top_inventory}", True, (250, 0, 0))
-                screen.blit(inventory, (mx + 10, my))
             if player.bi_rect.collidepoint((mx, my)):
-                inventory = font.render(f"{player.bottom_inventory}", True, (250, 0, 0))
-                screen.blit(inventory, (mx + 10, my))
                 inventory = font.render(f"{player.bottom_inventory}", True, (250, 0, 0))
                 screen.blit(inventory, (mx + 10, my))
 
@@ -560,11 +424,6 @@ def main():
             register1.take_order(screen)
 
         # LAVISHA - if in machine UI, render the machine's mini-game mode
-        # (which will display prompts based on state and allow player to interact
-        # with it using e and escape)
-        # LAVISHA - if in machine UI, render the machine's mini-game mode
-        # (which will display prompts based on state and allow player to interact
-        # with it using e and escape)
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, font)
 
@@ -579,14 +438,7 @@ def main():
             True,
             (230, 230, 230),
         )
-        text = font.render(
-            f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()}",
-            True,
-            (230, 230, 230),
-        )
         screen.blit(text, (10, 10))
-
-        orders_text = font.render(f"Orders: {orders}", True, (250, 0, 0))
 
         orders_text = font.render(f"Orders: {orders}", True, (250, 0, 0))
         screen.blit(orders_text, (10, 25))
