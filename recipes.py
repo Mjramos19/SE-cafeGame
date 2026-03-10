@@ -57,33 +57,3 @@ class Recipes:
     def get_price(self):
         """Return the price of the recipe."""
         return self.price
-
-    '''class Recipes:
-        def __init__(self, all_recipes: dict, unlocked: list, images: dict):
-            self.all_recipes = all_recipes
-            self.unlocked = unlocked
-            self.images = images
-
-        def match(self, ingredients: list):
-            for recipe in self.unlocked:
-                if sorted(ingredients) == sorted(self.all_recipes[recipe]):
-                    return recipe
-            return None
-
-        def get_image(self, recipe_name):
-            return self.images.get(recipe_name)'''
-
-    '''class Recipes:
-        def __init__(self, all_recipes: dict, unlocked: list, images: dict):
-            self.all_recipes = all_recipes
-            self.unlocked = unlocked
-            self.images = images
-
-        def match(self, ingredients: list):
-            for recipe in self.unlocked:
-                if sorted(ingredients) == sorted(self.all_recipes[recipe]):
-                    return recipe
-            return None
-
-        def get_image(self, recipe_name):
-            return self.images.get(recipe_name)'''
