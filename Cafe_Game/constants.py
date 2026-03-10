@@ -30,6 +30,11 @@ IMAGE_LIBRARY = {}
 # Line position coordinates for customers
 LINE_POSITIONS = [(900, 385), (680, 350), (530, 350), (380, 350)]
 
+# Time Management for Day Cycle
+REAL_DAY_SEC = 86400
+TIME_SPEED = 72
+
+
 
 class GameObject:
     '''A GameObject determines an objects' position and dimensions.'''
@@ -44,6 +49,7 @@ class GameObject:
 
 # Ingredients Class for building all ingredients
 class Ingredient(GameObject):
+    """An Ingredient is---"""
     def __init__(self, name, image_keys: list, price_to_buy=0.0, quantity=0):
         self.image = IMAGE_LIBRARY[image_keys[0]]
         image_rect = self.image.get_rect()

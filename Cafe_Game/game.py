@@ -121,9 +121,11 @@ machines = [hot_water_m]
 def main():
     global Customer, currentCust
     pygame.display.set_caption("Cafe Sim")
-    clock = pygame.time.Clock()
-    START_TIME = pygame.time.get_ticks()
     font = pygame.font.SysFont(None, 22)
+    clock_font = pygame.font.SysFont(None, 45)
+    clock = pygame.time.Clock()
+    seconds_per_frame = TIME_SPEED / 60
+    game_seconds = 21600  # Start day at 6:00 AM
 
     DebugMode = True
 
@@ -167,14 +169,19 @@ def main():
         keys = pygame.key.get_pressed()
         m_x, m_y = pygame.mouse.get_pos()
 
-        current_time = pygame.time.get_ticks()
+        game_seconds += seconds_per_frame
+        if game_seconds >= REAL_DAY_SEC:
+            game_seconds = 0
+        hours = int(game_seconds // 3600)
+        minutes = int((game_seconds % 3600) // 60)
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
             if event.type == pygame.MOUSEMOTION and DebugMode==True:
-                #print(f"Mouse position: X={m_x}, Y={m_y}")
+                print(f"Mouse position: X={m_x}, Y={m_y}")
                 pass
 
             if event.type == pygame.MOUSEBUTTONDOWN and GameState == "MACHINE":
@@ -334,18 +341,19 @@ def main():
                 active_machine.ingredient.x = active_machine.ingredient_rect.x
                 active_machine.ingredient.y = active_machine.ingredient_rect.y
 
-
         # Update machine timers every frame regardless of game state
         for m in machines:
             m.update()
 
         clock.tick(FPS)
 
+        # Handles all text rendering
         text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-        screen.blit(text, (10, 10))
         orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
+        clock_text = clock_font.render(handle_time(hours, minutes), True, 'black')
+        screen.blit(text, (10, 10))
         screen.blit(orders_text, (10, 25))
-
+        screen.blit(clock_text, (1202, 35))
 
         pygame.display.flip()
 
@@ -353,9 +361,18 @@ def main():
     sys.exit()
 
 
-# Finds first open seat in collisions list and returns it. None if all occupied
+def handle_time(hrs, mins):
+    """Takes in the game's hours and minutes and converts them to follow standard clock rules while on a 5 minutes interval."""
+    meridiem = "PM" if hrs >= 12 else "AM"
+    new_hours = hrs % 12
+    if new_hours == 0:
+        new_hours = 12
+    new_mins = (mins // 5) * 5 #rounds down to nearest 5 minutes
+    return f'{new_hours:02d}:{new_mins:02d} {meridiem}'
+
 
 def findFirstOpen(seats):
+    """Finds first open seat in collisions list and returns it. None if all occupied."""
     for c in seats:
         if isinstance(c, Seat) and c.state == "open":
             return c
