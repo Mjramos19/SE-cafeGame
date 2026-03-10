@@ -180,18 +180,21 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN and GameState == "MACHINE":
                 if active_machine.start_button != None:
                     if active_machine.start_button.collidepoint((m_x, m_y)) and event.button == 1:
+                        # here is where any logic for different outputs would be handled. we can have two start buttons,
+                        # have right-click be output 2 ( run_machine(1) ), etc.
                         if active_machine.state == "full":
                             active_machine.run_machine()
                         elif active_machine.state == "empty":
                             active_machine.state = "error"
+                            active_machine.error_start = pygame.time.get_ticks()
 
                     if active_machine.ingredient and active_machine.ingredient_rect.collidepoint((m_x, m_y)):
                         is_dragging = True
 
             if event.type == pygame.MOUSEBUTTONUP:
                 is_dragging = False
-                if active_machine and active_machine.ingredient:
-                    if active_machine.interaction_zone.colliderect(active_machine.ingredient_rect):
+                if active_machine and active_machine.ingredient and (active_machine.state == "empty" or active_machine.state == "error"):
+                    if active_machine.mg_interaction_zone.colliderect(active_machine.ingredient_rect):
                         # i need to handle the active ingredient from the players inventory, assign that as a variable, then put that into minigamemode() not player.bottom
                         # then i can remove the ingredient after it is used
                         active_machine.add(active_machine.ingredient)
@@ -247,6 +250,7 @@ def main():
                         result = active_machine.remove_output()
                         if result:
                             print(f"Collected: {result.name}")
+                            player.top_inventory.append(result)
                         if not active_machine.contents:
                             active_machine.state = "empty"
 
@@ -313,17 +317,15 @@ def main():
 
             mx, my = pygame.mouse.get_pos()
             if player.ti_rect.collidepoint((mx, my)):
-                inventory = font.render(f'{player.top_inventory}', True, (250, 0, 0))
+                inventory = font.render(f'{', '.join(item.name for item in player.top_inventory)}', True, (250, 0, 0))
                 screen.blit(inventory, (mx+10, my))
             if player.bi_rect.collidepoint((mx, my)):
                 inventory = font.render(f'{', '.join(item.name for item in player.bottom_inventory)}', True, (250, 0, 0))
                 screen.blit(inventory, (mx+10, my))
 
 
-
         elif GameState == "REGISTER":
             register1.take_order(screen)
-
 
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, DebugMode)

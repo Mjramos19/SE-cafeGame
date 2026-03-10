@@ -26,6 +26,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.state = 'empty'
         # states: empty, full, running, ready
         self.timer_start = 0
+        self.error_start = 0
         self.selected_output = None
 
         # Interaction zone sits directly in front of (below) the machine.
@@ -49,73 +50,44 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
 
     def mini_game_mode(self, screen, debug):
+        """When the player interacts with a machine, the minigame mode is called. This mode has a new interaction zone, start button, and handles the rendering."""
 
         screen.blit(IMAGE_LIBRARY["minigame_bg"], (0, 0))
-
-        self.interaction_zone = pygame.Rect(400, 100, 400, 200)
+        self.mg_interaction_zone = pygame.Rect(400, 100, 400, 200)
         self.start_button = pygame.Rect(450, 210, 70, 70)
 
         if self.state == "error":
-            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[0]], (402, 147))
+            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[0]], (402, 145)) # location of image subject to change with different assets
+            elapsed = pygame.time.get_ticks() - self.error_start
+            if elapsed >= 1500:
+                self.state = "empty"
         elif self.state == "running":
-            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[1]], (402, 147))
+            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[1]], (402, 145))
         elif self.state == "ready":
-            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[2]], (402, 147))
+            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[2]], (402, 145))
 
         if self.ingredient:
             screen.blit(self.ingredient.image, (self.ingredient.x, self.ingredient.y))
             self.ingredient_rect = self.ingredient.image.get_rect(topleft=(self.ingredient.x, self.ingredient.y))
 
-
         if debug == True:
-            pygame.draw.rect(screen, (255, 255, 255), self.interaction_zone, 3)
+            pygame.draw.rect(screen, (255, 255, 255), self.mg_interaction_zone, 3)
             pygame.draw.rect(screen, (255, 255, 255), self.start_button)
             if self.ingredient:
                 pygame.draw.rect(screen, (255, 255, 255), self.ingredient_rect, 3)
 
-
-
-    def exit_mingame(self):
-        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 200)
-
-
-
-        """screen.fill((30, 30, 30))
-        cx = screen.get_width() // 2
-
-        title = font.render(self.name, True, (255, 255, 255))
-        screen.blit(title, (cx - title.get_width() // 2, 100))
-
-        state_text = font.render(f"State: {self.state}", True, (200, 200, 200))
-        screen.blit(state_text, (cx - state_text.get_width() // 2, 160))
-
-        if self.state == "empty":
-            prompt = font.render("No input loaded.", True, (180, 180, 180))
-        elif self.state == "full":
-            prompt = font.render(f"Press E to run {self.name}.", True, (100, 255, 100))
-        elif self.state == "running":
-            elapsed = pygame.time.get_ticks() - self.timer_start
-            remaining = max(0, self.runtime - elapsed // 1000)
-            prompt = font.render(f"Running... {remaining}s remaining", True, (255, 200, 0))
-        elif self.state == "ready":
-            prompt = font.render("Output ready! Press E to collect.", True, (100, 255, 100))
-        else:
-            prompt = font.render("", True, (255, 255, 255))
-
-        screen.blit(prompt, (cx - prompt.get_width() // 2, 260))
-
-        hint = font.render("ESC to close", True, (150, 150, 150))
-        screen.blit(hint, (cx - hint.get_width() // 2, 700))"""
-
     def add(self, ingredient):
+        """Adds the current ingredient to the machine and changes state to full."""
         if ingredient != self.input:
             print(f"cannot add {ingredient} to {self.name}.")
+            self.state = "error"
         else:
             self.state = "full"
             self.ingredient = None
+            # need to update the code here to include removing the ingredient from the player's inventory. must consider opening the machine with an empty inventory to avoid crahses.
 
     def run_machine(self, num=0):
-        '''Start the machine running if it has been filled with the correct input.'''
+        '''Starts running the machine if it has been filled with the correct input.'''
         if self.state != "full":
             return
         print("run machine")
@@ -137,9 +109,11 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 self.contents = [self.selected_output] * self.num_outputs
 
     def select_output(self, index=0):
+        """Returns the selceted output index from the list of outputs."""
         return self.outputs[0]
 
     def remove_output(self):
+        """Returns the output from the ready machine."""
         if self.state != "ready":
             print("nothing is brewed")
         else:
@@ -147,6 +121,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 return self.contents.pop()
 
     def render(self, screen, debug=False):
+        """Renders the machine sprite in cafe view."""
         screen.blit(self.sprite, self.rect)
         if debug:
             pygame.draw.rect(screen, (255, 255, 0), self.interaction_zone, 2)
