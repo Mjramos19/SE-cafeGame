@@ -1,11 +1,11 @@
 import random
 import pygame
 from constants import *
-
+#hi
 
 class GameObject:
     '''A GameObject determines an objects' position, dimensions, and display image.'''
-    def __init__(self, x, y, w, h, color):
+    def __init__(self, x, y, w, h, color = None):
         self.x, self.y, self.w, self.h, self.color = x, y, w, h, color
         self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
         self.color = color
@@ -32,6 +32,12 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_h = (8 * 4)
         self.activeOrders = []
         self.foodInHand = []
+        self.top_inventory = []
+        self.ti_rect = pygame.Rect(10,340, 50,50)
+        self.bottom_inventory = []
+        self.bi_rect = pygame.Rect(10,410, 50,50)
+        self.selectedSlot = -1
+        self.inventory = [None, None, None, None]
 
 
     def get_foot_rect(self):
@@ -72,7 +78,7 @@ class Player(GameObject, pygame.sprite.Sprite):
     def attempt_brew(self):
         pass
 
-    def deliver(self, table):
+    def deliver(self):
         #loops through each seat at the table in which the player is standing.
         #If the seat is occupied, checks if food in hand matches the item ordered from that customer
         #and delivers it if so
@@ -84,13 +90,14 @@ class Player(GameObject, pygame.sprite.Sprite):
 
     def render(self, screen):
         screen.blit(self.sprite, self.rect)
-
+        pygame.draw.rect(screen, (0,0,0), self.ti_rect)
+        pygame.draw.rect(screen, (0,0,0), self.bi_rect)
 
 # dirty table aspect - states - money collection
 class Table(GameObject):
     def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats = []):
         super().__init__(x, y, w, h, color)
-        self.interactionZone = pygame.Rect(self.rect.x - 20, self.rect.y - 20, self.rect.w + 40, self.rect.h + 40)
+        self.open = True
         self.seats = seats
         self.open = True
 
@@ -131,40 +138,46 @@ class Counter(GameObject):
 
 class Register(Counter):
     '''A Register is a child of Counter that handles player interation within the zone and customer lineup behavior, whether a customer is at the register.'''
-    def __init__(self, x, y, w=150, h=90):
+    # this variable is shared amongst both register objects
+    customerWaiting = False
+    def __init__(self, x, y, iz_y, w=150, h=90):
         super().__init__(x, y, w, h, REGISTER_COLOR)
         self.placeable = False
         self.customerWaiting = False
         # interaction box for register
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y, self.rect.w + 50, self.rect.h + 50)
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
 
+        self.icon = IMAGE_LIBRARY["register_icon"]
+        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
+
+        # order screen variables
+        self.order_screen = IMAGE_LIBRARY["order_screen"]
+        self.customer_image = IMAGE_LIBRARY["customer"] #place holder
+        self.customer_rect = pygame.Rect(500,200,100,418)
         if self.customerWaiting == True:
             pass  # change register image to display icon
 
 
     def setWaiting(self):
         self.customerWaiting = True
-    
+
     def setOpen(self):
         self.customerWaiting = False
 
-    def take_order(self, screen):
+    def take_order(self, screen, currentCust=None):
         '''A function that brings up the order taking screen.'''
-        # bring up order taking screen - Currently placeholder black screen
-        return screen.fill((0, 0, 0))
+        # bring up order taking screen - learn to crop customer to rectangle
+        screen.blit(self.order_screen, (0,0))
+        screen.blit(self.customer_image, self.customer_rect)
 
 
-#placeholder for machines
-class foodCounter(Counter):
-    def __init__(self, x, y, w = 40, h = 120):
-        super().__init__(x, y, w, h, REGISTER_COLOR)
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 60, self.rect.w, self.rect.h)
-    
-    def cookFood(self, screen):
-        #Bring up cooking screen
-        #currently placeholder black screen
-        return screen.fill((0,0,0))
-    
+
+
+
+    def render(self, screen):
+        if Register.customerWaiting == True:
+            screen.blit(self.icon, self.icon_rect)
+
 
 class Sink(Counter):
     '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''
@@ -234,14 +247,6 @@ class Customer(GameObject, pygame.sprite.Sprite):
             self.rect.center = self.targetSeat.rect.center
             self.state = "seated"
             self.targetSeat.occupySeat(self)
-    
-
-    def findFirstOpen(seats):
-        for c in seats:
-            if isinstance(c, Seat) and c.state == "open":
-                return c
-        return None
-
 
     def moveUpInLine(self):
         # increment the npc's x coordinate by their speed until they reach their new
@@ -295,3 +300,4 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
     def __str__(self):
         return f'State: {self.state}, Target Seat: {self.targetSeat}'
+    
