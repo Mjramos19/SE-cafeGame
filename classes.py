@@ -191,54 +191,53 @@ class Customer(GameObject, pygame.sprite.Sprite):
         return self.recipesUnlocked[itemNum]
 
     def findSeat(self, collisions):
-        '''A function that finds a seat, calculates the distance and movement for customer to get to seat, and will occupy the seat once there.'''
+        '''Move smoothly to the assigned seat and sit down once reached'''
+        if self.targetSeat is None:
+            return
+        
+        target_x = self.targetSeat.rect.x
+        target_y = self.targetSeat.rect.y
 
-        # Set original coordinates for collisions
-        '''old_x = self.rect.x
-        old_y = self.rect.y'''
+        reached = self.move_toward_point(target_x, target_y)
 
-        # targest seats x and y coords
-        targetX, targetY = self.targetSeat.rect.x, self.targetSeat.rect.y
-
-        # calculate remaining distance between customer and seat every iteration
-        distanceY = self.targetSeat.rect.y - self.rect.y
-        distanceX = self.targetSeat.rect.x - self.rect.x
-
-        # increment positions by CUSTOMER_SPEED
-        if self.rect.x < targetX:
-            self.rect.x += CUSTOMER_SPEED
-        elif self.rect.x > targetX:
-            self.rect.x -= CUSTOMER_SPEED
-
-        if self.rect.y < targetY:
-            self.rect.y += CUSTOMER_SPEED
-        elif self.rect.y > targetY:
-            self.rect.y -= CUSTOMER_SPEED
-
-        # if NPC is close enough that the next iteration would put them past the seat,
-        # snap them onto the seat and mark them seated
-        if distanceY < CUSTOMER_SPEED and distanceX < CUSTOMER_SPEED:
+        if reached:
             self.rect.center = self.targetSeat.rect.center
+            self.x, self.y = self.rect.x, self.rect.y
             self.state = "seated"
             self.targetSeat.occupySeat(self)
 
-    def moveUpInLine(self):
-        # increment the npc's x coordinate by their speed until they reach their new
-        # line position
 
-        target_x = self.linePosition[0] - (self.w // 2)
-
-        if self.rect.x > target_x:
-            self.rect.x -= CUSTOMER_SPEED
-            # Snap to position if close enough to prevent jitter
-            if self.rect.x - target_x < CUSTOMER_SPEED:
-                self.rect.x = target_x
-                self.state = "waiting"
+    def move_toward_point(self, target_x, target_y):
+        """Move toward a point smoothly. Returns True when the point is reached"""
+        if abs(self.rect.x - target_x) <= CUSTOMER_SPEED:
+            self.rect.x = target_x
         elif self.rect.x < target_x:
             self.rect.x += CUSTOMER_SPEED
-            if target_x - self.rect.x < CUSTOMER_SPEED:
-                self.rect.x = target_x
-                self.state = "waiting"
+        else:
+            self.rect.x -= CUSTOMER_SPEED
+    
+        if abs(self.rect.y - target_y) <= CUSTOMER_SPEED:
+            self.rect.y = target_y
+        elif self.rect.y < target_y:
+            self.rect.y += CUSTOMER_SPEED
+        else:
+            self.rect.y -= CUSTOMER_SPEED
+
+        #Keep x/y synced with rect
+        self.x, self.y = self.rect.x, self.rect.y
+
+        return self.rect.x == target_x and self.rect.y == target_y        
+     
+
+    def moveUpInLine(self):
+        """Move smoothly to the customer's next line position"""
+        target_x = self.linePosition[0] - (self.w // 2)
+        target_y = self.linePosition[1] - (self.h // 2)
+
+        reached = self.move_toward_point(target_x, target_y)
+
+        if reached:
+            self.state = "waiting"
 
 
     def set_state(self, state):
@@ -247,25 +246,53 @@ class Customer(GameObject, pygame.sprite.Sprite):
     def set_targetSeat(self, seat):
         self.targetSeat = seat
 
+        #First walk up to a point in front of the chair area, then go to the exact seat
+        self.targetPosition = (seat.rect.x, 330)
+
 
     def render(self, screen):
         screen.blit(self.sprite, self.rect)
 
 
     def update(self, collisions):
-        # If npc's state is "finding seat", call findseat function to incremement coords until seated
-        if self.state == "finding seat" and self.targetSeat != None:
+        """
+        Updates the customers behavior every frame.
+        This function controls the state machine for the customer. Depending on 
+        the current state, the customer will:
+
+        - Walk toward the seating area
+        - Find and move to their assigned seat
+        - Move up in the waiting line
+        - Stay within the bounds of the game window
+        """
+
+        # State 1: Walking toward the table area
+        if self.state == "walking to table" and self.targetPosition is not None:
+            # Move toward the temp target position
+            reached = self.move_toward_point(
+                self.targetPosition[0],
+                self.targetPosition[1]
+            )
+
+            # Once the temp position is reached switch state
+            if reached:
+                self.state = "finding seat"
+
+        # State 2: Move toward assigned seat
+        if self.state == "finding seat" and self.targetSeat is not None:
             self.findSeat(collisions)
 
-        # If npc's state is "moving up in line", call moveUpInLine to increment x coord until new
-        # spot in line is reached.
-        if self.state == "moving up in line" and self.linePosition != None:
+        # State 3: Moving forward in the line
+        if self.state == "moving up in line" and self.linePosition is not None:
             self.moveUpInLine()
-
-        # clamp npc's to screen
+        
+        # Keep customer in game window
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
         self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
 
+        # Synchronize logical position with sprite position
+        self.x, self.y = self.rect.x, self.rect.y
+        
     def get_foot_rect(self):
         '''A function that returns a rectangle that only covers the feet area of the player sprite.'''
         foot_x = self.x + (self.w // 2) - (self.foot_w // 2)

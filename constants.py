@@ -25,7 +25,7 @@ UI_BG_COLOR = (30, 30, 30)
 IMAGE_LIBRARY = {}
 
 # Line position coordinates for customers
-LINE_POSITIONS = [(900, 385), (680, 350), (530, 350), (380, 350)]
+LINE_POSITIONS = [(900 - i * 180, 395 - i * 15) for i in range(6)]
 
 
 # Ingredients Class for building all ingredients

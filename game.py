@@ -296,9 +296,9 @@ def main():
                 index = len(customersWaiting)
                 base_x, base_y = LINE_POSITIONS[index]
 
-                # Center the spawn coordinates
-                spawn_x = base_x - 60
-                spawn_y = base_y - 64
+                # Center the spawn coordinates using the customer sprite size
+                spawn_x = base_x - (constants.IMAGE_LIBRARY["customer"].get_width() // 2)
+                spawn_y = base_y - (constants.IMAGE_LIBRARY["customer"].get_height() // 2)
 
                 # Create the customer using the key "customer" from your IMAGE_LIBRARY
                 currCustomer = Customer(
