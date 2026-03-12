@@ -250,33 +250,41 @@ def main():
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
-                        return
-
-                    orders.insert(0, currentCust.orderedItem)
-                    time.sleep(1)
-
-                    seat = findFirstOpen(seats)  # find open seat
-
-                    if seat:
-                        # reserve open seat
-                        seat.reserveSeat(currentCust)
-                        # set Customer objects target seat
-                        currentCust.set_targetSeat(seat)
-                        # set Customer state to finding seat
-                        currentCust.set_state("finding seat")
-                        # Remove from line
-                        customersWaiting.pop(0)
-
-                        # set every Customer's line position to the next one up and change their state
-                        for i in range(0, len(customersWaiting)):
-                            customersWaiting[i].state = "moving up in line"
-                            customersWaiting[i].linePosition = LINE_POSITIONS[i]
-
-                        # set customer in front of the line to next up
-                        if len(customersWaiting) > 0:
-                            currentCust = customersWaiting[0]
-
                         GameState = "PLAYING"
+                        continue
+                    #Find open seat
+                    seat = findFirstOpen(seats) 
+
+                    #Dont take order if there is nowhere for customer to go
+                    if seat is None:
+                        print("No open seats available.")
+                        continue
+                    # Only add the order once we know the customer can be seated
+                    orders.insert(0, currentCust.orderedItem)
+                    
+                    # Reserve open seat
+                    seat.reserveSeat(currentCust)
+
+                    #Set Customer object's target seat and state
+                    currentCust.set_targetSeat(seat)
+                    currentCust.set_state("finding seat")
+
+                    #Remove from line
+                    customersWaiting.pop(0)
+
+                    # Move other customers up in line
+                    for i in range(0, len(customersWaiting)):
+                        customersWaiting[i].state = "moving up in line"
+                        customersWaiting[i].linePosition = LINE_POSITIONS[i]
+
+                    # Update current customer
+                    if len(customersWaiting) > 0:
+                        currentCust = customersWaiting[0]
+                    else:
+                        currentCust = None
+                        Register.customerWaiting = False
+                    
+                    GameState = "PLAYING"
 
             # if wait line is not current full and total customers not at max, spawn new customer
             if (
