@@ -489,6 +489,8 @@ def main():
                     customersWaiting.clear()
                     active_orders[0] = None
                     active_orders[1] = None
+                    inventory.clear_all()
+                    machine_loaded_slot = None
                     Register.customerWaiting = False
                     currentCust = None
 

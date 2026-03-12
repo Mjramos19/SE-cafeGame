@@ -433,3 +433,12 @@ class CupInventory:
         if self.selected_slot is None:
             return None
         return self.slots[self.selected_slot]
+    
+    def clear_all(self):
+        """
+        Clear all cup slots and remove any current selection
+        """
+        for i in range(len(self.slots)):
+            self.slots[i] = None
+        
+        self.selected_slot = None
