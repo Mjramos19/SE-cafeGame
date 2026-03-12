@@ -651,11 +651,8 @@ def main():
 
             else:
                 if CafeView == "FRONT":
-                    temp_cols = list(front_collisions)
-                    for c in customers:
-                        temp_cols.append(c.get_foot_rect())
 
-                    player.handle_movement(keys, temp_cols)
+                    player.handle_movement(keys, front_collisions)
 
                     screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
 
