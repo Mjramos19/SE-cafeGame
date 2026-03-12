@@ -11,6 +11,8 @@ CUSTOMER_SPAWN_EVERY_MS = 2400
 MAX_CUSTOMERS = 10
 MAX_CUSTOMERS_WAITING = 4
 ORDER_DELAY = 4000  # milliseconds
+MAX_CUP_SLOTS = 2
+MAX_ACTIVE_ORDERS = 2
 
 # Colors
 TABLE_COLOR = (140, 110, 70)
@@ -19,6 +21,12 @@ COUNTER_COLOR = (140, 110, 70)
 SEAT_COLOR = (0, 0, 0)
 NPC_COLOR = (255, 220, 80)
 UI_BG_COLOR = (30, 30, 30)
+YELLOW = (255, 215, 0)
+BLUE = (80, 160, 255)
+GREEN = (0, 200, 0)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+ORDER_COLORS = [YELLOW, BLUE]
 
 # This dictionary starts empty and will be filled in game.py
 # This prevents classes.py from trying to import game.py
