@@ -145,6 +145,7 @@ message = ""
 message_timer = 0
 machine_loaded_slot = None
 run_button_rect = pygame.Rect(540, 620, 140, 50)
+money = 0
 
 
 def set_message(text, duration_ms=1500):
@@ -230,6 +231,8 @@ def serve_customer(customer):
     Correct serves resolve the order.
     Incorrect serves still consume the cup and make the customer leave.
     """
+    global money
+
     if customer is None:
         return
 
@@ -255,16 +258,19 @@ def serve_customer(customer):
         inventory.remove_cup(inventory.selected_slot)
         inventory.selected_slot = None
 
+    # Determine payout
+    if result == "correct":
+        money += 5
+        set_message("Served Correctly: +$5")
+    else:
+        set_message("Incorrect Serve")
+
     # Mark the order as resolved.
     customer.order.mark_resolved()
 
     # Start the short drinking phase.
     customer.start_drinking(result)
 
-    if result == "correct":
-        set_message("Served correctly")
-    else:
-        set_message("Incorrect serve")
 
 
 def draw_orders(screen):
@@ -379,7 +385,7 @@ def get_nearby_seated_customer(player, customers):
 
 
 def main():
-    global currentCust, current_screen, active_orders, message, machine_loaded_slot
+    global currentCust, current_screen, active_orders, message, machine_loaded_slot, money
 
     pygame.display.set_caption("Cafe Sim")
     clock = pygame.time.Clock()
@@ -520,6 +526,8 @@ def main():
                             GameState = "REGISTER"
                             continue
 
+                        nearby_customer = get_nearby_seated_customer(player, customers)
+                        
                         if nearby_customer is not None:
                             if inventory.get_selected_cup() is None:
                                 set_message("Select a cup first")
@@ -773,6 +781,10 @@ def main():
             (230, 230, 230),
         )
         screen.blit(text, (10, 10))
+
+        # Draw money
+        money_text = font.render(f"Money: ${money}", True, (230, 230, 230))
+        screen.blit(money_text, (10, 35))
 
         # Draw order cards, inventory, and temporary message
         draw_orders(screen)
