@@ -137,7 +137,7 @@ water_boiler = WaterBoiler(
 machines = [grinder, espresso_mach, water_boiler]
 SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
-recipe_button = Button(1190, 342, 160, 78, "Recipe", "RECIPE_MENU", None)
+recipe_button = Button(1190, 342, 160, 78, "Recipes", "RECIPE_MENU", None)
 shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
 
 
@@ -319,7 +319,7 @@ class GameManager:
 
             rect = pygame.Rect(x, y, card_width, 60)
 
-            pygame.draw.rect(screen, (200, 200, 200), rect)
+            pygame.draw.rect(screen, constants.WHITE, rect)
             # Empty slot outline
             outline_color = ORDER_COLORS[i]
             pygame.draw.rect(screen, outline_color, rect, 3)
@@ -343,21 +343,28 @@ class GameManager:
 
         slot_rects = [player.ti_rect, player.bi_rect]
 
+        mouse_pos = pygame.mouse.get_pos()
         for i in range(constants.MAX_CUP_SLOTS):
             rect = slot_rects[i]
             outline_color = ORDER_COLORS[i]
 
+            # Change slot color if hovered
+            if self.inventory.selected_slot == i:
+                slot_color = (140, 140, 140) # sekected color
+            elif rect.collidepoint(mouse_pos):
+                slot_color = (200, 200, 200)  # hover color
+            else:
+                slot_color = constants.WHITE # normal color
+
+            pygame.draw.rect(screen, slot_color, rect)
             pygame.draw.rect(screen, outline_color, rect, 2)
 
             cup = self.inventory.slots[i]
 
             if cup is not None:
-                text = "Empty" if cup.is_empty() else cup.contents
+                text = "Water" if cup.is_empty() else cup.contents
                 label = font.render(text, True, constants.WHITE)
                 screen.blit(label, (rect.x + 60, rect.y + 15))
-
-            if self.inventory.selected_slot == i:
-                pygame.draw.rect(screen, constants.GREEN, rect, 3)
 
     def draw_money(self, screen, font):
         """
