@@ -135,209 +135,336 @@ water_boiler = WaterBoiler(
     w=150, h=200,
 )
 machines = [grinder, espresso_mach, water_boiler]
-
-recipe_button = Button(1135, 343, 60, 77, "Recipe", "RECIPE_MENU", None)
-
-# Mario: Simple gameplay loop so I can add economy
-inventory = CupInventory()
-active_orders = [None, None]
-message = ""
-message_timer = 0
-machine_loaded_slot = None
-run_button_rect = pygame.Rect(540, 620, 140, 50)
-money = 0
+SHOP_VIEW_NONE = None
+SHOP_VIEW_MENU = "MENU"
+recipe_button = Button(1190, 342, 160, 78, "Recipe", "RECIPE_MENU", None)
+shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
 
 
-def set_message(text, duration_ms=1500):
+class GameManager:
     """
-    Set a temporary on-screen message.
+    Holds game-wide progression and UI state.
 
-    Parameters:
-        text (str): The message to display.
-        duration_ms (int): How long to show the message in milliseconds.
+    This keeps economy, orders, messages, and placeholder upgrade/shop
+    data together without changing the gameplay loop structure too much.
     """
-    global message, message_timer
-    message = text
-    message_timer = pygame.time.get_ticks() + duration_ms
+    def __init__(self):
+        """Initialize the shared game state."""
+        self.inventory = CupInventory()
+        self.active_orders = [None] * MAX_ACTIVE_ORDERS
+        self.message = ""
+        self.message_timer = 0
+        self.machine_loaded_slot = None
+        self.money = 0
+
+        # Placeholder progression systems for Phase 3
+        self.upgrades = [
+            {"name": "Faster Grinder", "cost": 25, "purchased": False},
+            {"name": "Recipe Unlock", "cost": 40, "purchased": False},
+            {"name": "Cafe Decor", "cost": 15, "purchased": False},
+        ]
+
+    def set_message(self, text, duration_ms=1500):
+        """
+        Set a temporary on-screen message.
+
+        Parameters:
+            text (str): The message to display.
+            duration_ms (int): How long to show the message in milliseconds.
+        """
+        self.message = text
+        self.message_timer = pygame.time.get_ticks() + duration_ms
+
+    def update_message(self):
+        """
+        Clear the current message once its timer expires.
+        """
+        current_time = pygame.time.get_ticks()
+        if self.message != "" and current_time >= self.message_timer:
+            self.message = ""
+
+    def first_empty_order_slot(self):
+        """
+        Return the index of the first empty order slot.
+
+        Returns:
+            int | None: The first empty slot index, or None if all are occupied.
+        """
+        for i in range(len(self.active_orders)):
+            if self.active_orders[i] is None:
+                return i
+        return None
+
+    def accept_order(self, customer):
+        """
+        Accept a customer's order if both an order slot and cup slot are available.
+
+        This creates a visual order card and gives the player an empty cup.
+        """
+        if customer is None:
+            return
+
+        order_slot = self.first_empty_order_slot()
+        cup_slot = self.inventory.first_empty_slot()
+
+        if order_slot is None or cup_slot is None:
+            self.set_message("No empty cup slots")
+            return
+
+        color = ORDER_COLORS[order_slot]
+
+        order = Order(
+            seat_number=customer.seat_number,
+            drink_name="Black Coffee",
+            color=color
+        )
+
+        customer.order = order
+        self.active_orders[order_slot] = order
+        self.inventory.add_empty_cup()
+
+    def serve_customer(self, customer):
+        """
+        Attempt to serve the selected cup to the given customer.
+
+        Correct serves resolve the order.
+        Incorrect serves still consume the cup and make the customer leave.
+        """
+        if customer is None:
+            return
+
+        cup = self.inventory.get_selected_cup()
+
+        if cup is None:
+            self.set_message("Select a cup first")
+            return
+
+        if customer.order is None:
+            return
+
+        # Determine if the serve is correct.
+        if cup.is_empty():
+            result = "incorrect"
+        elif cup.contents == customer.order.drink_name:
+            result = "correct"
+        else:
+            result = "incorrect"
+
+        # Remove the cup entirely from the selected inventory slot.
+        if self.inventory.selected_slot is not None:
+            self.inventory.remove_cup(self.inventory.selected_slot)
+            self.inventory.selected_slot = None
+
+        # Determine payout
+        if result == "correct":
+            self.money += 5
+            self.set_message("Served Correctly: +$5")
+        else:
+            self.set_message("Incorrect Serve")
+
+        # Mark the order as resolved.
+        customer.order.mark_resolved()
+
+        # Start the short drinking phase.
+        customer.start_drinking(result)
+
+    def clear_round_state(self):
+        """
+        Reset lightweight gameplay state used during testing.
+        """
+        self.active_orders = [None] * MAX_ACTIVE_ORDERS
+        self.inventory.clear_all()
+        self.machine_loaded_slot = None
+        self.message = ""
+        self.message_timer = 0
+
+    def buy_upgrade(self, upgrade_index):
+        """
+        Attempt to buy a placeholder upgrade.
+
+        Parameters:
+            upgrade_index (int): The index of the upgrade in the list.
+        """
+        if not (0 <= upgrade_index < len(self.upgrades)):
+            return
+
+        upgrade = self.upgrades[upgrade_index]
+
+        if upgrade["purchased"]:
+            self.set_message("Already purchased")
+            return
+
+        if self.money < upgrade["cost"]:
+            self.set_message("Not enough money")
+            return
+
+        self.money -= upgrade["cost"]
+        upgrade["purchased"] = True
+        self.set_message(f"Purchased {upgrade['name']}")
+
+    def draw_orders(self, screen):
+        """
+        Draw the fixed order slots across the top of the screen.
+        """
+        font = pygame.font.SysFont(None, 28)
+
+        start_x = 200
+        y = 20
+        card_width = 180
+        card_spacing = 200
+
+        for i in range(len(self.active_orders)):
+            order = self.active_orders[i]
+            x = start_x + i * card_spacing
+
+            rect = pygame.Rect(x, y, card_width, 60)
+
+            # Empty slot outline
+            outline_color = ORDER_COLORS[i]
+            pygame.draw.rect(screen, outline_color, rect, 3)
+
+            if order is not None:
+                drink_text = font.render(order.drink_name, True, constants.WHITE)
+                seat_text = font.render(f"Seat {order.seat_number}", True, constants.WHITE)
+
+                screen.blit(drink_text, (x + 10, y + 10))
+                screen.blit(seat_text, (x + 10, y + 35))
+
+                if order.resolved:
+                    resolved = font.render("Resolved", True, constants.GREEN)
+                    screen.blit(resolved, (x + 85, y + 35))
+
+    def draw_inventory(self, screen, player):
+        """
+        Draw the fixed cup inventory slots in the left-side boxes.
+        """
+        font = pygame.font.SysFont(None, 22)
+
+        slot_rects = [player.ti_rect, player.bi_rect]
+
+        for i in range(constants.MAX_CUP_SLOTS):
+            rect = slot_rects[i]
+            outline_color = ORDER_COLORS[i]
+
+            pygame.draw.rect(screen, outline_color, rect, 2)
+
+            cup = self.inventory.slots[i]
+
+            if cup is not None:
+                text = "Empty" if cup.is_empty() else cup.contents
+                label = font.render(text, True, constants.WHITE)
+                screen.blit(label, (rect.x + 60, rect.y + 15))
+
+            if self.inventory.selected_slot == i:
+                pygame.draw.rect(screen, constants.GREEN, rect, 3)
+
+    def draw_money(self, screen, font):
+        """
+        Draw the current money total in the HUD.
+        """
+        money_text = font.render(f"Money: ${self.money}", True, constants.BLACK)
+        screen.blit(money_text, (1000, 48))
+
+    def draw_message(self, screen):
+        """
+        Draw the current temporary on-screen message.
+        """
+        if self.message == "":
+            return
+
+        msg_font = pygame.font.SysFont(None, 30)
+        message_x = constants.WIDTH // 2 - 100
+        message_y = 120
+        outline = msg_font.render(self.message, True, (0, 0, 0))
+        text = msg_font.render(self.message, True, (255, 255, 255))
+        screen.blit(outline, (message_x - 1, message_y))
+        screen.blit(outline, (message_x + 1, message_y))
+        screen.blit(outline, (message_x, message_y - 1))
+        screen.blit(outline, (message_x, message_y + 1))
+        screen.blit(text, (message_x, message_y))
+
+    def draw_shop_screen(self, screen):
+        """
+        Draw the placeholder shop and upgrades overlay.
+        """
+        overlay = pygame.Surface((700, 420))
+        overlay.set_alpha(235)
+        overlay.fill((25, 25, 25))
+
+        box_x = constants.WIDTH // 2 - 350
+        box_y = constants.HEIGHT // 2 - 210
+        screen.blit(overlay, (box_x, box_y))
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
+
+        title_font = pygame.font.SysFont(None, 42)
+        body_font = pygame.font.SysFont(None, 28)
+        small_font = pygame.font.SysFont(None, 22)
+
+        title = title_font.render("Shop / Upgrades", True, constants.WHITE)
+        screen.blit(title, (box_x + 20, box_y + 20))
+
+        money_text = body_font.render(f"Money: ${self.money}", True, constants.WHITE)
+        screen.blit(money_text, (box_x + 20, box_y + 70))
+
+        hint_1 = small_font.render("Press ESC to close the shop", True, constants.WHITE)
+        hint_2 = small_font.render("Press 1, 2, or 3 to buy a placeholder upgrade", True, constants.WHITE)
+        screen.blit(hint_1, (box_x + 20, box_y + 110))
+        screen.blit(hint_2, (box_x + 20, box_y + 135))
+
+        item_y = box_y + 185
+        for i, upgrade in enumerate(self.upgrades):
+            status = "OWNED" if upgrade["purchased"] else f"${upgrade['cost']}"
+            line = body_font.render(
+                f"[{i + 1}] {upgrade['name']} - {status}",
+                True,
+                constants.GREEN if upgrade["purchased"] else constants.WHITE
+            )
+            screen.blit(line, (box_x + 30, item_y))
+            item_y += 55
+        
+        self.draw_message(screen)
+
+    def draw_recipe_screen(self, screen):
+        """
+        Draw the recipe menu using the same general layout style as the shop screen.
+        """
+        overlay = pygame.Surface((700, 420))
+        overlay.set_alpha(235)
+        overlay.fill((25, 25, 25))
+
+        box_x = constants.WIDTH // 2 - 350
+        box_y = constants.HEIGHT // 2 - 210
+        screen.blit(overlay, (box_x, box_y))
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
+
+        title_font = pygame.font.SysFont(None, 42)
+        body_font = pygame.font.SysFont(None, 28)
+        small_font = pygame.font.SysFont(None, 22)
+
+        title = title_font.render("Recipes", True, constants.WHITE)
+        screen.blit(title, (box_x + 20, box_y + 20))
+
+        hint_1 = small_font.render("Press ESC to close the recipe menu", True, constants.WHITE)
+        hint_2 = small_font.render("Unlocked recipes:", True, constants.WHITE)
+        screen.blit(hint_1, (box_x + 20, box_y + 70))
+        screen.blit(hint_2, (box_x + 20, box_y + 105))
+
+        item_y = box_y + 155
+        for i, recipe in enumerate(RECIPES_UNLOCKED):
+            line = body_font.render(f"[{i + 1}] {recipe}", True, constants.WHITE)
+            screen.blit(line, (box_x + 30, item_y))
+            item_y += 45  
+
+        self.draw_message(screen)
 
 
-def first_empty_order_slot():
-    """
-    Return the index of the first empty order slot.
-
-    Returns:
-        int | None: The first epty slot index, or None if all are occupied
-    """
-    for i in range(len(active_orders)):
-        if active_orders[i] is None:
-            return i
-
-    return None
-
-
-def accept_order(customer):
-    """
-    Accept a customer's order if both an order slot and cup slot are available.
-
-    This creates a visual order card and gives the player an empty cup.
-    """
-    if customer is None:
-        return
-
-    order_slot = first_empty_order_slot()
-    cup_slot = inventory.first_empty_slot()
-
-    if order_slot is None or cup_slot is None:
-        set_message("No empty cup slots")
-        return
-
-    color = ORDER_COLORS[order_slot]
-
-    order = Order(
-        seat_number=customer.seat_number,
-        drink_name="Black Coffee",
-        color=color
-    )
-
-    customer.order = order
-    active_orders[order_slot] = order # type: ignore
-    inventory.add_empty_cup()
-
-
-def use_grinder():
-    """
-    Use the grinder as the MVP black coffee station.
-
-    For now, this fills the currently selected empty cup with Black Coffee.
-    """
-    cup = inventory.get_selected_cup()
-
-    if cup is None:
-        set_message("Select a cup first")
-        return
-
-    if not cup.is_empty():
-        set_message("Only empty cups allowed")
-        return
-
-    cup.fill("Black Coffee")
-    set_message("Filled cup with Black Coffee")
-
-
-def serve_customer(customer):
-    """
-    Attempt to serve the selected cup to the given customer.
-
-    Correct serves resolve the order.
-    Incorrect serves still consume the cup and make the customer leave.
-    """
-    global money
-
-    if customer is None:
-        return
-
-    cup = inventory.get_selected_cup()
-
-    if cup is None:
-        set_message("Select a cup first")
-        return
-
-    if customer.order is None:
-        return
-
-    # Determine if the serve is correct.
-    if cup.is_empty():
-        result = "incorrect"
-    elif cup.contents == customer.order.drink_name:
-        result = "correct"
-    else:
-        result = "incorrect"
-
-    # Remove the cup entirely from the selected inventory slot.
-    if inventory.selected_slot is not None:
-        inventory.remove_cup(inventory.selected_slot)
-        inventory.selected_slot = None
-
-    # Determine payout
-    if result == "correct":
-        money += 5
-        set_message("Served Correctly: +$5")
-    else:
-        set_message("Incorrect Serve")
-
-    # Mark the order as resolved.
-    customer.order.mark_resolved()
-
-    # Start the short drinking phase.
-    customer.start_drinking(result)
-
-
-
-def draw_orders(screen):
-    """
-    Draw the fixed order slots across the top of the screen.
-    """
-    font = pygame.font.SysFont(None, 28)
-
-    start_x = 200
-    y = 20
-    card_width = 180
-    card_spacing = 200
-
-    for i in range(len(active_orders)):
-        order = active_orders[i]
-        x = start_x + i * card_spacing
-
-        rect = pygame.Rect(x, y, card_width, 60)
-
-        # Empty slot outline
-        outline_color = ORDER_COLORS[i]
-        pygame.draw.rect(screen, outline_color, rect, 3)
-
-        if order is not None:
-            drink_text = font.render(order.drink_name, True, constants.WHITE)
-            seat_text = font.render(f"Seat {order.seat_number}", True, constants.WHITE)
-
-            screen.blit(drink_text, (x + 10, y + 10))
-            screen.blit(seat_text, (x + 10, y + 35))
-
-            if order.resolved:
-                resolved = font.render("Resolved", True, constants.GREEN)
-                screen.blit(resolved, (x + 85, y + 35))
-
-
-def draw_inventory(screen, player):
-    """
-    Draw the two fixed cup inventory slots in the left-side boxes.
-    """
-    font = pygame.font.SysFont(None, 22)
-
-    slot_rects = [player.ti_rect, player.bi_rect]
-
-    for i in range(constants.MAX_CUP_SLOTS):
-        rect = slot_rects[i]
-        outline_color = ORDER_COLORS[i]
-
-        pygame.draw.rect(screen, outline_color, rect, 2)
-
-        cup = inventory.slots[i]
-
-        if cup is not None:
-            text = "Empty" if cup.is_empty() else cup.contents
-            label = font.render(text, True, constants.WHITE)
-            screen.blit(label, (rect.x + 60, rect.y + 15))
-
-        if inventory.selected_slot == i:
-            pygame.draw.rect(screen, constants.GREEN, rect, 3)
-
-
-def cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group):
+def cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager):
     """
     Remove customers that have fully left the cafe.
 
     Also remove their resolved order cards once they are gone.
     """
-    global active_orders, currentCust
+    global currentCust
 
     gone_customers = [c for c in customers if c.state == "gone"]
 
@@ -356,9 +483,9 @@ def cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_gr
 
         # Remove the customer's resolved order card once they are fully gone.
         if customer.order is not None:
-            for i in range(len(active_orders)):
-                if active_orders[i] is customer.order:
-                    active_orders[i] = None
+            for i in range(len(manager.active_orders)):
+                if manager.active_orders[i] is customer.order:
+                    manager.active_orders[i] = None
                     break
             customer.order = None
 
@@ -384,8 +511,42 @@ def get_nearby_seated_customer(player, customers):
     return None
 
 
+def findFirstOpen(seats):
+    """
+    Find and return the first open seat.
+
+    Returns:
+        Seat | None: The first open seat, or None if all seats are occupied.
+    """
+    for c in seats:
+        if isinstance(c, Seat) and c.state == "open":
+            return c
+    return None
+
+
+def change_counters_pos(view):
+    """
+    Change counter positions depending on the current cafe view.
+    """
+    if view == "MIDDLE":
+        c1.rect.x, c1.rect.y = 1014, 615
+        c2.rect.x, c2.rect.y = 849, 615
+        c3.rect.x, c3.rect.y = 685, 615
+        c4.rect.x, c4.rect.y = 522, 615
+        c5.rect.x, c5.rect.y = 357, 615
+    elif view == "FRONT":
+        c1.rect.x, c1.rect.y = 7, 487
+        c2.rect.x, c2.rect.y = 172, 487
+        c3.rect.x, c3.rect.y = 336, 487
+        c4.rect.x, c4.rect.y = 500, 487
+        c5.rect.x, c5.rect.y = 664, 487
+
+
 def main():
-    global currentCust, current_screen, active_orders, message, machine_loaded_slot, money
+    """
+    Run the main game loop.
+    """
+    global currentCust, current_screen
 
     pygame.display.set_caption("Cafe Sim")
     clock = pygame.time.Clock()
@@ -396,11 +557,15 @@ def main():
     GameState = "PLAYING"
     CafeView = "FRONT"
     RecipeView = RECIPE_VIEW_NONE
+    ShopView = SHOP_VIEW_NONE
     active_machine = None
 
     # Other entities (Customers)
     customers = []
     customersWaiting = []
+
+    # Shared game-wide state manager
+    manager = GameManager()
 
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
@@ -413,16 +578,16 @@ def main():
     player = Player(40, 600, "player")
     all_sprites.add(player)
 
+    # Machine run button for the current machine UI
+    run_button_rect = pygame.Rect(540, 620, 140, 50)
+
     running = True
     while running:
         screen.fill((0, 0, 0))
         keys = pygame.key.get_pressed()
 
-        current_time = pygame.time.get_ticks()
-
         # Clear expired messages.
-        if message != "" and current_time >= message_timer:
-            message = ""
+        manager.update_message()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -433,6 +598,10 @@ def main():
                 if event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
                     RecipeView = RECIPE_VIEW_MENU
+                
+                if event.button == 1 and shop_button.is_clicked(event.pos):
+                    current_screen = "shop"
+                    ShopView = SHOP_VIEW_MENU
 
                 # Inventory slot clicking
                 # In PLAYING: select/deselect cup slot
@@ -444,31 +613,31 @@ def main():
 
                         # Normal gameplay: select or deselect slot
                         if GameState == "PLAYING":
-                            inventory.select_slot(i)
+                            manager.inventory.select_slot(i)
 
                         # Machine UI: load empty cup into machine
                         elif GameState == "MACHINE":
-                            cup = inventory.slots[i]
+                            cup = manager.inventory.slots[i]
 
                             if cup is None:
-                                set_message("No cup in that slot")
+                                manager.set_message("No cup in that slot")
                             elif not cup.is_empty():
-                                set_message("Only empty cups allowed")
+                                manager.set_message("Only empty cups allowed")
                             else:
-                                machine_loaded_slot = i
-                                set_message(f"Loaded slot {i + 1}")
+                                manager.machine_loaded_slot = i
+                                manager.set_message(f"Loaded slot {i + 1}")
 
                 # Run button for machine UI
                 if GameState == "MACHINE" and run_button_rect.collidepoint(mouse_pos):
-                    if machine_loaded_slot is None:
-                        set_message("Load a cup first")
+                    if manager.machine_loaded_slot is None:
+                        manager.set_message("Load a cup first")
                     else:
-                        cup = inventory.slots[machine_loaded_slot]
+                        cup = manager.inventory.slots[manager.machine_loaded_slot]
 
                         if cup is not None and cup.is_empty():
                             cup.fill("Black Coffee")
-                            set_message("Drink created")
-                            machine_loaded_slot = None
+                            manager.set_message("Drink created")
+                            manager.machine_loaded_slot = None
 
             elif event.type == pygame.MOUSEMOTION and DebugMode:
                 m_x, m_y = pygame.mouse.get_pos()
@@ -479,6 +648,10 @@ def main():
                         RecipeView = RECIPE_VIEW_NONE
                         current_screen = "game"
                         continue
+                    if ShopView != SHOP_VIEW_NONE:
+                        ShopView = SHOP_VIEW_NONE
+                        current_screen = "game"
+                        continue
                     if GameState == "REGISTER":
                         GameState = "PLAYING"
                         continue
@@ -487,16 +660,27 @@ def main():
                         active_machine = None
                         continue
 
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_1 and ShopView == SHOP_VIEW_NONE and RecipeView == RECIPE_VIEW_NONE:
                     DebugMode = not DebugMode
+
+                # Placeholder shop purchases
+                if ShopView != SHOP_VIEW_NONE:
+                    if event.key == pygame.K_1:
+                        manager.buy_upgrade(0)
+                    elif event.key == pygame.K_2:
+                        manager.buy_upgrade(1)
+                    elif event.key == pygame.K_3:
+                        manager.buy_upgrade(2)
+                    continue
+
+                # Pause normal gameplay input while a menu is open
+                if RecipeView != RECIPE_VIEW_NONE or ShopView != SHOP_VIEW_NONE:
+                    continue
 
                 if event.key == pygame.K_r:
                     customers.clear()
                     customersWaiting.clear()
-                    active_orders[0] = None
-                    active_orders[1] = None
-                    inventory.clear_all()
-                    machine_loaded_slot = None
+                    manager.clear_round_state()
                     Register.customerWaiting = False
                     currentCust = None
 
@@ -515,7 +699,7 @@ def main():
                     # Machine actions are mouse based
                     if GameState == "MACHINE":
                         continue
-                    
+
                     # Ignore E unless the player is in normal gameplay
                     if GameState != "PLAYING":
                         continue
@@ -527,12 +711,12 @@ def main():
                             continue
 
                         nearby_customer = get_nearby_seated_customer(player, customers)
-                        
+
                         if nearby_customer is not None:
-                            if inventory.get_selected_cup() is None:
-                                set_message("Select a cup first")
+                            if manager.inventory.get_selected_cup() is None:
+                                manager.set_message("Select a cup first")
                             else:
-                                serve_customer(nearby_customer)
+                                manager.serve_customer(nearby_customer)
                             continue
 
                     # MIDDLE VIEW interactions
@@ -544,7 +728,7 @@ def main():
                         for m in machines:
                             if m.is_player_nearby(player):
                                 active_machine = m
-                                machine_loaded_slot = None
+                                manager.machine_loaded_slot = None
                                 GameState = "MACHINE"
                                 break
 
@@ -559,17 +743,17 @@ def main():
 
                     # Do not take the order if there is nowhere for the customer to go.
                     if seat is None:
-                        set_message("No open seats available")
+                        manager.set_message("No open seats available")
                         continue
 
                     # Reserve the seat and assign it to the customer.
                     seat.reserveSeat(currentCust)
                     currentCust.set_targetSeat(seat)
-                    currentCust.seat_number = seat.seat_number # type: ignore
+                    currentCust.seat_number = seat.seat_number
                     currentCust.set_state("walking to table")
 
                     # Accept the order only after the customer has a seat assignment.
-                    accept_order(currentCust)
+                    manager.accept_order(currentCust)
 
                     # If the order could not be accepted because cup slots are full,
                     # keep the customer at the register and undo the seat reservation.
@@ -604,6 +788,8 @@ def main():
                 event.type == SPAWN_EVENT
                 and len(customers) < MAX_CUSTOMERS
                 and len(customersWaiting) < MAX_CUSTOMERS_WAITING
+                and RecipeView == RECIPE_VIEW_NONE
+                and ShopView == SHOP_VIEW_NONE
             ):
                 index = len(customersWaiting)
                 base_x, base_y = LINE_POSITIONS[index]
@@ -630,33 +816,20 @@ def main():
                 customersWaiting.append(currCustomer)
                 register1.setWaiting()
 
-        # Update all customers every frame
-        for c in customers:
-            c.update(seats)
+        # Only update customers while no menu is open
+        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+            for c in customers:
+                c.update(seats)
 
         # Remove customers that have left and clean up their orders.
-        cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group)
+        cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
 
         # Main game rendering
         if GameState == "PLAYING":
             if RecipeView != RECIPE_VIEW_NONE:
-                screen.fill(UI_BG_COLOR)
-                font_large = pygame.font.SysFont(None, 50)
-                text = font_large.render("Recipe Menu", True, (255, 255, 255))
-                screen.blit(text, (500, 100))
-
-                if RecipeView == RECIPE_VIEW_MENU:
-                    x = RECIPE_START_X
-                    y = RECIPE_START_Y
-
-                    for recipe in RECIPES_UNLOCKED:
-                        recipe_img = constants.IMAGE_LIBRARY.get(recipe)
-                        if recipe_img:
-                            recipe_img = pygame.transform.smoothscale(recipe_img, RECIPE_ICON_SIZE)
-                            screen.blit(recipe_img, (x, y))
-
-                        x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
-
+                manager.draw_recipe_screen(screen)
+            elif ShopView != SHOP_VIEW_NONE:
+                manager.draw_shop_screen(screen)
             else:
                 if CafeView == "FRONT":
 
@@ -680,6 +853,7 @@ def main():
                         player.render(screen)
 
                     recipe_button.draw(screen)
+                    shop_button.draw(screen)
 
                     # Serve tooltip for nearby seated customer.
                     nearby_customer = get_nearby_seated_customer(player, customers)
@@ -709,10 +883,13 @@ def main():
 
                     player.render(screen)
 
+
                     if currentCust is not None and currentCust.state == "waiting":
                         register2.render(screen)
 
                     screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
+                    recipe_button.draw(screen)
+                    shop_button.draw(screen)
 
                     for m in machines:
                         if m.is_player_nearby(player):
@@ -755,7 +932,7 @@ def main():
 
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, font)
-            draw_inventory(screen, player)
+            manager.draw_inventory(screen, player)
             pygame.draw.rect(screen, (80, 80, 80), run_button_rect)
             pygame.draw.rect(screen, constants.WHITE, run_button_rect, 2)
 
@@ -782,61 +959,21 @@ def main():
         )
         screen.blit(text, (10, 10))
 
-        # Draw money
-        money_text = font.render(f"Money: ${money}", True, (230, 230, 230))
-        screen.blit(money_text, (10, 35))
+        # Draw money only during gameplay
+        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+            manager.draw_money(screen, font)
 
-        # Draw order cards, inventory, and temporary message
-        draw_orders(screen)
-        draw_inventory(screen, player)
-
-        if message != "":
-            msg_font = pygame.font.SysFont(None, 30)
-            message_x = constants.WIDTH // 2 - 100
-            message_y = 120
-            outline = msg_font.render(message, True, (0, 0, 0))
-            text = msg_font.render(message, True, (255, 255, 255))
-            screen.blit(outline, (message_x - 1, message_y))
-            screen.blit(outline, (message_x + 1, message_y))
-            screen.blit(outline, (message_x, message_y - 1))
-            screen.blit(outline, (message_x, message_y + 1))
-            screen.blit(text, (message_x, message_y))
+        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+            # Draw order cards, inventory, and temporary message
+            manager.draw_orders(screen)
+            manager.draw_inventory(screen, player)
+            
+        manager.draw_message(screen)
 
         pygame.display.flip()
 
     pygame.quit()
     sys.exit()
-
-
-def findFirstOpen(seats):
-    """
-    Find and return the first open seat.
-
-    Returns:
-        Seat | None: The first open seat, or None if all seats are occupied.
-    """
-    for c in seats:
-        if isinstance(c, Seat) and c.state == "open":
-            return c
-    return None
-
-
-def change_counters_pos(view):
-    """
-    Change counter positions depending on the current cafe view.
-    """
-    if view == "MIDDLE":
-        c1.rect.x, c1.rect.y = 1014, 615
-        c2.rect.x, c2.rect.y = 849, 615
-        c3.rect.x, c3.rect.y = 685, 615
-        c4.rect.x, c4.rect.y = 522, 615
-        c5.rect.x, c5.rect.y = 357, 615
-    elif view == "FRONT":
-        c1.rect.x, c1.rect.y = 7, 487
-        c2.rect.x, c2.rect.y = 172, 487
-        c3.rect.x, c3.rect.y = 336, 487
-        c4.rect.x, c4.rect.y = 500, 487
-        c5.rect.x, c5.rect.y = 664, 487
 
 
 if __name__ == "__main__":
