@@ -308,8 +308,8 @@ class GameManager:
         """
         font = pygame.font.SysFont(None, 28)
 
-        start_x = 200
-        y = 20
+        start_x = 10
+        y = 30
         card_width = 180
         card_spacing = 200
 
@@ -319,13 +319,14 @@ class GameManager:
 
             rect = pygame.Rect(x, y, card_width, 60)
 
+            pygame.draw.rect(screen, (200, 200, 200), rect)
             # Empty slot outline
             outline_color = ORDER_COLORS[i]
             pygame.draw.rect(screen, outline_color, rect, 3)
 
             if order is not None:
-                drink_text = font.render(order.drink_name, True, constants.WHITE)
-                seat_text = font.render(f"Seat {order.seat_number}", True, constants.WHITE)
+                drink_text = font.render(order.drink_name, True, constants.BLACK)
+                seat_text = font.render(f"Seat {order.seat_number}", True, constants.BLACK)
 
                 screen.blit(drink_text, (x + 10, y + 10))
                 screen.blit(seat_text, (x + 10, y + 35))
