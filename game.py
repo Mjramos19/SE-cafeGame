@@ -363,7 +363,7 @@ class GameManager:
 
             if cup is not None:
                 text = "Water" if cup.is_empty() else cup.contents
-                label = font.render(text, True, constants.WHITE)
+                label = font.render(text, True, constants.WHITE, constants.BLACK)
                 screen.blit(label, (rect.x + 60, rect.y + 15))
 
     def draw_money(self, screen, font):
@@ -862,11 +862,21 @@ def main():
 
                     recipe_button.draw(screen)
                     shop_button.draw(screen)
+                    # Register tooltip when the player is close enough and a customer is waiting
+                    if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
+                        label = font.render("[E] Take Order", True, constants.WHITE, constants.BLACK)
+                        screen.blit(
+                            label,
+                            (
+                                register1.interactionZone.centerx - label.get_width() // 2,
+                                register1.interactionZone.top - 24,
+                            ),
+                        )
 
                     # Serve tooltip for nearby seated customer.
                     nearby_customer = get_nearby_seated_customer(player, customers)
                     if nearby_customer is not None:
-                        label = font.render("[E] Serve", True, (255, 255, 255))
+                        label = font.render("[E] Serve", True, constants.WHITE, constants.BLACK)
                         screen.blit(
                             label,
                             (
@@ -900,9 +910,21 @@ def main():
                     shop_button.draw(screen)
 
                     for m in machines:
+                        # Machine tooltip when the player is close enough 
                         if m.is_player_nearby(player):
-                            label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
+                            label = font.render(f"[E] {m.name}  ({m.state})", True, constants.WHITE, constants.BLACK)
                             screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
+                        
+                        # Register tooltip when the player is close enough and a customer is waiting
+                        if player.rect.colliderect(register2.interactionZone) and register2.customerWaiting:
+                            label = font.render("[E] Take Order", True, constants.WHITE, constants.BLACK)
+                            screen.blit(
+                                label,
+                                (
+                                    register2.interactionZone.centerx - label.get_width() // 2,
+                                    register2.interactionZone.top - 24,
+                                ),
+                            )
 
                     if DebugMode:
                         for c in middle_collisions:
@@ -936,7 +958,7 @@ def main():
                 pygame.draw.rect(screen, (255, 255, 0), player.get_foot_rect(), 2)
 
         elif GameState == "REGISTER":
-            register1.take_order(screen)
+            register1.take_order(screen, currentCust)
 
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, font)
@@ -967,15 +989,15 @@ def main():
         )
         screen.blit(text, (10, 10))
 
-        # Draw money only during gameplay
-        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+        # Draw money and order cards only during normal gameplay
+        if (
+            GameState == "PLAYING"
+            and RecipeView == RECIPE_VIEW_NONE
+            and ShopView == SHOP_VIEW_NONE
+        ):
             manager.draw_money(screen, font)
-
-        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
-            # Draw order cards, inventory, and temporary message
             manager.draw_orders(screen)
             manager.draw_inventory(screen, player)
-            
         manager.draw_message(screen)
 
         pygame.display.flip()

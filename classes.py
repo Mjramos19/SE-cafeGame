@@ -148,10 +148,47 @@ class Register(Counter):
         Register.customerWaiting = True
 
     def take_order(self, screen, currentCust=None):
-        '''A function that brings up the order taking screen.'''
+        '''
+        Draws the register order-taking screen and show control hints.
+
+        Parameters:
+            screen: The pygame surface to draw on
+            currentCust: The current customer at the register.
+        '''
         # bring up order taking screen - learn to crop customer to rectangle
         screen.blit(self.order_screen, (0, 0))
         screen.blit(self.customer_image, self.customer_rect)
+
+        # Fonts for register UI text
+        title_font = pygame.font.SysFont(None, 36)
+        body_font = pygame.font.SysFont(None, 28)
+
+        # Main Title
+        title_text = title_font.render("Register - Accepting an order gives you an empty cup", True, WHITE)
+        screen.blit(title_text, (80, 80))
+
+        # Show current customer order if available
+        if currentCust is not None and currentCust.order is not None:
+            order_text = body_font.render(
+                f"Order: {currentCust.order.drink_name}",
+                True,
+                WHITE
+            )
+            screen.blit(order_text, (80, 140))
+        elif currentCust is not None and hasattr(currentCust, "orderedItem"):
+            order_text = body_font.render(
+                f"Order: {currentCust.orderedItem}",
+                True,
+                WHITE
+            )
+            screen.blit(order_text, (80, 140))
+
+        # Control hints
+        hint_accept = body_font.render("[S] Accept Order", True, WHITE)
+        hint_close = body_font.render("[ESC] Leave Register", True, WHITE)
+
+        screen.blit(hint_accept, (80, 220))
+        screen.blit(hint_close, (80, 260))
 
     def render(self, screen):
         if Register.customerWaiting is True:
