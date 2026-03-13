@@ -139,6 +139,9 @@ SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
 recipe_button = Button(1190, 342, 160, 78, "Recipes", "RECIPE_MENU", None)
 shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
+# Corner prompt zone for switching cafe view
+switch_view_prompt_rect_cafe = pygame.Rect(1025, 675, 100, 100)
+switch_view_prompt_rect_middle = pygame.Rect(50, 675, 100, 100)
 
 
 class GameManager:
@@ -884,6 +887,16 @@ def main():
                                 nearby_customer.rect.top - 24,
                             ),
                         )
+                    
+                    if player.rect.colliderect(switch_view_prompt_rect_cafe):
+                        label = font.render("[Q] Switch View", True, constants.WHITE, constants.BLACK)
+                        screen.blit(
+                            label,
+                            (
+                                switch_view_prompt_rect_cafe.centerx - label.get_width() // 2,
+                                switch_view_prompt_rect_cafe.top - 12,
+                            ),
+                        )
 
                     if DebugMode:
                         for c in front_counters:
@@ -891,6 +904,7 @@ def main():
                         pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
                         for c in front_collisions:
                             pygame.draw.rect(screen, (255, 255, 0), c, 2)
+                        pygame.draw.rect(screen, (0, 255, 255), switch_view_prompt_rect_cafe, 2)
 
                 elif CafeView == "MIDDLE":
                     player.handle_movement(keys, middle_collisions)
@@ -908,6 +922,15 @@ def main():
                     screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
                     recipe_button.draw(screen)
                     shop_button.draw(screen)
+                    if player.rect.colliderect(switch_view_prompt_rect_middle):
+                        label = font.render("[Q] Switch View", True, constants.WHITE, constants.BLACK)
+                        screen.blit(
+                            label,
+                            (
+                                switch_view_prompt_rect_middle.centerx - label.get_width() // 2,
+                                switch_view_prompt_rect_middle.top - 12,
+                            ),
+                        )
 
                     for m in machines:
                         # Machine tooltip when the player is close enough 
@@ -932,6 +955,7 @@ def main():
                         for c in middle_counters:
                             pygame.draw.rect(screen, (250, 0, 0), c)
                         pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
+                        pygame.draw.rect(screen, (0, 250, 250), switch_view_prompt_rect_middle, 2)
 
                 else:
                     player.handle_movement(keys, back_collisions)
