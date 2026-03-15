@@ -35,6 +35,16 @@ REAL_DAY_SEC = 86400
 TIME_SPEED = 72
 
 
+# Back room ingredients box positions
+MAX_INGREDIENT_BOXES = 4
+BOX_POSITIONS = [(50, 10), (200, 10), (350, 10), (500, 10)]
+
+# Inventory constants
+NUM_SLOTS = 4
+SLOT_SIZE = 50
+INVENTORY_POSITIONS = [(10, 500), (10, 560), (10, 620), (10, 680)]
+
+
 
 class GameObject:
     '''A GameObject determines an objects' position and dimensions.'''

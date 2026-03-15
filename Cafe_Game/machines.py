@@ -4,16 +4,25 @@ class Machine(GameObject, pygame.sprite.Sprite):
     def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, mini_game_img_keys, w=150, h=90):
         pygame.sprite.Sprite.__init__(self)
 
+        self.state = 'empty'
+        # states: empty, full, running, ready
+        self.mini_game_img_keys = mini_game_img_keys
+
         # Black square placeholder — replace with real sprites later
-        self.sprite = pygame.Surface((w, h))
-        self.sprite.fill((0, 0, 0))
+        try:
+            self.sprite = self.get_sprite()
+        except:
+            self.sprite = pygame.Surface((w, h))
+            self.sprite.fill((0, 0, 0))
 
         super().__init__(x, y, w, h, (0, 0, 0))
-        self.rect = self.sprite.get_rect(topleft=(x, y))
+        self.counter_space_rect = pygame.rect.Rect(x, y, w, h)
+        self.rect = self.sprite.get_rect(topleft=(x,y))
+        self.rect.centerx = self.counter_space_rect.centerx
+        self.rect.centery = self.counter_space_rect.centery
+        self.rect.y -= 50  # accounts for the height above the counter
 
-        self.x, self.y = x, y
         self.name = name
-
         self.input = machine_input
         self.outputs = [o for o in outputs]
 
@@ -23,8 +32,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.runtime = runtime
 
         self.contents = []
-        self.state = 'empty'
-        # states: empty, full, running, ready
+
         self.timer_start = 0
         self.error_start = 0
         self.selected_output = None
@@ -37,7 +45,15 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
         self.ingredient = None
         self.ingredient_rect = None
-        self.mini_game_img_keys = mini_game_img_keys
+
+    def get_sprite(self):
+        if self.state == 'running':
+            self.sprite = self.mini_game_img_keys[1]
+        elif self.state == 'ready':
+            self.sprite = self.mini_game_img_keys[2]
+        else:
+            self.sprite = self.mini_game_img_keys[0]
+        return IMAGE_LIBRARY[self.sprite]
 
 
     def is_player_nearby(self, player):
@@ -46,7 +62,8 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
     def setup_minigame(self, ingredient):
         self.ingredient = ingredient
-        self.ingredient.x, self.ingredient.y = 20, 500
+        if self.ingredient != None:
+            self.ingredient.x, self.ingredient.y = 20, 500
 
 
     def mini_game_mode(self, screen, debug):
@@ -55,16 +72,26 @@ class Machine(GameObject, pygame.sprite.Sprite):
         screen.blit(IMAGE_LIBRARY["minigame_bg"], (0, 0))
         self.mg_interaction_zone = pygame.Rect(400, 100, 400, 200)
         self.start_button = pygame.Rect(450, 210, 70, 70)
+        self.minigame_rect = pygame.Rect(400, 100, 400, 590)
 
+        # might not need this code later
         if self.state == "error":
-            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[0]], (402, 145)) # location of image subject to change with different assets
             elapsed = pygame.time.get_ticks() - self.error_start
             if elapsed >= 1500:
                 self.state = "empty"
-        elif self.state == "running":
-            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[1]], (402, 145))
-        elif self.state == "ready":
-            screen.blit(IMAGE_LIBRARY[self.mini_game_img_keys[2]], (402, 145))
+
+        def scale_image_to_fit(img, rect):
+            """Scales the machine image proportionally to fit inside the minigame_mode rect."""
+            img_width, img_height = img.get_size()
+            rect_width, rect_height = rect.size
+            scale_factor = min(rect_width / img_width, rect_height / img_height)
+            new_width = int(img_width * scale_factor)
+            new_height = int(img_height * scale_factor)
+            return pygame.transform.smoothscale(img, (new_width, new_height))
+
+        scaled_image = scale_image_to_fit(self.get_sprite(), self.minigame_rect)
+        scaled_rect = scaled_image.get_rect(center=self.minigame_rect.center)
+        screen.blit(scaled_image, scaled_rect)
 
         if self.ingredient:
             screen.blit(self.ingredient.image, (self.ingredient.x, self.ingredient.y))
@@ -73,6 +100,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         if debug == True:
             pygame.draw.rect(screen, (255, 255, 255), self.mg_interaction_zone, 3)
             pygame.draw.rect(screen, (255, 255, 255), self.start_button)
+            pygame.draw.rect(screen, (255, 255, 0), self.minigame_rect, 1)
             if self.ingredient:
                 pygame.draw.rect(screen, (255, 255, 255), self.ingredient_rect, 3)
 
@@ -81,9 +109,11 @@ class Machine(GameObject, pygame.sprite.Sprite):
         if ingredient != self.input:
             print(f"cannot add {ingredient} to {self.name}.")
             self.state = "error"
+            return False
         else:
             self.state = "full"
             self.ingredient = None
+            return True
             # need to update the code here to include removing the ingredient from the player's inventory. must consider opening the machine with an empty inventory to avoid crahses.
 
     def run_machine(self, num=0):
@@ -122,6 +152,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
     def render(self, screen, debug=False):
         """Renders the machine sprite in cafe view."""
-        screen.blit(self.sprite, self.rect)
+        screen.blit(self.get_sprite(), self.rect)
         if debug:
             pygame.draw.rect(screen, (255, 255, 0), self.interaction_zone, 2)
+            pygame.draw.rect(screen, (20, 20, 20), self.rect)

@@ -17,10 +17,8 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_w = (18 * 4)
         self.foot_h = (8 * 4)
 
-        self.top_inventory = []
-        self.ti_rect = pygame.Rect(10,340, 50,50)
-        self.bottom_inventory = []
-        self.bi_rect = pygame.Rect(10,410, 50,50)
+        self.selectedSlot = 0
+        self.inventory = [None, None, None, None]
 
 
     def get_foot_rect(self):
@@ -59,8 +57,7 @@ class Player(GameObject, pygame.sprite.Sprite):
 
     def render(self, screen):
         screen.blit(self.sprite, self.rect)
-        pygame.draw.rect(screen, (0,0,0), self.ti_rect)
-        pygame.draw.rect(screen, (0,0,0), self.bi_rect)
+
 
 # dirty table aspect - states - money collection
 class Table(GameObject):
@@ -208,6 +205,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         if distanceY < CUSTOMER_SPEED and distanceX < CUSTOMER_SPEED:
             self.rect.center = self.targetSeat.rect.center
             self.state = "seated"
+            # Changes the direction the customer is seated depending on the seat's number
             self.sprite = IMAGE_LIBRARY[self.image_keys[1]]
             if self.targetSeat.num % 2 != 0:
                 self.sprite = pygame.transform.flip(self.sprite, True, False)
