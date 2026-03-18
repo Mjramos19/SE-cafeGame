@@ -57,7 +57,6 @@ INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water,
 
 # Recipe List
 RECIPES_UNLOCKED = ["Breakfast Bagel", "Breakfast Sandwich", "Iced Coffee", "Hot Coffee"]
-import pygame
 
 # Screen Dimensions
 WIDTH, HEIGHT = 1366, 768
@@ -109,6 +108,8 @@ foamed_milk = Ingredient("Foamed Milk",["img"])
 cocoa_powder = Ingredient("Cocoa Powder",["img"], 9.40, 64)
 hot_chocolate = Ingredient("Hot Chocolate",["img"])
 
+
+
 # Ingredients List
 INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water, ice, milk, steamed_milk, foamed_milk, cocoa_powder, hot_chocolate]
 
@@ -142,7 +143,7 @@ LINE_POSITIONS = [(900, 385), (680, 350), (530, 350), (380, 350)]
 
 #Back room ingredients box positions
 MAX_INGREDIENT_BOXES = 4
-BOX_POSITIONS = [(50, 10), (200, 10), (350, 10), (500, 10)]
+BOX_POSITIONS = [(50, 125), (200, 125), (350, 125), (500, 125)]
 
 #Inventory constants
 NUM_SLOTS = 4

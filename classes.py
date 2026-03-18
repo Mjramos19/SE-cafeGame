@@ -36,9 +36,8 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.ti_rect = pygame.Rect(10,340, 50,50)
         self.bottom_inventory = []
         self.bi_rect = pygame.Rect(10,410, 50,50)
-        self.selectedSlot = -1
+        self.selectedSlot = 0
         self.inventory = [None, None, None, None]
-
 
     def get_foot_rect(self):
         '''A function that returns a rectangle that only covers the feet area of the player sprite.'''
@@ -209,6 +208,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.targetPosition = None
         self.linePosition = linePosition
         self.foot_w, self.foot_h = (18 * 4), (8 * 4)
+        self.waitBar_length = 10000
 
 
     def pickItem(self):
@@ -247,6 +247,8 @@ class Customer(GameObject, pygame.sprite.Sprite):
             self.rect.center = self.targetSeat.rect.center
             self.state = "seated"
             self.targetSeat.occupySeat(self)
+            #reset wait bar
+            self.waitBar_length = 10000
 
     def moveUpInLine(self):
         # increment the npc's x coordinate by their speed until they reach their new
@@ -276,6 +278,10 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
     def render(self, screen):
         screen.blit(self.sprite, self.rect)
+        #renders customers wait bar
+        #Length of each bar is measured by customers waitBar_length attribute
+        waitRect = pygame.Rect(self.rect.x, self.rect.y - 20, self.waitBar_length // 100, 10)
+        pygame.draw.rect(screen, (255, 255, 255), waitRect)
 
 
     def update(self, collisions):
@@ -287,6 +293,13 @@ class Customer(GameObject, pygame.sprite.Sprite):
         # spot in line is reached.
         if self.state == "moving up in line" and self.linePosition != None:
             self.moveUpInLine()
+        
+        #if customers wait bar is empty, set their state to leaving. Else, decrement by 1
+        if self.state == "waiting" or self.state == "seated":
+            if self.waitBar_length == 0:
+                self.state == "leaving"
+            else:
+                self.waitBar_length -= 1
 
         # clamp npc's to screen
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
@@ -301,3 +314,13 @@ class Customer(GameObject, pygame.sprite.Sprite):
     def __str__(self):
         return f'State: {self.state}, Target Seat: {self.targetSeat}'
     
+
+class cup(GameObject):
+    def __init__(self, x, y, w, h, ):
+        super().__init__(x, y, w, h)
+    
+    def cupToInventory(player):
+        for i in range(NUM_SLOTS):
+            if player.inventory[i] == None:
+                player.inventory[i] = cup(0,0,20,20)
+                break
