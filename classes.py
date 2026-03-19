@@ -1,23 +1,8 @@
-import random
-import pygame
 from constants import *
-from typing import Optional
-
-
-class GameObject:
-    '''A GameObject determines an objects' position, dimensions, and display image.'''
-    def __init__(self, x, y, w, h, color):
-        self.x, self.y, self.w, self.h, self.color = x, y, w, h, color
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
-        self.color = color
-
-    def render(self, screen):
-        return pygame.draw.rect(screen, self.color, self.rect)  # make render apply to all after making individual renders
-
 
 class Player(GameObject, pygame.sprite.Sprite):
     '''The player class.'''
-    def __init__(self, x, y, image_key):  # Pass the key for IMAGE_LIBRARY
+    def __init__(self, x, y, image_key):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
         pygame.sprite.Sprite.__init__(self)
         try:
             self.sprite = IMAGE_LIBRARY[image_key]
@@ -32,10 +17,9 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_w = (18 * 4)
         self.foot_h = (8 * 4)
 
-        self.top_inventory = []
-        self.ti_rect = pygame.Rect(10, 340, 50, 50)
-        self.bottom_inventory = []
-        self.bi_rect = pygame.Rect(10, 410, 50, 50)
+        self.selectedSlot = 0
+        self.inventory = [None, None, None, None]
+
 
     def get_foot_rect(self):
         '''A function that returns a rectangle that only covers the feet area of the player sprite.'''
@@ -45,20 +29,17 @@ class Player(GameObject, pygame.sprite.Sprite):
         foot_y = self.y + self.h - self.foot_h
         return pygame.Rect(foot_x, foot_y, self.foot_w, self.foot_h)
 
+
     def handle_movement(self, keys, collisions):
         '''A function that updates the player position if keys are pressed, and also handles collisions using the foot rectangle.'''
         # Stores old position in case plyer hits something
         old_x, old_y = self.rect.x, self.rect.y
 
         # Inputs for movement
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= PLAYER_SPEED
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += PLAYER_SPEED
-        if keys[pygame.K_UP]:
-            self.rect.y -= PLAYER_SPEED
-        if keys[pygame.K_DOWN]:
-            self.rect.y += PLAYER_SPEED
+        if keys[pygame.K_LEFT]:  self.rect.x -= PLAYER_SPEED
+        if keys[pygame.K_RIGHT]: self.rect.x += PLAYER_SPEED
+        if keys[pygame.K_UP]:    self.rect.y -= PLAYER_SPEED
+        if keys[pygame.K_DOWN]:  self.rect.y += PLAYER_SPEED
 
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
         self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
@@ -74,27 +55,27 @@ class Player(GameObject, pygame.sprite.Sprite):
     def deliver(self, table):
         pass
 
-    def render(self, screen):
+    def render(self, screen, debugmode):
         screen.blit(self.sprite, self.rect)
-        pygame.draw.rect(screen, (0, 0, 0), self.ti_rect)
-        pygame.draw.rect(screen, (0, 0, 0), self.bi_rect)
+
+        if debugmode == True:
+            pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)
 
 
 # dirty table aspect - states - money collection
 class Table(GameObject):
-    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats=[]):
+    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats = []):
         super().__init__(x, y, w, h, color)
         self.open = True
         self.seats = seats
         self.open = True
 
-
 class Seat(GameObject):
-    def __init__(self, x, y, w=70, h=15, color=SEAT_COLOR):
+    def __init__(self, x, y, num, w=70, h=15, color=SEAT_COLOR):
         super().__init__(x, y, w, h, color)
         self.state = "open"
         self.seatedCustomer = None
-        self.seat_number: int | None = None
+        self.num = num
 
     def get_seatX(self):
         return self.rect.x
@@ -128,8 +109,7 @@ class Register(Counter):
     '''A Register is a child of Counter that handles player interation within the zone and customer lineup behavior, whether a customer is at the register.'''
     # this variable is shared amongst both register objects
     customerWaiting = False
-
-    def __init__(self, x, y, iz_y, w=150, h=90):
+    def __init__(self, x, y, iz_y, w=150, h=90): #will need to update and put a parameter for the current customer image key to be passed through.
         super().__init__(x, y, w, h, REGISTER_COLOR)
         self.placeable = False
 
@@ -137,26 +117,25 @@ class Register(Counter):
         self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
 
         self.icon = IMAGE_LIBRARY["register_icon"]
-        self.icon_rect = self.icon.get_rect(topleft=(x + 55, y - 85))
+        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
 
         # order screen variables
         self.order_screen = IMAGE_LIBRARY["order_screen"]
-        self.customer_image = IMAGE_LIBRARY["customer"]  # place holder
-        self.customer_rect = pygame.Rect(500, 200, 100, 418)
+        self.customer_image = IMAGE_LIBRARY["ladybug_idle"] #place holder until parameter is updated.
+        self.customer_rect = pygame.Rect(500,200,100,418)
+
 
     def setWaiting(self):
         Register.customerWaiting = True
 
     def take_order(self, screen, currentCust=None):
-        '''
-        Draws the register order-taking screen and show control hints.
-
+        """Draws the register order-taking screen and show control hints.
         Parameters:
             screen: The pygame surface to draw on
-            currentCust: The current customer at the register.
-        '''
-        # bring up order taking screen - learn to crop customer to rectangle
-        screen.blit(self.order_screen, (0, 0))
+            currentCust: The current customer at the register."""
+
+        # to do: learn to crop customer to rectangle
+        screen.blit(self.order_screen, (0,0))
         screen.blit(self.customer_image, self.customer_rect)
 
         # Fonts for register UI text
@@ -190,8 +169,9 @@ class Register(Counter):
         screen.blit(hint_accept, (80, 220))
         screen.blit(hint_close, (80, 260))
 
+
     def render(self, screen):
-        if Register.customerWaiting is True:
+        if Register.customerWaiting == True:
             screen.blit(self.icon, self.icon_rect)
 
 
@@ -205,11 +185,12 @@ class Sink(Counter):
 class Customer(GameObject, pygame.sprite.Sprite):
     '''The Customer class creates a customer object that walks to the register, will line up, will order a recipe, and
     will seat itself. Once the order is delivered, te customer will exit the level. A customer has a satisfaction bar determined by time.'''
-    def __init__(self, x, y, image_key, recipesUnlockedList, linePosition):
+    def __init__(self, x, y, image_keys, recipesUnlockedList, linePosition):
         pygame.sprite.Sprite.__init__(self)
 
+        self.image_keys = image_keys
         try:
-            self.sprite = IMAGE_LIBRARY[image_key]
+            self.sprite = IMAGE_LIBRARY[self.image_keys[0]]
         except:
             self.sprite = pygame.Surface((30 * 4, 67 * 4))
             self.sprite.fill((255, 0, 0))
@@ -226,9 +207,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.linePosition = linePosition
         self.foot_w, self.foot_h = (18 * 4), (8 * 4)
 
-        # Order / serving data
-        self.order = None
-        self.seat_number = None
+        self.waitBar_length = 10000
 
         # Drinking / leaving behavior
         self.drink_start_time = None
@@ -240,13 +219,17 @@ class Customer(GameObject, pygame.sprite.Sprite):
         itemNum = random.randint(0, len(self.recipesUnlocked) - 1)
         return self.recipesUnlocked[itemNum]
 
-    def findSeat(self, collisions):
-        '''Move smoothly to the assigned seat and sit down once reached.'''
+    def findSeat(self):
+        '''A function that finds a seat, calculates the distance and movement for customer to get to seat, and will occupy the seat once there.'''
+
         if self.targetSeat is None:
             return
 
-        target_x = self.targetSeat.rect.x
-        target_y = self.targetSeat.rect.y
+        target_x, target_y = self.targetSeat.rect.x, self.targetSeat.rect.y
+
+        # calculate remaining distance between customer and seat every iteration
+        distanceY = self.targetSeat.rect.y - self.rect.y
+        distanceX = self.targetSeat.rect.x - self.rect.x
 
         reached = self.move_toward_point(target_x, target_y)
 
@@ -254,7 +237,16 @@ class Customer(GameObject, pygame.sprite.Sprite):
             self.rect.center = self.targetSeat.rect.center
             self.x, self.y = self.rect.x, self.rect.y
             self.state = "seated"
+            # Changes the direction the customer is seated depending on the seat's number
+            self.sprite = IMAGE_LIBRARY[self.image_keys[1]]
+            if self.targetSeat.num % 2 != 0:
+                self.sprite = pygame.transform.flip(self.sprite, True, False)
             self.targetSeat.occupySeat(self)
+
+            # Now that the customer is sitting, get rid of foot rect. Logic handled in get_foot_rect()
+            self.foot_w = 0
+            # Also reset wait bar
+            self.waitBar_length = 10000
 
     def move_toward_point(self, target_x, target_y):
         """Move toward a point smoothly. Returns True when the point is reached."""
@@ -277,25 +269,22 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
         return self.rect.x == target_x and self.rect.y == target_y
 
+
     def moveUpInLine(self):
         """Move smoothly to the customer's next line position."""
         target_x = self.linePosition[0] - (self.w // 2)
         target_y = self.linePosition[1] - (self.h // 2)
 
         reached = self.move_toward_point(target_x, target_y)
-
         if reached:
             self.state = "waiting"
 
-    def start_drinking(self, result):
-        """
-        Put the customer into the drinking state after being served.
-
+    def start_drinking(self, result):  # should be finding the result using the check_match() func from recipes
+        """Put the customer into the drinking state after being served.
         Parameters:
             result (str): Either "correct" or "incorrect". This is stored
             so later systems such as money, ratings, or tips can react
-            to the serve result.
-        """
+            to the serve result."""
         # Store whether the serve was correct or incorrect.
         self.serve_result = result
 
@@ -313,7 +302,6 @@ class Customer(GameObject, pygame.sprite.Sprite):
     def leave_cafe(self):
         """
         Move the customer toward the exit.
-
         For now, the customer walks to the right side of the screen.
         Once they move off-screen, their state becomes 'gone'.
         """
@@ -325,17 +313,24 @@ class Customer(GameObject, pygame.sprite.Sprite):
         if reached:
             self.state = "gone"
 
+
     def set_state(self, state):
         self.state = state
 
     def set_targetSeat(self, seat):
         self.targetSeat = seat
-
         # First walk up to a point in front of the chair area, then go to the exact seat
         self.targetPosition = (seat.rect.x, 330)
 
-    def render(self, screen):
+    def render(self, screen, debugmode):
         screen.blit(self.sprite, self.rect)
+
+        waitRect = pygame.Rect(self.rect.x, self.rect.y - 20, self.waitBar_length // 100, 10)
+        pygame.draw.rect(screen, (255, 255, 255), waitRect)
+
+        if debugmode == True:
+            pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 1)
+
 
     def update(self, collisions):
         """
@@ -349,6 +344,14 @@ class Customer(GameObject, pygame.sprite.Sprite):
         - Pause briefly to simulate drinking
         - Leave the cafe after being served
         """
+
+        #if customers wait bar is empty, set their state to leaving. Else, decrement by 1
+        if self.state == "waiting" or self.state == "seated":
+            if self.waitBar_length == 0:
+                self.state = "leaving"
+            else:
+                self.waitBar_length -= 1
+
 
         # State 1: Walking toward the table area
         if self.state == "walking to table" and self.targetPosition is not None:
@@ -364,7 +367,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
         # State 2: Move toward assigned seat
         if self.state == "finding seat" and self.targetSeat is not None:
-            self.findSeat(collisions)
+            self.findSeat()
 
         # State 3: Moving forward in the line
         if self.state == "moving up in line" and self.linePosition is not None:
@@ -378,7 +381,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
             if self.drink_start_time is not None:
                 if current_time - self.drink_start_time >= self.drink_duration:
                     self.state = "leaving"
-                    
+
         # State 5: Leave the cafe
         if self.state == "leaving":
             self.leave_cafe()
@@ -394,19 +397,25 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
     def get_foot_rect(self):
         '''A function that returns a rectangle that only covers the feet area of the player sprite.'''
-        foot_x = self.x + (self.w // 2) - (self.foot_w // 2)
-        foot_y = self.y + self.h - self.foot_h
-        return pygame.Rect(foot_x, foot_y, self.foot_w, self.foot_h)
+        if self.w > 0:
+            foot_x = self.x + (self.w // 2) - (self.foot_w // 2)
+            foot_y = self.y + self.h - self.foot_h
+            return pygame.Rect(foot_x, foot_y, self.foot_w, self.foot_h)
 
     def __str__(self):
         return f'State: {self.state}, Target Seat: {self.targetSeat}'
 
 
+class Cup(GameObject):
+    def __init__(self, x, y, w, h, ):
+        super().__init__(x, y, w, h, color=WHITE)
+        self.name = "Cup"
+        self.contents = []
+
+'''
 class Cup:
-    """
-    Represents a drink container held in the player's inventory.
-    A cup may be empty or filled with a specific drink.
-    """
+    """Represents a drink container held in the player's inventory. A cup may be empty or filled with a specific drink."""
+
     def __init__(self):
         self.contents: Optional[str] = None
 
@@ -421,9 +430,8 @@ class Cup:
 
 
 class Order:
-    """
-    Represents a customer's drink order.
-    """
+    """Represents a customer's drink order."""
+
     def __init__(self, seat_number, drink_name, color):
         self.seat_number = seat_number
         self.drink_name = drink_name
@@ -435,9 +443,7 @@ class Order:
 
 
 class CupInventory:
-    """
-    Holds the player's cup inventory.
-    """
+    """Holds the player's cup inventory."""
     def __init__(self):
         self.slots: list[Optional[Cup]] = [None] * MAX_CUP_SLOTS
         self.selected_slot: Optional[int] = None
@@ -470,12 +476,10 @@ class CupInventory:
         if self.selected_slot is None:
             return None
         return self.slots[self.selected_slot]
-    
+
     def clear_all(self):
-        """
-        Clear all cup slots and remove any current selection
-        """
+        """Clear all cup slots and remove any current selection"""
         for i in range(len(self.slots)):
             self.slots[i] = None
-        
-        self.selected_slot = None
+
+        self.selected_slot = None'''

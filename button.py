@@ -1,5 +1,4 @@
-import pygame
-import constants
+from constants import *
 
 class Button:
     def __init__(self, x, y, width, height, text, target_state, action):
@@ -8,11 +7,9 @@ class Button:
         self.target_state = target_state
         self.font = pygame.font.SysFont(None, 22)
 
-
-
-        self.color = constants.WHITE
+        self.color = WHITE
         self.hover_color = (200, 200, 200)
-        self.text_color = constants.BLACK
+        self.text_color = BLACK
         self.action = action
 
     def is_clicked(self, mouse_pos):

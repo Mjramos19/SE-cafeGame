@@ -1,15 +1,14 @@
-import pygame
-from constants import IMAGE_LIBRARY
+from constants import *
 
-class Recipes:
-    def __init__(self, all_recipes: dict, unlocked_recipes: list, price: float, image_key):
-        """
-        all_recipes: dict of recipe_name -> list of ingredients
-        unlocked_recipes: list of recipe names currently available
-        """
-        self.all_recipes = all_recipes
-        self.unlocked = unlocked_recipes
-        self.price = price
+class Recipe:
+    """The Recipe class defines a recipe a customer can order and a player can make."""
+    def __init__(self, name: str, ingredients: list, price: float, image_key, locked=True):
+        """A recipe includes a name, a list of ingredients, a price, and a sprite."""
+        if isinstance(name, str):
+            self.name = name
+        self.ingredients = ingredients
+        if isinstance(price, float):
+            self.price = price
 
         try:
             self.image = IMAGE_LIBRARY[image_key]
@@ -17,43 +16,49 @@ class Recipes:
             self.image = pygame.Surface((50, 50))
             self.image.fill(pygame.Color("white"))
 
-    def match_ingredients_to_recipe(self, ingredients: list):
-        """
-        Returns the recipe name that matches the given ingredients.
-        Order does not matter. Must match exactly.
-        """
-        if not ingredients:
-            return None
+        self.locked = locked
 
-        for recipe_name in self.unlocked:
-            recipe_ingredients = self.all_recipes.get(recipe_name)
 
-            if recipe_ingredients and sorted(ingredients) == sorted(recipe_ingredients):
-                return recipe_name
+    def check_match(self, drink_ingredients: list):
+        """Will take the ingredients of the current drink and try to match it to whatever recipe the customer has as
+        their ordered recipe. Is called when trying to deliver and returns True or False."""
+        if len(self.ingredients) != len(drink_ingredients):
+            return False
+        i = 0
+        for item in self.ingredients:
+            if item != drink_ingredients[i]:
+                return False
+            i += 1
+        return True
 
-        return None
+    def get_name(self):
+        """Returns name of recipe."""
+        return self.name
 
-    def get_ingredients(self, recipe_name: str):
-        """Return ingredient list for a recipe, or None if not found."""
-        return self.all_recipes.get(recipe_name)
+    def get_ingredients(self):
+        """Returns the ingredient list to create recipe, in order."""
+        return self.ingredients
 
-    def is_unlocked(self, recipe_name):
-        """Check whether a recipe is unlocked."""
-        return recipe_name in self.unlocked
-
-    def unlock(self, recipe_name):
-        """Unlock a recipe if it exists."""
-        if recipe_name in self.all_recipes and recipe_name not in self.unlocked:
-            self.unlocked.append(recipe_name)
-
-    def lock(self, recipe_name):
-        """Lock a recipe."""
-        if recipe_name in self.unlocked:
-            self.unlocked.remove(recipe_name)
-
-    def get_unlocked(self):
-        """Return a copy of unlocked recipes."""
-        return list(self.unlocked)
     def get_price(self):
-        """Return the price of the recipe."""
+        """Returns the price of the recipe."""
         return self.price
+
+    def get_status(self):
+        """Returns whether the recipe is currently locked or not."""
+        return self.locked
+
+    def set_status(self, state):
+        """Sets the recipe state as either True (recipe locked) or False (recipe unlocked)."""
+        self.locked = state
+
+    def str(self):
+        """Returns all attributes of the recipe in a sentence."""
+        if self.locked == True:
+            state = 'currently'
+        else:
+            state = 'currently not'
+        return f"A/an {self.name} is made with {', '.join(i.name for i in self.ingredients)}, costs ${self.price}, and is {state} locked."
+
+    def render(self):
+        """Renders the recipe image. Used in recipe menu."""
+        pass

@@ -1,4 +1,7 @@
 import pygame
+import sys
+import time
+import random
 
 # Screen Dimensions
 WIDTH, HEIGHT = 1366, 768
@@ -10,9 +13,7 @@ CUSTOMER_SPEED = 2
 CUSTOMER_SPAWN_EVERY_MS = 2400
 MAX_CUSTOMERS = 10
 MAX_CUSTOMERS_WAITING = 4
-ORDER_DELAY = 4000  # milliseconds
-MAX_CUP_SLOTS = 2
-MAX_ACTIVE_ORDERS = 2
+ORDER_DELAY = 4000 # milliseconds
 
 # Colors
 TABLE_COLOR = (140, 110, 70)
@@ -33,59 +34,20 @@ ORDER_COLORS = [YELLOW, BLUE]
 IMAGE_LIBRARY = {}
 
 # Line position coordinates for customers
-LINE_POSITIONS = [(900 - i * 180, 395 - i * 15) for i in range(6)]
+LINE_POSITIONS = [(900, 385), (680, 350), (530, 350), (380, 350)]
 
+# Time Management for Day Cycle
+REAL_DAY_SEC = 86400
+TIME_SPEED = 72
 
-# Ingredients Class for building all ingredients
-class Ingredient:
-    def __init__(self, name, images: list, price_to_buy=None, quantity=None):
-        if isinstance(name, str):
-            self.name = name
-        if isinstance(price_to_buy, (int, float)):
-            self.price = price_to_buy
-        if isinstance(images, list):
-            self.images = images
-        if isinstance(quantity, int):
-            self.quantity = quantity
+# Back room ingredients box positions
+MAX_INGREDIENT_BOXES = 4
+BOX_POSITIONS = [(50, 125), (200, 125), (350, 125), (500, 125)]
 
-
-bag_coffee_beans = Ingredient("Coffee Beans", ["img"], 18.35, 56)
-ground_coffee = Ingredient("Ground Coffee", ["img"])
-espresso_shot = Ingredient("Espresso Shot", ["img"])
-espresso_doubleShot = Ingredient("Espresso Double Shot", ["img"])
-water = Ingredient("Water", ["img"])
-hot_water = Ingredient("Hot Water", ["img"])
-ice = Ingredient("Ice", ["img"])
-milk = Ingredient("Milk", ["img"], 3.28, 16)
-steamed_milk = Ingredient("Steamed Milk", ["img"])
-foamed_milk = Ingredient("Foamed Milk", ["img"])
-cocoa_powder = Ingredient("Cocoa Powder", ["img"], 9.40, 64)
-hot_chocolate = Ingredient("Hot Chocolate", ["img"])
-
-# Ingredients List
-INGREDIENTS = [
-    bag_coffee_beans,
-    ground_coffee,
-    espresso_shot,
-    water,
-    hot_water,
-    ice,
-    milk,
-    steamed_milk,
-    foamed_milk,
-    cocoa_powder,
-    hot_chocolate,
-]
-
-# Recipe / Menu System
-
-# Default unlocked recipes
-RECIPES_UNLOCKED = [
-    "Breakfast Bagel",
-    "Breakfast Sandwich",
-    "Iced Coffee",
-    "Hot Coffee",
-]
+# Inventory constants
+NUM_SLOTS = 4
+SLOT_SIZE = 50
+INVENTORY_POSITIONS = [(10, 500), (10, 560), (10, 620), (10, 680)]
 
 # Recipe view states
 RECIPE_VIEW_NONE = None
@@ -101,3 +63,34 @@ RECIPE_START_Y = 200
 # Input bindings
 OPEN_RECIPE_MENU_KEY = pygame.K_m
 CLOSE_MENU_KEY = pygame.K_ESCAPE
+
+
+
+class GameObject:
+    '''A GameObject determines an objects' position and dimensions.'''
+    def __init__(self, x, y, w, h, color):
+        self.x, self.y, self.w, self.h, self.color = x, y, w, h, color
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        self.color = color
+
+    def render(self, screen):
+        return pygame.draw.rect(screen, self.color, self.rect)  # make render apply to all after making individual renders
+
+
+# Ingredients Class for building all ingredients
+class Ingredient(GameObject):
+    """An Ingredient is---"""
+    def __init__(self, name, image_keys: list, price_to_buy=0.0, quantity=0):
+        self.image = IMAGE_LIBRARY[image_keys[0]]
+        image_rect = self.image.get_rect()
+
+        super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=(0, 0, 0))
+
+        self.name = name
+        self.price = price_to_buy
+        self.image_keys = image_keys
+        self.quantity = quantity
+
+    def render(self, screen):
+        screen.blit(self.image, (self.x, self.y))
+
