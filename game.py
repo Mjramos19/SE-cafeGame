@@ -203,12 +203,9 @@ def main():
                             if ingredientBoxes[i] != None:
                                 if player.get_foot_rect().colliderect(ingredientBoxes[i].interactionZone):
                                     #grabs corresponding box and adds it to first open hot bar slot
-                                    for j in range(len(player.inventory)):
-                                        if player.inventory[j] == None:
-                                            player.inventory[j] = ingredientBoxes[i]
-                                            ingredientBox.popBox(ingredientBoxes[i], ingredientBoxes, backroom_collisions)
-                                            numBoxes -= 1
-                                            break
+                                    player.addInventoryItem(ingredientBoxes[i], type = type(ingredientBoxes[i]))
+                                    ingredientBox.popBox(ingredientBoxes[i], ingredientBoxes, backroom_collisions)
+                                    numBoxes -= 1
                                 
                 elif event.key == pygame.K_ESCAPE:
                     if GameState == "REGISTER":
@@ -242,20 +239,34 @@ def main():
                         if len(customersWaiting) > 0:
                             currentCust = customersWaiting[0]
                         GameState = "PLAYING"
-                        cup.cupToInventory(player)
+                        cupObj = cup(0,0,20,20)
+                        player.addInventoryItem(cupObj, type = type(cupObj))
 
             #If player presses mouse button in backroom, check if cursor is over shelf spot with ingredient object selected
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if GameState == "BACKROOM":
                     #loops through all backroom objects looking for shelves
                     for obj in backroom_collisions:
+                        #if shelf
                         if isinstance(obj, stockingShelf):
-                            #if player is standing in shelf interaction zone and clicks on shelf spot with item in hand, attempt to place it
-                            if player.get_foot_rect().colliderect(obj.interactionZone) and player.inventory[player.selectedSlot] != None:
-                                if event.button == 1:
-                                    for shelfSpot in obj.spots:
-                                        if shelfSpot.rect.collidepoint(getMousePos()):
-                                            shelfSpot.storeIngredientBox(player.inventory[player.selectedSlot], player)
+                            #check if player is colliding with shelf interaction zone
+                            if player.get_foot_rect().colliderect(obj.interactionZone):
+                                #loops through shelf spots of shelf
+                                for shelfSpot in obj.spots:
+                                    #players selected inventory slot item
+                                    slot = player.inventory[player.selectedSlot]
+                                    #if player clicks on shelf spot
+                                    if shelfSpot.rect.collidepoint(getMousePos()) and event.button == 1:
+                                        #if slot has items and items are ingredient voxes, store ingredient box
+                                        if len(slot) != 0 and isinstance(slot[0], ingredientBox):
+                                            shelfSpot.storeIngredientBox(player)
+                                        #else if selected slot is an ingredient
+                                        elif shelfSpot.held_ingredient_box != None:
+                                            shelfSpot.held_ingredient_box.grabIngredient(player)
+
+                                   
+                           
+
                                 
             # if wait line is not current full and total customers not at max, spawn new customer
             elif event.type == SPAWN_EVENT:
@@ -345,7 +356,7 @@ def main():
                         pygame.draw.rect(screen, (255, 255, 0), c, 2)
                 pygame.draw.rect(screen, (255, 255, 255), counterCup)
                 
-                drawHotBar(player.inventory, player.selectedSlot, font)
+                drawHotBar(player, font)
 
             elif CafeView == "MIDDLE":
 
@@ -373,7 +384,7 @@ def main():
                         pygame.draw.rect(screen, (250, 0, 0), c)
                     pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
                 
-                drawHotBar(player.inventory, player.selectedSlot, font)
+                drawHotBar(player, font)
 
 
             else:
@@ -425,7 +436,7 @@ def main():
 
             player.render(screen)
 
-            drawHotBar(player.inventory, player.selectedSlot, font)
+            drawHotBar(player, font)
 
         # Update machine timers every frame regardless of game state
         for m in machines:
@@ -453,7 +464,7 @@ def main():
         orders_text = font.render(f'Orders: {orders}', True, (250, 0, 0))
         screen.blit(orders_text, (10, 25))
 
-
+        player.updateInventoryLengths()
         pygame.display.flip()
 
     pygame.quit()
@@ -485,7 +496,7 @@ def change_counters_pos(view):
     
 
 #helper function for generating the hot bar
-def drawHotBar(playerInventory, selectedSlot, font):
+def drawHotBar(player, font):
     for i in range(NUM_SLOTS):
         #makes rectangle object for that inventory slot at corresponding inventory position
         slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1] ,SLOT_SIZE, SLOT_SIZE)
@@ -493,22 +504,25 @@ def drawHotBar(playerInventory, selectedSlot, font):
         #draws the grey slot background at that spot
         pygame.draw.rect(screen, (40, 40, 40), slot)
 
+        quantNum = font.render(f"{player.inventoryQuants[i]}", True, (255, 255, 255))
+        screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
+
         #if that inventory slot has an item, draw that icon inside
-        if playerInventory[i] != None:
+        if len(player.inventory[i]) != 0:
             #placeholder for item pictures
             tempItemPic = pygame.Rect(slot.center[0], slot.center[1], 10, 10)
             pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
 
         #if that inventory slot is selected, draw thick white border, else: draw thin black border
-        if i == selectedSlot:
+        if i == player.selectedSlot:
             pygame.draw.rect(screen, (255, 255, 255), slot, 3)
         else:
             pygame.draw.rect(screen, (0, 0, 0), slot, 2)
         
         #if the players mouse is hovering over a slot that isn't empty, display that items name next to the slot
         if slot.collidepoint(getMousePos()):
-            if playerInventory[i] != None:
-                screen.blit(font.render(f'{playerInventory[i]}', True, (250, 0, 0)), (slot.x + 60, slot.y + 15))
+            if player.inventory[i] != None:
+                screen.blit(font.render(f'{player.inventory[i]}', True, (250, 0, 0)), (slot.x + 60, slot.y + 15))
         
 
 #helper function to get mouse position

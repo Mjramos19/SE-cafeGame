@@ -37,7 +37,10 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.bottom_inventory = []
         self.bi_rect = pygame.Rect(10,410, 50,50)
         self.selectedSlot = 0
-        self.inventory = [None, None, None, None]
+        self.inventory = [[], [], [], []]
+        self.inventoryQuants = [0, 0, 0, 0]
+
+
 
     def get_foot_rect(self):
         '''A function that returns a rectangle that only covers the feet area of the player sprite.'''
@@ -70,13 +73,48 @@ class Player(GameObject, pygame.sprite.Sprite):
                 self.x, self.y = old_x, old_y
                 break
 
-
     def attempt_restock(self):
         pass
+
 
     def attempt_brew(self):
         pass
 
+    
+    #helper function to update hotbar quantities every frame
+    def updateInventoryLengths(self):
+        self.inventoryQuants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
+
+    #function add a given object to players inventory
+    def addInventoryItem(self, item, type):
+        #Loops through inventory slots
+        for i in range(NUM_SLOTS):
+            #if stack of same item is found, add item to stack
+            if len(self.inventory[i]) != 0:
+                if isinstance(self.inventory[i][0], type) and isinstance(item, type):
+                    self.inventory[i].append(item)
+                    return
+        #if stack was not found, loop again find first open slot and put it there
+        for i in range(NUM_SLOTS):
+            if len(self.inventory[i]) == 0:
+                self.inventory[i].append(item)
+                return
+            
+    
+    #function to remove a given object from players inventory
+    def popInventoryItem(self, item, type):
+        #loop through hot bar
+        for i in range(NUM_SLOTS):
+            #check if there is an item or stack in that slot and if its type matches item to remove
+            if len(self.inventory[i]) > 0 and isinstance(self.inventory[i][0], type):
+                #Then loop through that slot list
+                for j in range(len(self.inventory[i])):
+                    #find that item in slot list
+                    if self.inventory[i][j] == item:
+                        #remove and return that item
+                        return self.inventory[i].pop(j)
+        
+    
     def deliver(self):
         #loops through each seat at the table in which the player is standing.
         #If the seat is occupied, checks if food in hand matches the item ordered from that customer
@@ -318,9 +356,8 @@ class Customer(GameObject, pygame.sprite.Sprite):
 class cup(GameObject):
     def __init__(self, x, y, w, h, ):
         super().__init__(x, y, w, h)
-    
-    def cupToInventory(player):
-        for i in range(NUM_SLOTS):
-            if player.inventory[i] == None:
-                player.inventory[i] = cup(0,0,20,20)
-                break
+
+class sink(GameObject):
+    def __init__(self, x, y, w, h):
+        super().__init__(x, y, w, h)
+        
