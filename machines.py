@@ -40,7 +40,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         # Interaction zone sits directly in front of (below) the machine.
         # Height of 200 ensures the zone reaches past the counter collision into the
         # area where the player can actually stand (~y=392 in the MIDDLE view).
-        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 200)
+        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 150)
         self.start_button = None
 
         self.ingredient = None

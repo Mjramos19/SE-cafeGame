@@ -13,16 +13,16 @@ from button import *
 pygame.init()
 screen = pygame.display.set_mode((1366, 768))
 
-constants.IMAGE_LIBRARY["player"] = pygame.image.load("Cafe_Game_Art/player.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
 constants.IMAGE_LIBRARY["order_screen"] = pygame.image.load("Cafe_Game_Art/order_screen.png").convert()
 constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg2"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2.png").convert()
-constants.IMAGE_LIBRARY["bg2_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2_top.png").convert_alpha()
+constants.IMAGE_LIBRARY["bg2_top"] = pygame.image.load("Cafe_Game_Art/bg2_top.png").convert_alpha()
 constants.IMAGE_LIBRARY["register_icon"] = pygame.image.load("Cafe_Game_Art/register_icon.png").convert_alpha()
-constants.IMAGE_LIBRARY["minigame_bg"] = pygame.image.load("Cafe_Game_Art/minigame background.png").convert()
+constants.IMAGE_LIBRARY["minigame_bg"] = pygame.image.load("Cafe_Game_Art/minigame_bg.png").convert()
 
 # All Machine Images
 constants.IMAGE_LIBRARY["cg_empty"] = pygame.image.load("Cafe_Game_Art/CGEmpty-removebg-preview.png").convert_alpha()
@@ -37,12 +37,15 @@ constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WBready.p
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
+constants.IMAGE_LIBRARY["coffee_beans"] = pygame.image.load("Cafe_Game_Art/coffee_beans.png").convert_alpha()
+#constants.IMAGE_LIBRARY["ground_coffee"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+#constants.IMAGE_LIBRARY["espresso_shot"] = pygame.image.load("Cafe_Game_Art/espresso_shot.png").convert_alpha()
 
 # All Recipes Images
 
 
 # Pre-scale all images in the library them once
-constants.IMAGE_LIBRARY["player"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player"], (120, 268))
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
 constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
@@ -62,9 +65,10 @@ constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (130, 200))
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (130, 200))
 constants.IMAGE_LIBRARY["water"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["water"], ((348, 330)))
+constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["coffee_beans"], ((348, 330)))
 
 # Defines all ingredients
-bag_coffee_beans = Ingredient("Coffee Beans", ["water"], 18.35, 56)
+bag_coffee_beans = Ingredient("Coffee Beans", ["coffee_beans"], 18.35, 56)
 ground_coffee = Ingredient("Ground Coffee",["water"])
 espresso_shot = Ingredient("Espresso Shot",["water"])
 espresso_doubleShot = Ingredient("Espresso Double Shot",["water"])
@@ -519,6 +523,7 @@ class GameManager:
 
         recipe_button.draw(screen)
         shop_button.draw(screen)
+
         if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
             label = font.render("[E] Take Order", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (
@@ -573,13 +578,16 @@ class GameManager:
 
         self.drawHotBar(player.inventory, player.selectedSlot, font)
 
-    def back_view_rendering(self, player, font, keys, DebugMode):
+    def back_view_rendering(self, player, boxes_list, font, keys, DebugMode):
 
         player.handle_movement(keys, backroom_collisions)
         screen.fill((0, 0, 0))
-        for c in backroom_collisions:
-            print(c)
 
+        for i in boxes_list:
+            if i != None:
+                i.render(screen)
+
+        for c in backroom_collisions:
             if isinstance(c, pygame.Rect):
                 pygame.draw.rect(screen, (255, 255, 255), c, 2)
             else:
@@ -629,11 +637,12 @@ def main():
     customer_group = pygame.sprite.Group()
 
     # Player
-    player = Player(40, 600, "player")
+    player = Player(40, 600, "player_idle_front")
     all_sprites.add(player)
 
     """for testing the minigame mode I'm defaulting the player with water"""
     player.inventory[0] = water
+    player.inventory[1] = bag_coffee_beans
     is_dragging = False
 
     # orders list
@@ -718,14 +727,15 @@ def main():
 
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
-                    player.selectedSlot = 0
-                elif event.key == pygame.K_2:
-                    player.selectedSlot = 1
-                elif event.key == pygame.K_3:
-                    player.selectedSlot = 2
-                elif event.key == pygame.K_4:
-                    player.selectedSlot = 3
+                if GameState == "PLAYING" and not active_machine:
+                    if event.key == pygame.K_1:
+                        player.selectedSlot = 0
+                    elif event.key == pygame.K_2:
+                        player.selectedSlot = 1
+                    elif event.key == pygame.K_3:
+                        player.selectedSlot = 2
+                    elif event.key == pygame.K_4:
+                        player.selectedSlot = 3
 
                 if event.key == pygame.K_0:
                     if DebugMode == False:
@@ -752,14 +762,14 @@ def main():
 
                 # if player presses e inside registers collision zone, and there is a customer, take order
                 if event.key == pygame.K_e:
-                    if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
+                    if player.get_foot_rect().colliderect(register1.interactionZone) and register1.customerWaiting and CafeView == "FRONT":
                         GameState = "REGISTER"
-                    elif player.rect.colliderect(register2.interactionZone) and register2.customerWaiting:
+                    elif player.get_foot_rect().colliderect(register2.interactionZone) and register2.customerWaiting and CafeView == "MIDDLE":
                         GameState = "REGISTER"
-                    elif player.rect.colliderect(doorEntry) and GameState == "PLAYING" and CafeView == "MIDDLE":
+                    elif player.get_foot_rect().colliderect(doorEntry) and GameState == "PLAYING" and CafeView == "MIDDLE":
                         CafeView = "BACKROOM"
                         player.rect.x, player.rect.y = 30, 490
-                    elif player.rect.colliderect(doorEntry2) and CafeView == "BACKROOM":
+                    elif player.get_foot_rect().colliderect(doorEntry2) and CafeView == "BACKROOM":
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 30, 115
 
@@ -935,7 +945,7 @@ def main():
                 elif CafeView == "MIDDLE":
                     manager.middle_view_rendering(player, font, keys, DebugMode)
                 else:
-                    manager.back_view_rendering(player, font, keys, DebugMode)
+                    manager.back_view_rendering(player, ingredientBoxes,font, keys, DebugMode)
 
         elif GameState == "REGISTER":
             register1.take_order(screen)
