@@ -171,6 +171,7 @@ class GameManager:
         self.machine_loaded_slot = None
         self.money = 0
         self.active_orders = []
+        self.max_orders = 2 # Upgradable via shop later
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
@@ -860,6 +861,12 @@ def main():
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
+                        GameState = "PLAYING"
+                        continue
+
+                    active_count = sum(1 for o in manager.active_orders if o is not None)
+                    if active_count >= manager.max_orders:
+                        manager.set_message(f"Can't take more than {manager.max_orders} orders at once!")
                         GameState = "PLAYING"
                         continue
 
