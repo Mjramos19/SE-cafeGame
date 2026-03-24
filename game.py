@@ -168,6 +168,7 @@ class GameManager:
         self.message_timer = 0
         self.machine_loaded_slot = None
         self.money = 0
+        self.active_orders = []
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
@@ -599,8 +600,6 @@ def main():
     player.inventory[1] = [bag_coffee_beans, bag_coffee_beans]
     is_dragging = False
 
-    # orders list
-    orders_list = []
 
     for recipe in ALL_RECIPES:
         if recipe.locked == False:
@@ -849,7 +848,7 @@ def main():
                         GameState = "PLAYING"
                         continue
 
-                    orders_list.insert(0, currentCust.orderedItem)
+                    manager.active_orders.insert(0, currentCust.orderedItem)
                     time.sleep(1) # will need to be updated so the whole game doesn't pause
 
                     seat = manager.findFirstOpen(seats)  # find open seat
@@ -981,7 +980,7 @@ def main():
 
         # Handles all text +  rendering
         text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-        orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
+        orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders if o is not None)}', True, (250, 0, 0))
         clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
         screen.blit(text, (10, 10))
         screen.blit(orders_text, (10, 25))
