@@ -219,7 +219,10 @@ class Sink(Counter):
     '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''
     def __init__(self, x, y):
         super().__init__(x, y)
-        pass
+        self.placeable = False
+
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 50, self.rect.w, self.rect.h)
+        
 
 
 class Customer(GameObject, pygame.sprite.Sprite):
