@@ -370,6 +370,15 @@ class Customer(GameObject, pygame.sprite.Sprite):
         if debugmode == True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 1)
 
+    def calculate_tip(self):
+        """Calculate tip based on remaining wait bar. Full bar = 100%tip, empty = no tip.
+        Return a tuple of (base_pay, tip, total)"""
+        base_pay = self.orderedItem.get_price()
+        tip_percent = self.waitBar_length / 10000
+        tip = round(base_pay * tip_percent, 2)
+        total = round(base_pay + tip, 2)
+        return base_pay, tip, total
+
 
     def update(self, collisions):
         """

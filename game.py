@@ -412,7 +412,7 @@ class GameManager:
         """
         Draw the current money total in the HUD.
         """
-        money_text = font.render(f"Money: ${self.money}", True, constants.BLACK)
+        money_text = font.render(f"Money: ${self.money:.2f}", True, constants.BLACK)
         screen.blit(money_text, (1000, 48))
 
     def draw_message(self, screen):
@@ -490,6 +490,11 @@ class GameManager:
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
         if DebugMode == True:
+                nearby = self.get_nearby_seated_customer(player, customers)
+                if nearby:
+                    label = font.render("[P] Deliver Order (Debug)", True, constants.WHITE, constants.BLACK)
+                    screen.blit(label, (nearby.rect.centerx - label.get_width() // 2, nearby.rect.top - 24))
+
                 for c in front_counters:
                     pygame.draw.rect(screen, (250, 0, 0), c)
                 pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
@@ -635,6 +640,14 @@ def main():
                     if event.key == pygame.K_b:
                         print("Adding $8")
                         manager.money += 8
+                
+                    if event.key == pygame.K_p and CafeView == "FRONT":
+                        nearby = manager.get_nearby_seated_customer(player, customers)
+                        if nearby and nearby.state == "seated":
+                            base_pay, tip, total = nearby.calculate_tip()
+                            manager.money += total
+                            manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
+                            nearby.start_drinking("correct")
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
