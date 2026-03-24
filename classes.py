@@ -18,7 +18,8 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_h = (8 * 4)
 
         self.selectedSlot = 0
-        self.inventory = [None, None, None, None]
+        self.inventory = [[], [], [], []]
+        self.inventoryQuants = [0, 0, 0, 0]
 
 
     def get_foot_rect(self):
@@ -54,6 +55,48 @@ class Player(GameObject, pygame.sprite.Sprite):
 
     def deliver(self, table):
         pass
+
+#helper function to update hotbar quantities every frame
+    def updateInventoryLengths(self):
+        self.inventoryQuants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
+
+    #function add a given object to players inventory
+    def addInventoryItem(self, item, type):
+        #Loops through inventory slots
+        if item.stackable == True:
+            for i in range(NUM_SLOTS):
+                #if stack of same item is found, add item to stack
+                if len(self.inventory[i]) != 0:
+                    print("here 1")
+                    if isinstance(self.inventory[i][0], type) and isinstance(item, type):
+                        print("here 2")
+                        self.inventory[i].append(item)
+                        return
+        #if stack was not found, loop again find first open slot and put it there
+        print("here 3")
+        for i in range(NUM_SLOTS):
+            print("here 4")
+            if len(self.inventory[i]) == 0:
+                print("here 5")
+                self.inventory[i].append(item)
+                return
+        return False #if inventory is full, return false to indicate item was not added
+
+    #function to remove a given object from players inventory
+    def popInventoryItem(self, item, type):
+        #loop through hot bar
+        for i in range(NUM_SLOTS):
+            #check if there is an item or stack in that slot and if its type matches item to remove
+            if len(self.inventory[i]) > 0 and isinstance(self.inventory[i][0], type):
+                #Then loop through that slot list
+                for j in range(len(self.inventory[i])):
+                    #find that item in slot list
+                    if self.inventory[i][j] == item:
+                        #remove and return that item
+                        print(f'popped {item.name} from inventory space list' + str(self.inventory[i]))
+                        return self.inventory[i].pop(j)
+                        
+
 
     def render(self, screen, debugmode):
         screen.blit(self.sprite, self.rect)
@@ -156,7 +199,7 @@ class Register(Counter):
             screen.blit(order_text, (80, 140))
         elif currentCust is not None and hasattr(currentCust, "orderedItem"):
             order_text = body_font.render(
-                f"Order: {currentCust.orderedItem}",
+                f"Order: {currentCust.orderedItem.get_name()}",
                 True,
                 WHITE
             )
@@ -302,7 +345,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
     def leave_cafe(self):
         """
         Move the customer toward the exit.
-        For now, the customer walks to the right side of the screen.
+        For now, the customer walks to the left side of the screen.
         Once they move off-screen, their state becomes 'gone'.
         """
         target_x = -self.w - 50
@@ -411,6 +454,9 @@ class Cup(GameObject):
         super().__init__(x, y, w, h, color=WHITE)
         self.name = "Cup"
         self.contents = []
+        self.stackable = True
+        if self.contents:
+            self.stackable = False
 
 '''
 class Cup:

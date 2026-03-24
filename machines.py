@@ -60,8 +60,13 @@ class Machine(GameObject, pygame.sprite.Sprite):
         '''Returns True if the player's feet are within the machine's interaction zone.'''
         return player.get_foot_rect().colliderect(self.interaction_zone)
 
-    def setup_minigame(self, ingredient):
-        self.ingredient = ingredient
+    def setup_minigame(self, ingredient_list):
+        temp_list = ingredient_list.copy()
+        
+        if len(temp_list) > 0:
+            self.ingredient = temp_list.pop()
+        else:
+            self.ingredient = None
         if self.ingredient != None:
             self.ingredient.x, self.ingredient.y = 20, 500
 
@@ -116,8 +121,8 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.state = "error"
         else:
             self.state = "full"
+            player.popInventoryItem(self.ingredient, type(self.ingredient))
             self.ingredient = None
-            player.inventory[player.selectedSlot] = None
 
     def run_machine(self, num=0):
         '''Starts running the machine if it has been filled with the correct input.'''
