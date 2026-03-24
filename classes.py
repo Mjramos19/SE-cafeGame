@@ -312,8 +312,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
     def moveUpInLine(self):
         """Move smoothly to the customer's next line position."""
-        target_x = self.linePosition[0] - (self.w // 2)
-        target_y = self.linePosition[1] - (self.h // 2)
+        target_x, target_y = self.linePosition[0], self.linePosition[1]
 
         reached = self.move_toward_point(target_x, target_y)
         if reached:
@@ -392,6 +391,12 @@ class Customer(GameObject, pygame.sprite.Sprite):
             else:
                 self.waitBar_length -= 1
 
+        # State 0: Walk in from off-screen to line position
+        if self.state == "walking to line":
+            target_x, target_y = self.linePosition[0], self.linePosition[1]
+            reached = self.move_toward_point(target_x, target_y)
+            if reached:
+                self.state = "waiting"
 
         # State 1: Walking toward the table area
         if self.state == "walking to table" and self.targetPosition is not None:

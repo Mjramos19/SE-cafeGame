@@ -909,17 +909,18 @@ def main():
 
                     # Calculate the index for the new customer
                     index = len(customersWaiting)
-                    base_x, base_y = LINE_POSITIONS[index]
-
-                    # Center the spawn coordinates
-                    spawn_x = base_x - 60
-                    spawn_y = base_y - 64
+                    spawn_x = CUSTOMER_ENTRY_X
+                    spawn_y = CUSTOMER_ENTRY_Y
 
                     # Create the customer using the key "customer" from your IMAGE_LIBRARY
                     '''Each customer we design will have a list of image keys. Eventually we will have s system to make
                     different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
                     currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
                                             linePosition=LINE_POSITIONS[index])
+                    
+                    currCustomer.set_state("walking to line")
+                    if index == 0:
+                        currentCust = currCustomer
 
                     if index == 0:
                         currentCust = currCustomer
