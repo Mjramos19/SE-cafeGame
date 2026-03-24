@@ -67,19 +67,16 @@ class Player(GameObject, pygame.sprite.Sprite):
             for i in range(NUM_SLOTS):
                 #if stack of same item is found, add item to stack
                 if len(self.inventory[i]) != 0:
-                    print("here 1")
-                    if isinstance(self.inventory[i][0], type) and isinstance(item, type):
-                        print("here 2")
+                    if isinstance(self.inventory[i][0], type) and isinstance(item, type) and (self.inventory[i][0].stackable == True):
+                        if isinstance(item, Ingredient) and self.inventory[i][0].name != item.name:
+                            continue
                         self.inventory[i].append(item)
-                        return
+                        return True
         #if stack was not found, loop again find first open slot and put it there
-        print("here 3")
         for i in range(NUM_SLOTS):
-            print("here 4")
             if len(self.inventory[i]) == 0:
-                print("here 5")
                 self.inventory[i].append(item)
-                return
+                return True
         return False #if inventory is full, return false to indicate item was not added
 
     #function to remove a given object from players inventory
@@ -450,82 +447,20 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
 
 class Cup(GameObject):
-    def __init__(self, x, y, w, h, ):
-        super().__init__(x, y, w, h, color=WHITE)
+    def __init__(self, image_keys):
+        self.image_keys = image_keys
+        self.image = IMAGE_LIBRARY[self.image_keys[0]]
+        image_rect = self.image.get_rect()
+
+        super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=WHITE)
         self.name = "Cup"
         self.contents = []
         self.stackable = True
+
+    def update(self):
         if self.contents:
             self.stackable = False
+            self.image = IMAGE_LIBRARY[self.image_keys[1]]
 
-'''
-class Cup:
-    """Represents a drink container held in the player's inventory. A cup may be empty or filled with a specific drink."""
-
-    def __init__(self):
-        self.contents: Optional[str] = None
-
-    def is_empty(self) -> bool:
-        return self.contents is None
-
-    def fill(self, drink_name) -> None:
-        self.contents = drink_name
-
-    def clear(self) -> None:
-        self.contents = None
-
-
-class Order:
-    """Represents a customer's drink order."""
-
-    def __init__(self, seat_number, drink_name, color):
-        self.seat_number = seat_number
-        self.drink_name = drink_name
-        self.color = color
-        self.resolved = False
-
-    def mark_resolved(self) -> None:
-        self.resolved = True
-
-
-class CupInventory:
-    """Holds the player's cup inventory."""
-    def __init__(self):
-        self.slots: list[Optional[Cup]] = [None] * MAX_CUP_SLOTS
-        self.selected_slot: Optional[int] = None
-
-    def first_empty_slot(self):
-        for i in range(len(self.slots)):
-            if self.slots[i] is None:
-                return i
-        return None
-
-    def add_empty_cup(self):
-        slot = self.first_empty_slot()
-        if slot is None:
-            return False
-
-        self.slots[slot] = Cup()
-        return True
-
-    def remove_cup(self, slot):
-        self.slots[slot] = None
-
-    def select_slot(self, slot):
-        if 0 <= slot < len(self.slots):
-            if self.selected_slot == slot:
-                self.selected_slot = None
-            else:
-                self.selected_slot = slot
-
-    def get_selected_cup(self):
-        if self.selected_slot is None:
-            return None
-        return self.slots[self.selected_slot]
-
-    def clear_all(self):
-        """Clear all cup slots and remove any current selection"""
-        for i in range(len(self.slots)):
-            self.slots[i] = None
-
-        self.selected_slot = None'''
+    def render(self, screen):
+        screen.blit(self.image, (self.x, self.y))

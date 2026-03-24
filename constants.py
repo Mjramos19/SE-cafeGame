@@ -92,6 +92,8 @@ class Ingredient(GameObject):
         self.image_keys = image_keys
         self.quantity = quantity
 
+        self.stackable = True
+
     def render(self, screen):
         screen.blit(self.image, (self.x, self.y))
 
