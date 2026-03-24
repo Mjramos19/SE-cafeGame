@@ -25,18 +25,19 @@ constants.IMAGE_LIBRARY["register_icon"] = pygame.image.load("Cafe_Game_Art/regi
 constants.IMAGE_LIBRARY["minigame_bg"] = pygame.image.load("Cafe_Game_Art/minigame background.png").convert()
 
 # All Machine Images
-constants.IMAGE_LIBRARY["cg_empty"] = pygame.image.load("Cafe_Game_Art/CGEmpty-removebg-preview.png").convert_alpha()
-constants.IMAGE_LIBRARY["cg_ready"] = pygame.image.load("Cafe_Game_Art/CGFull-removebg-preview.png").convert_alpha()
-constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.image.load("Cafe_Game_Art/CGInprogress-removebg-preview.png").convert_alpha()
-constants.IMAGE_LIBRARY["em_empty"] = pygame.image.load("Cafe_Game_Art/EMempty.png").convert_alpha()
-constants.IMAGE_LIBRARY["em_inprogress"] = pygame.image.load("Cafe_Game_Art/EMinprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Cafe_Game_Art/EMready.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WBempty.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WBinprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WBready.png").convert_alpha()
+constants.IMAGE_LIBRARY["cg_empty"] = pygame.image.load("Machines_art/CoffeeGrinder_art/CGEmpty-removebg-preview.png").convert_alpha()
+constants.IMAGE_LIBRARY["cg_ready"] = pygame.image.load("Machines_art/CoffeeGrinder_art/CGFull-removebg-preview.png").convert_alpha()
+constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.image.load("Machines_art/CoffeeGrinder_art/CGInprogress-removebg-preview.png").convert_alpha()
+constants.IMAGE_LIBRARY["em_empty"] = pygame.image.load("Machines_art/EspressoMachine_art/EMempty.png").convert_alpha()
+constants.IMAGE_LIBRARY["em_inprogress"] = pygame.image.load("Machines_art/EspressoMachine_art/EMinprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Machines_art/EspressoMachine_art/EMready.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Machines_art/WaterBoiler_art/WBempty.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Machines_art/WaterBoiler_art/WBinprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Machines_art/WaterBoiler_art/WBready.png").convert_alpha()
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
+
 
 # All Recipes Images
 
@@ -143,6 +144,14 @@ SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
 recipe_button = Button(1190, 342, 160, 78, "Recipes", "RECIPE_MENU", None)
 shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
+
+# Main menu buttons (centered on 1366x768 screen)
+menu_start_button  = Button(483, 320, 400, 70, "Start Game", "PLAYING", None)
+menu_load_button   = Button(483, 420, 400, 70, "Load Game",  "LOAD",    None)
+
+# Pause menu buttons
+pause_resume_button = Button(483, 280, 400, 70, "Resume",    "PLAYING", None)
+pause_quit_button   = Button(483, 380, 400, 70, "Quit",      "QUIT",    None)
 # Corner prompt zone for switching cafe view
 switch_view_prompt_rect_cafe = pygame.Rect(1025, 675, 100, 100)
 switch_view_prompt_rect_middle = pygame.Rect(50, 675, 100, 100)
@@ -474,6 +483,36 @@ class GameManager:
         screen.blit(outline, (message_x, message_y + 1))
         screen.blit(text, (message_x, message_y))
 
+    def draw_menu_screen(self, screen):
+        """Draw the main menu with Start and Load options."""
+        screen.fill((20, 12, 8))
+
+        title_font = pygame.font.SysFont(None, 90)
+        sub_font   = pygame.font.SysFont(None, 30)
+
+        title = title_font.render("Cafe", True, (220, 180, 120))
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 160))
+
+        hint = sub_font.render("A cozy cafe management game", True, (160, 130, 90))
+        screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 265))
+
+        menu_start_button.draw(screen)
+        menu_load_button.draw(screen)
+
+    def draw_pause_menu(self, screen):
+        """Draw the pause menu overlay."""
+        overlay = pygame.Surface((constants.WIDTH, constants.HEIGHT))
+        overlay.set_alpha(160)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+
+        title_font = pygame.font.SysFont(None, 72)
+        title = title_font.render("Paused", True, constants.WHITE)
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 190))
+
+        pause_resume_button.draw(screen)
+        pause_quit_button.draw(screen)
+
     def change_counters_pos(self, view):
         if view == "MIDDLE":
             c1.rect.x, c1.rect.y = 1014, 615
@@ -511,6 +550,10 @@ class GameManager:
             for c in customers:
                 c.render(screen, DebugMode)
             screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
+            back_img_positions = []
+            back_img_y = 0
+            for key, bx in back_img_positions:
+                screen.blit(constants.IMAGE_LIBRARY[key], (bx, back_img_y))
             if currentCust != None and currentCust.state == "waiting":
                 register1.render(screen)
             pygame.draw.rect(screen, (255, 255, 255), counterCup)
@@ -597,7 +640,7 @@ class GameManager:
 
 def main():
     global Customer, currentCust
-    pygame.display.set_caption("Cafe Sim")
+    pygame.display.set_caption("Cafe")
     font = pygame.font.SysFont(None, 22)
 
     clock_font = pygame.font.SysFont(None, 45)
@@ -607,8 +650,8 @@ def main():
 
     manager = GameManager()
 
-    DebugMode = True
-    GameState = "PLAYING"
+    DebugMode = False
+    GameState = "MENU_SCREEN"
     CafeView = "FRONT"
     RecipeView = RECIPE_VIEW_NONE
     ShopView = SHOP_VIEW_NONE
@@ -676,6 +719,21 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+
+                if event.button == 1 and GameState == "MENU_SCREEN":
+                    if menu_start_button.is_clicked(event.pos):
+                        GameState = "PLAYING"
+                    elif menu_load_button.is_clicked(event.pos):
+                        manager.set_message("Load Game not yet implemented")
+                    continue
+
+                if event.button == 1 and GameState == "PAUSED":
+                    if pause_resume_button.is_clicked(event.pos):
+                        GameState = "PLAYING"
+                    elif pause_quit_button.is_clicked(event.pos):
+                        running = False
+                    continue
+
                 if event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
                     RecipeView = RECIPE_VIEW_MENU
@@ -796,9 +854,8 @@ def main():
                                             break
 
                 if event.key == pygame.K_ESCAPE:
-                    if GameState == "MACHINE":
-                        active_machine = None
-                    GameState = "PLAYING"
+                    if GameState == "MENU_SCREEN":
+                        continue
                     if RecipeView != RECIPE_VIEW_NONE:
                         RecipeView = RECIPE_VIEW_NONE
                         current_screen = "game"
@@ -813,6 +870,12 @@ def main():
                     if GameState == "MACHINE":
                         GameState = "PLAYING"
                         active_machine = None
+                        continue
+                    if GameState == "PAUSED":
+                        GameState = "PLAYING"
+                        continue
+                    if GameState == "PLAYING":
+                        GameState = "PAUSED"
                         continue
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
@@ -878,7 +941,7 @@ def main():
                     continue
 
 
-            if event.type == SPAWN_EVENT:
+            if event.type == SPAWN_EVENT and GameState not in ("MENU_SCREEN", "PAUSED"):
                 # if wait line is not current full and total customers not at max, spawn new customer
                 if (len(customers) < MAX_CUSTOMERS and len(customersWaiting) < MAX_CUSTOMERS_WAITING and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
 
@@ -918,13 +981,27 @@ def main():
                             numBoxes += 1
                             break
 
-        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE and GameState not in ("MENU_SCREEN", "PAUSED"):
             for c in customers:
                 c.update(seats)
 
-        manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
+        if GameState not in ("MENU_SCREEN", "PAUSED"):
+            manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
 
-        if GameState == "PLAYING":
+        if GameState == "MENU_SCREEN":
+            manager.draw_menu_screen(screen)
+
+        elif GameState == "PAUSED":
+            frozen_keys = [False] * 512  # no inputs while paused
+            if CafeView == "FRONT":
+                manager.front_view_rendering(player, customers, font, frozen_keys, DebugMode)
+            elif CafeView == "MIDDLE":
+                manager.middle_view_rendering(player, font, frozen_keys, DebugMode)
+            else:
+                manager.back_view_rendering(player, font, frozen_keys, DebugMode)
+            manager.draw_pause_menu(screen)
+
+        elif GameState == "PLAYING":
             if RecipeView != RECIPE_VIEW_NONE:
                 manager.draw_recipe_screen(screen)
             elif ShopView != SHOP_VIEW_NONE:
@@ -953,13 +1030,14 @@ def main():
 
         clock.tick(FPS)
 
-        # Handles all text +  rendering
-        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-        orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
-        clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
-        screen.blit(text, (10, 10))
-        screen.blit(orders_text, (10, 25))
-        screen.blit(clock_text, (1202, 35))
+        # Handles all text + rendering (skip HUD on menu/pause)
+        if GameState not in ("MENU_SCREEN",):
+            text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
+            orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
+            clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
+            screen.blit(text, (10, 10))
+            screen.blit(orders_text, (10, 25))
+            screen.blit(clock_text, (1202, 35))
 
         if (GameState == "PLAYING" and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
             manager.draw_money(screen, font)
