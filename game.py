@@ -16,6 +16,7 @@ screen = pygame.display.set_mode((1366, 768))
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
+constants.IMAGE_LIBRARY["ladybug_register"] = pygame.image.load("Cafe_Game_Art/ladybug_register.png").convert_alpha()
 constants.IMAGE_LIBRARY["order_screen"] = pygame.image.load("Cafe_Game_Art/order_screen.png").convert()
 constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
@@ -48,6 +49,7 @@ constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.image.load("Cafe_Game_Art/cup_w_li
 # Pre-scale all images in the library them once
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
+constants.IMAGE_LIBRARY["ladybug_register"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_register"], (300, 400))
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
 constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1"], (1366, 768))
@@ -177,12 +179,15 @@ class GameManager:
         self.message_timer = 0
         self.machine_loaded_slot = None
         self.money = 0
+        self.active_orders = []
+        self.max_orders = 2 # Upgradable via shop later
+        self.more_hands_tier = 0 # 0 = none bought, max = 3
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
-            {"name": "Faster Grinder", "cost": 25, "purchased": False},
-            {"name": "Recipe Unlock", "cost": 40, "purchased": False},
-            {"name": "Cafe Decor", "cost": 15, "purchased": False},
+            {"name": "More Hands I",   "cost": 50,  "tier": 1, "purchased": False},
+            {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
+            {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
         ]
 
     def set_message(self, text, duration_ms=1500):
@@ -226,16 +231,25 @@ class GameManager:
         upgrade = self.upgrades[upgrade_index]
 
         if upgrade["purchased"]:
-            self.set_message("Already purchased")
+            self.set_message("Already purchased!")
             return
 
+        # Must buy previous tier first
+        if upgrade["tier"] > 1:
+            prev = self.upgrades[upgrade_index - 1]
+            if not prev["purchased"]:
+                self.set_message(f"Unlock {prev['name']} first!")
+                return
+
         if self.money < upgrade["cost"]:
-            self.set_message("Not enough money")
+            self.set_message(f"Need ${upgrade['cost']:.2f} - not enough money!")
             return
 
         self.money -= upgrade["cost"]
         upgrade["purchased"] = True
-        self.set_message(f"Purchased {upgrade['name']}")
+        self.more_hands_tier += 1
+        self.max_orders += 2
+        self.set_message(f"Purchased {upgrade['name']}! Max orders: {self.max_orders}")
 
     def handle_time(self, hrs, mins):
         """Takes in the game's hours and minutes and converts them to follow standard clock rules while on a 5 minutes interval."""
@@ -379,37 +393,49 @@ class GameManager:
         """
         Draw the placeholder shop and upgrades overlay.
         """
-        overlay = pygame.Surface((700, 420))
+        overlay = pygame.Surface((700, 460))
         overlay.set_alpha(235)
         overlay.fill((25, 25, 25))
 
         box_x = constants.WIDTH // 2 - 350
-        box_y = constants.HEIGHT // 2 - 210
+        box_y = constants.HEIGHT // 2 - 230
         screen.blit(overlay, (box_x, box_y))
-        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 460), 3)
 
         title_font = pygame.font.SysFont(None, 42)
-        body_font = pygame.font.SysFont(None, 28)
+        body_font  = pygame.font.SysFont(None, 28)
         small_font = pygame.font.SysFont(None, 22)
 
         title = title_font.render("Shop / Upgrades", True, constants.WHITE)
         screen.blit(title, (box_x + 20, box_y + 20))
 
-        money_text = body_font.render(f"Money: ${self.money}", True, constants.WHITE)
-        screen.blit(money_text, (box_x + 20, box_y + 70))
+        money_text = body_font.render(f"Money: ${self.money:.2f}", True, constants.WHITE)
+        screen.blit(money_text, (box_x + 20, box_y + 65))
 
-        hint_1 = small_font.render("Press ESC to close the shop", True, constants.WHITE)
-        hint_2 = small_font.render("Press 1, 2, or 3 to buy a placeholder upgrade", True, constants.WHITE)
-        screen.blit(hint_1, (box_x + 20, box_y + 110))
-        screen.blit(hint_2, (box_x + 20, box_y + 135))
+        orders_text = small_font.render(f"Current max orders: {self.max_orders}", True, constants.WHITE)
+        screen.blit(orders_text, (box_x + 20, box_y + 95))
 
-        item_y = box_y + 185
+        hint = small_font.render("Press ESC to close  |  Press 1, 2, 3 to buy", True, constants.WHITE)
+        screen.blit(hint, (box_x + 20, box_y + 125))
+
+        item_y = box_y + 170
         for i, upgrade in enumerate(self.upgrades):
-            status = "OWNED" if upgrade["purchased"] else f"${upgrade['cost']}"
+            # Locked if previous tier not bought yet
+            locked = upgrade["tier"] > 1 and not self.upgrades[i - 1]["purchased"]
+
+            if upgrade["purchased"]:
+                status = "OWNED"
+                color = constants.GREEN
+            elif locked:
+                status = "LOCKED"
+                color = (120, 120, 120)
+            else:
+                status = f"${upgrade['cost']:.2f}"
+                color = constants.WHITE
+
             line = body_font.render(
-                f"[{i + 1}] {upgrade['name']} - {status}",
-                True,
-                constants.GREEN if upgrade["purchased"] else constants.WHITE
+                f"[{i + 1}] {upgrade['name']} (+2 max orders) - {status}",
+                True, color
             )
             screen.blit(line, (box_x + 30, item_y))
             item_y += 55
@@ -420,7 +446,7 @@ class GameManager:
         """
         Draw the current money total in the HUD.
         """
-        money_text = font.render(f"Money: ${self.money}", True, constants.BLACK)
+        money_text = font.render(f"Money: ${self.money:.2f}", True, constants.BLACK)
         screen.blit(money_text, (1000, 48))
 
     def draw_message(self, screen):
@@ -532,6 +558,11 @@ class GameManager:
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
         if DebugMode == True:
+                nearby = self.get_nearby_seated_customer(player, customers)
+                if nearby:
+                    label = font.render("[P] Deliver Order (Debug)", True, constants.WHITE, constants.BLACK)
+                    screen.blit(label, (nearby.rect.centerx - label.get_width() // 2, nearby.rect.top - 24))
+
                 for c in front_counters:
                     pygame.draw.rect(screen, (250, 0, 0), c)
                 pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
@@ -642,8 +673,6 @@ def main():
     player.inventory[1] = [bag_coffee_beans, bag_coffee_beans]
     is_dragging = False
 
-    # orders list
-    orders_list = []
 
     for recipe in ALL_RECIPES:
         if recipe.locked == False:
@@ -679,6 +708,14 @@ def main():
                     if event.key == pygame.K_b:
                         print("Adding $8")
                         manager.money += 8
+                
+                    if event.key == pygame.K_p and CafeView == "FRONT":
+                        nearby = manager.get_nearby_seated_customer(player, customers)
+                        if nearby and nearby.state == "seated":
+                            base_pay, tip, total = nearby.calculate_tip()
+                            manager.money += total
+                            manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
+                            nearby.start_drinking("correct")
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -912,8 +949,13 @@ def main():
                         GameState = "PLAYING"
                         continue
 
-                    orders_list.insert(0, currentCust.orderedItem)
-                    time.sleep(1) # will need to be updated so the whole game doesn't pause
+                    active_count = sum(1 for o in manager.active_orders if o is not None)
+                    if active_count >= manager.max_orders:
+                        manager.set_message(f"Can't take more than {manager.max_orders} orders at once!")
+                        GameState = "PLAYING"
+                        continue
+
+                    manager.active_orders.insert(0, currentCust.orderedItem)
 
                     seat = manager.findFirstOpen(seats)  # find open seat
                     if seat is None:
@@ -973,17 +1015,18 @@ def main():
 
                     # Calculate the index for the new customer
                     index = len(customersWaiting)
-                    base_x, base_y = LINE_POSITIONS[index]
-
-                    # Center the spawn coordinates
-                    spawn_x = base_x - 60
-                    spawn_y = base_y - 64
+                    spawn_x = CUSTOMER_ENTRY_X
+                    spawn_y = CUSTOMER_ENTRY_Y
 
                     # Create the customer using the key "customer" from your IMAGE_LIBRARY
                     '''Each customer we design will have a list of image keys. Eventually we will have s system to make
                     different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
                     currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
                                             linePosition=LINE_POSITIONS[index])
+                    
+                    currCustomer.set_state("walking to line")
+                    if index == 0:
+                        currentCust = currCustomer
 
                     if index == 0:
                         currentCust = currCustomer
@@ -1041,7 +1084,7 @@ def main():
                     manager.back_view_rendering(player, ingredientBoxes,font, keys, DebugMode)
 
         elif GameState == "REGISTER":
-            register1.take_order(screen)
+            register1.take_order(screen, currentCust)
 
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, DebugMode, font)

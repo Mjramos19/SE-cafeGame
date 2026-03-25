@@ -161,8 +161,8 @@ class Register(Counter):
 
         # order screen variables
         self.order_screen = IMAGE_LIBRARY["order_screen"]
-        self.customer_image = IMAGE_LIBRARY["ladybug_idle"] #place holder until parameter is updated.
-        self.customer_rect = pygame.Rect(500,200,100,418)
+        self.customer_image = IMAGE_LIBRARY["ladybug_register"] #place holder until parameter is updated.
+        self.customer_rect = pygame.Rect(500,75,200,418)
 
 
     def setWaiting(self):
@@ -184,30 +184,38 @@ class Register(Counter):
 
         # Main Title
         title_text = title_font.render("Register - Accepting an order gives you an empty cup", True, WHITE)
-        screen.blit(title_text, (80, 80))
+        screen.blit(title_text, (80, 70))
 
         # Show current customer order if available
-        if currentCust is not None and currentCust.order is not None:
-            order_text = body_font.render(
-                f"Order: {currentCust.order.drink_name}",
-                True,
-                WHITE
-            )
-            screen.blit(order_text, (80, 140))
-        elif currentCust is not None and hasattr(currentCust, "orderedItem"):
-            order_text = body_font.render(
-                f"Order: {currentCust.orderedItem.get_name()}",
-                True,
-                WHITE
-            )
-            screen.blit(order_text, (80, 140))
+        order_name = "???"
+        if currentCust is not None and currentCust.orderedItem is not None:
+            order_name = currentCust.orderedItem.get_name()
+        
+        # Speech buubble position - to the left of the customer
+        bubble_x, bubble_y = 60, 100
+        bubble_w, bubble_h = 420, 120
 
+        # Draw bubble background
+        pygame.draw.rect(screen, WHITE, (bubble_x, bubble_y, bubble_w, bubble_h), border_radius=20)
+
+        # Draw tail pointing toward customer
+        tail_points = [(bubble_x + bubble_w - 60, bubble_y + bubble_h),
+                    (bubble_x + bubble_w + 20, bubble_y + bubble_h + 60),
+                    (bubble_x + bubble_w - 120, bubble_y + bubble_h)]
+        pygame.draw.polygon(screen, WHITE, tail_points)
+
+        # Order text inside the bubble
+        order_text = title_font.render(f"I want an {order_name}!", True, BLACK)
+        screen.blit(order_text, (bubble_x + 20, bubble_y + 20))
+
+        hint_text = body_font.render("...please :)", True, (80, 80, 80))
+        screen.blit(hint_text, (bubble_x + 20, bubble_y + 65))
         # Control hints
         hint_accept = body_font.render("[S] Accept Order", True, WHITE)
         hint_close = body_font.render("[ESC] Leave Register", True, WHITE)
 
-        screen.blit(hint_accept, (80, 220))
-        screen.blit(hint_close, (80, 260))
+        screen.blit(hint_accept, (80, 300))
+        screen.blit(hint_close, (80, 340))
 
 
     def render(self, screen):
@@ -312,8 +320,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
     def moveUpInLine(self):
         """Move smoothly to the customer's next line position."""
-        target_x = self.linePosition[0] - (self.w // 2)
-        target_y = self.linePosition[1] - (self.h // 2)
+        target_x, target_y = self.linePosition[0], self.linePosition[1]
 
         reached = self.move_toward_point(target_x, target_y)
         if reached:
@@ -371,6 +378,15 @@ class Customer(GameObject, pygame.sprite.Sprite):
         if debugmode == True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 1)
 
+    def calculate_tip(self):
+        """Calculate tip based on remaining wait bar. Full bar = 100%tip, empty = no tip.
+        Return a tuple of (base_pay, tip, total)"""
+        base_pay = self.orderedItem.get_price()
+        tip_percent = self.waitBar_length / 10000
+        tip = round(base_pay * tip_percent, 2)
+        total = round(base_pay + tip, 2)
+        return base_pay, tip, total
+
 
     def update(self, collisions):
         """
@@ -392,6 +408,12 @@ class Customer(GameObject, pygame.sprite.Sprite):
             else:
                 self.waitBar_length -= 1
 
+        # State 0: Walk in from off-screen to line position
+        if self.state == "walking to line":
+            target_x, target_y = self.linePosition[0], self.linePosition[1]
+            reached = self.move_toward_point(target_x, target_y)
+            if reached:
+                self.state = "waiting"
 
         # State 1: Walking toward the table area
         if self.state == "walking to table" and self.targetPosition is not None:

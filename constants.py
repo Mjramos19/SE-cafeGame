@@ -34,7 +34,10 @@ ORDER_COLORS = [YELLOW, BLUE]
 IMAGE_LIBRARY = {}
 
 # Line position coordinates for customers
-LINE_POSITIONS = [(900, 385), (680, 350), (530, 350), (380, 350)]
+LINE_POSITIONS = [(840, 350), (660, 335), (490, 320), (320, 305)]
+
+CUSTOMER_ENTRY_X = -130
+CUSTOMER_ENTRY_Y = 315
 
 # Time Management for Day Cycle
 REAL_DAY_SEC = 86400
