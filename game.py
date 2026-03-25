@@ -1138,7 +1138,7 @@ def main():
         # Handles all text + rendering (skip HUD on menu/pause)
         if GameState not in ("MENU_SCREEN",):
             text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-            orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
+            orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders)}', True, (250, 0, 0))
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
             screen.blit(text, (10, 10))
             screen.blit(orders_text, (10, 25))
