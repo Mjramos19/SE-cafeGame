@@ -482,7 +482,7 @@ class Sink(Counter):
         super().__init__(x, y)
         self.placeable = False
 
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 150, self.rect.w, self.rect.h)
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 100, self.rect.w, self.rect.h)
 
     def clear_cup(self, player):
         """Empties the player's cup if they are interacting with the sink. Return True if a cup was cleared, False otherwise."""

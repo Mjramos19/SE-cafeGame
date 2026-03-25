@@ -145,9 +145,9 @@ backroom_shelves = []
 
 sink = Sink(1015, 234)
 
-grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"])
-espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"])
-water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"])
+grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"], (510, 480, 150, 70))
+espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"], (490, 255, 65, 50))
+water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (455, 220, 70, 90))
 
 machines = [grinder, espresso_mach, water_boiler]
 
@@ -349,8 +349,7 @@ class GameManager:
                     spot_list = player.inventory[i]
                     if len(spot_list) > 0:
                         if spot_list[0].name != "Cup":
-                            screen.blit(font.render(f'{spot_list[0].name}', True, (0, 0, 0)), (slot.x + 60, slot.y + 15))
-                            screen.blit(font.render(f'{player.inventoryQuants[i]}', True, (0, 0, 0)), (slot.x + 60, slot.y + 15))
+                            screen.blit(font.render(f'{spot_list[0].name}', True, (0, 0, 0), (255, 255, 255)), (slot.x + 60, slot.y + 15))
                         else:
                             if spot_list[0].stackable == True:
                                 text = font.render("Empty Cup", True, (0, 0, 0), (255, 255, 255))
@@ -604,7 +603,7 @@ class GameManager:
                                 switch_view_prompt_rect_middle.top - 12,), )
         
         if sink.is_player_nearby(player):
-            label = font.render(f"[E] Sink: Clear Cup | [F] Collect Water", True, (255, 255, 255))
+            label = font.render(f"[E] Clear Cup | [F] Collect Water", True, (255, 255, 255))
             screen.blit(label, (sink.rect.centerx - label.get_width() // 2, sink.rect.top - 100))
 
         for m in machines:
@@ -810,7 +809,7 @@ def main():
                         player.rect.x, player.rect.y = 1005, 520
                         manager.change_counters_pos(CafeView)
 
-                 if event.key == pygame.K_f:
+                if event.key == pygame.K_f:
                     if player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
                         result = player.addInventoryItem(water, Ingredient)
                         if result == True:
@@ -1137,12 +1136,13 @@ def main():
 
         # Handles all text + rendering (skip HUD on menu/pause)
         if GameState not in ("MENU_SCREEN",):
-            text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-            orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders)}', True, (250, 0, 0))
+            orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
-            screen.blit(text, (10, 10))
             screen.blit(orders_text, (10, 25))
             screen.blit(clock_text, (1202, 35))
+            if DebugMode == True:
+                text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
+                screen.blit(text, (10, 10))
 
         if (GameState == "PLAYING" and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
             manager.draw_money(screen, font)

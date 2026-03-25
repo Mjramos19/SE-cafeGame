@@ -1,7 +1,7 @@
 from constants import *
 
 class Machine(GameObject, pygame.sprite.Sprite):
-    def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, mini_game_img_keys, w=150, h=90):
+    def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, mini_game_img_keys, start_button_info, w=150, h=90):
         pygame.sprite.Sprite.__init__(self)
 
         self.state = 'empty'
@@ -40,8 +40,10 @@ class Machine(GameObject, pygame.sprite.Sprite):
         # Interaction zone sits directly in front of (below) the machine.
         # Uses the sprite rect's actual width and x so each machine's zone
         # matches its visual footprint exactly, with no overlap between machines.
-        self.interaction_zone = pygame.Rect(self.rect.x, self.y + self.h, self.rect.width, 150)
-        self.start_button = None
+          
+        self.interaction_zone = pygame.Rect(self.rect.x, self.y + self.h, self.rect.width - 40, 100)
+        self.interaction_zone.centerx = self.rect.centerx
+        self.start_button = pygame.Rect(start_button_info[0], start_button_info[1], start_button_info[2], start_button_info[3])
 
         self.ingredient = None
         self.ingredient_rect = None
@@ -78,18 +80,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
         screen.blit(IMAGE_LIBRARY["minigame_bg"], (0, 0))
         self.minigame_rect = pygame.Rect(400, 100, 400, 590)
-        if self.name == "Coffee Grinder":
-            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.top + 20, 400, 200)
-            self.start_button = pygame.Rect(self.minigame_rect.centerx - 35, 480, 70, 70)
-        elif self.name == "Espresso Machine":
-            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 50, 400, 150)
-            self.start_button = pygame.Rect(490, 255, 65, 50)
-        elif self.name == "Water Boiler":
-                self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 50, 400, 200)
-                self.start_button = pygame.Rect(455, 220, 70, 90)
-        else:
-            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 100, 400, 200)
-            self.start_button = pygame.Rect(450, 210, 70, 70)
+        self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 100, 400, 200)
 
         # might not need this code later
         if self.state == "error":
