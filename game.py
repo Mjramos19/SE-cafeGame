@@ -25,15 +25,15 @@ constants.IMAGE_LIBRARY["register_icon"] = pygame.image.load("Cafe_Game_Art/regi
 constants.IMAGE_LIBRARY["minigame_bg"] = pygame.image.load("Cafe_Game_Art/minigame_bg.png").convert()
 
 # All Machine Images
-constants.IMAGE_LIBRARY["cg_empty"] = pygame.image.load("Machines_art/CoffeeGrinder_art/CGEmpty-removebg-preview.png").convert_alpha()
-constants.IMAGE_LIBRARY["cg_ready"] = pygame.image.load("Machines_art/CoffeeGrinder_art/CGFull-removebg-preview.png").convert_alpha()
-constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.image.load("Machines_art/CoffeeGrinder_art/CGInprogress-removebg-preview.png").convert_alpha()
-constants.IMAGE_LIBRARY["em_empty"] = pygame.image.load("Machines_art/EspressoMachine_art/EMempty.png").convert_alpha()
-constants.IMAGE_LIBRARY["em_inprogress"] = pygame.image.load("Machines_art/EspressoMachine_art/EMinprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Machines_art/EspressoMachine_art/EMready.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Machines_art/WaterBoiler_art/WBempty.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Machines_art/WaterBoiler_art/WBinprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Machines_art/WaterBoiler_art/WBready.png").convert_alpha()
+constants.IMAGE_LIBRARY["cg_empty"] = pygame.image.load("Cafe_Game_Art/CGEmpty-removebg-preview.png").convert_alpha()
+constants.IMAGE_LIBRARY["cg_ready"] = pygame.image.load("Cafe_Game_Art/CGFull-removebg-preview.png").convert_alpha()
+constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.image.load("Cafe_Game_Art/CGInprogress-removebg-preview.png").convert_alpha()
+constants.IMAGE_LIBRARY["em_empty"] = pygame.image.load("Cafe_Game_Art/EMempty.png").convert_alpha()
+constants.IMAGE_LIBRARY["em_inprogress"] = pygame.image.load("Cafe_Game_Art/EMinprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Cafe_Game_Art/EMready.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WBempty.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WBinprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WBready.png").convert_alpha()
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
@@ -864,7 +864,7 @@ def main():
                         for m in machines:
                             if m.is_player_nearby(player):
                                 active_machine = m
-                                active_machine.setup_minigame(player.inventory[player.selectedSlot])
+                                active_machine.setup_minigame(player.inventory)
                                 GameState = "MACHINE"
                                 break
 
