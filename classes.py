@@ -63,7 +63,6 @@ class Player(GameObject, pygame.sprite.Sprite):
     #function add a given object to players inventory
     def addInventoryItem(self, item, item_type):
         if item.stackable:
-
             for i in range(NUM_SLOTS):
                 slot = self.inventory[i]
                 if len(slot) != 0:
@@ -71,13 +70,14 @@ class Player(GameObject, pygame.sprite.Sprite):
                     if isinstance(slot[0], item_type) and isinstance(item, item_type):
                         # Only stack cups if they are both empty
                         if isinstance(item, Cup):
-                            if (len(slot[0].contents) != 0 and len(item.contents) == 0) or (len(slot[0].contents) == 0 and len(item.contents) != 0):
+                            if (slot[0] == None and item.contents) or (slot[0].contents and item.contents == None):
                                 continue 
                         
                         # Ingredient name check for stackable ingredients
                         if isinstance(item, Ingredient) and slot[0].name != item.name:
                             continue
-                            
+                        
+                        print(slot)
                         slot.append(item)
                         return True
 
@@ -233,7 +233,6 @@ class Customer(GameObject, pygame.sprite.Sprite):
         For now, the customer walks to the left side of the screen.
         Once they move off-screen, their state becomes 'gone'.
         """
-        print("customer leaving cafe")
         self.sprite = IMAGE_LIBRARY[self.image_keys[0]]
           # Change back to walking sprite
         target_x = -self.w - 50
@@ -489,6 +488,8 @@ class Sink(Counter):
         curr_slot = player.inventory[player.selectedSlot]
         if curr_slot and isinstance(curr_slot[0], Cup) and curr_slot[0].contents:
             cup_to_clear = curr_slot.pop()
+
+            #cup_to_clear = copy.deepcopy(cup_to_clear)  # Creates a new instance to avoid mutating the original cup in the inventory
             cup_to_clear.contents.clear()
             cup_to_clear.update()
             print(f'{cup_to_clear}')
@@ -508,7 +509,7 @@ class Sink(Counter):
 
 class Cup(GameObject):
     """A Cup is a GameObject that can hold an non-input ingredients."""
-    def __init__(self, image_keys, contents=[]):
+    def __init__(self, image_keys, contents=None):
         """A cup takes in a list of image keys for the empty and filled cup states. It can also take in a list of contents at creation, but defaults to an empty cup."""
         self.image_keys = image_keys
         self.image = IMAGE_LIBRARY[self.image_keys[0]]
@@ -516,7 +517,11 @@ class Cup(GameObject):
 
         super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=WHITE)
         self.name = "Cup"
-        self.contents = contents
+
+        if contents != None:
+            self.contents = contents
+        else:
+            self.contents = []
         #just here for testing with an already made drink
         if self.contents:
             self.stackable = False

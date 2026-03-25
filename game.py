@@ -525,6 +525,11 @@ class GameManager:
         depth_list = customers + [player]
         depth_list.sort(key=lambda obj: obj.rect.bottom)
 
+        for c in customers:
+            if c.orderedItem is not None and (c.state == "finding seat" or c.state == "seated"):
+                order_text = font.render(f"{c.orderedItem.get_name()}", True, (255, 255, 255), (0, 0, 0))
+                screen.blit(order_text, (c.rect.x, c.rect.y - 50))
+
         if player.rect.bottom < 610:
             for entity in depth_list:
                 entity.render(screen, DebugMode)
@@ -535,9 +540,6 @@ class GameManager:
         else:
             for c in customers:
                 c.render(screen, DebugMode)
-                if c.orderedItem is not None and (c.state == "finding seat" or c.state == "seated"):
-                    order_text = font.render(f"{c.orderedItem.get_name()}", True, (255, 255, 255), (0, 0, 0))
-                    screen.blit(order_text, (c.rect.x, c.rect.y - 50))
 
             screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
             back_img_positions = []
@@ -646,7 +648,7 @@ def main():
     clock_font = pygame.font.SysFont(None, 45)
     clock = pygame.time.Clock()
     seconds_per_frame = TIME_SPEED / 60
-    game_seconds = 21600  # Start day at 6:00 AM
+    game_seconds = DAY_START  # Start day at 6:00 AM
 
     manager = GameManager()
 
@@ -666,8 +668,7 @@ def main():
 
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
-    pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
-
+        
     all_sprites = pygame.sprite.Group()
     customer_group = pygame.sprite.Group()
 
@@ -697,6 +698,12 @@ def main():
             game_seconds = 0
         hours = int(game_seconds // 3600)
         minutes = int((game_seconds % 3600) // 60)
+
+        # Set the customer spawn timer to start at 8:00 AM and stop at 6:00 PM
+        if int(game_seconds) == SEVEN_AM:
+            pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
+        if int(game_seconds) == DAY_END:
+            pygame.time.set_timer(SPAWN_EVENT, 0)
 
         manager.update_message()
 
@@ -882,6 +889,7 @@ def main():
                                             print("trying to add to empty cup")
                                             if result.an_input == False:
                                                 pulled_cup = curr_slot.pop(0) #pull the cup out of the inventory
+                                                #pulled_cup = copy.deepcopy(pulled_cup)
                                                 pulled_cup.contents.append(result) #add the machine output to the cup's contents
                                                 pulled_cup.update()
                                                 print("pulled cup:", pulled_cup.name, "with contents:", [o.name for o in pulled_cup.contents], pulled_cup.stackable)
@@ -934,7 +942,7 @@ def main():
                         for m in machines:
                             if m.is_player_nearby(player):
                                 active_machine = m
-                                active_machine.setup_minigame(player.inventory)
+                                active_machine.setup_minigame(player.inventory[player.selectedSlot])
                                 GameState = "MACHINE"
                                 break
 
@@ -1009,7 +1017,9 @@ def main():
                         currentCust.set_targetSeat(seat)
                         currentCust.set_state("walking to table")
 
-                        player.addInventoryItem(Cup(["cup", "cup_w_lid"]), Cup)
+                        # When taking an order, create a cup object, then add it.
+                        new_cup_instance = Cup(["cup", "cup_w_lid"])
+                        player.addInventoryItem(new_cup_instance, Cup)
 
                         # Remove from line.
                         if len(customersWaiting) > 0:
@@ -1136,6 +1146,9 @@ def main():
 
         # Handles all text + rendering (skip HUD on menu/pause)
         if GameState not in ("MENU_SCREEN",):
+            for item in manager.active_orders:
+                if item is None:
+                    manager.active_orders.remove(item)
             orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
             screen.blit(orders_text, (10, 25))

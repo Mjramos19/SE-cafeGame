@@ -62,16 +62,15 @@ class Machine(GameObject, pygame.sprite.Sprite):
         '''Returns True if the player's feet are within the machine's interaction zone.'''
         return player.get_foot_rect().colliderect(self.interaction_zone)
 
-    def setup_minigame(self, inventory):
-        self.ingredient = None
-        for slot in inventory:
-            for item in slot:
-                if item.name == self.input.name:
-                    self.ingredient = item
-                    break
-            if self.ingredient is not None:
-                break
-        if self.ingredient is not None:
+    def setup_minigame(self, ingredient_list):
+        temp_list = ingredient_list.copy()
+        
+        if len(temp_list) > 0:
+            self.ingredient = temp_list.pop()
+        else:
+            self.ingredient = None
+            
+        if self.ingredient != None:
             self.ingredient.x, self.ingredient.y = 20, 500
 
 

@@ -2,6 +2,7 @@ import pygame
 import sys
 import time
 import random
+import copy
 
 # Screen Dimensions
 WIDTH, HEIGHT = 1366, 768
@@ -10,7 +11,8 @@ WIDTH, HEIGHT = 1366, 768
 FPS = 60
 PLAYER_SPEED = 7
 CUSTOMER_SPEED = 2
-CUSTOMER_SPAWN_EVERY_MS = 2400
+#CUSTOMER_SPAWN_EVERY_MS = 2400
+CUSTOMER_SPAWN_EVERY_MS = 4000
 MAX_CUSTOMERS = 10
 MAX_CUSTOMERS_WAITING = 4
 ORDER_DELAY = 4000 # milliseconds
@@ -42,6 +44,11 @@ CUSTOMER_ENTRY_Y = 315
 # Time Management for Day Cycle
 REAL_DAY_SEC = 86400
 TIME_SPEED = 72
+
+DAY_START = 21600
+SEVEN_AM = 25200
+EIGHT_AM = 28800
+DAY_END = 64800
 
 # Back room ingredients box positions
 MAX_INGREDIENT_BOXES = 4
@@ -83,7 +90,7 @@ class GameObject:
 # Ingredients Class for building all ingredients
 class Ingredient(GameObject):
     """An Ingredient is---"""
-    def __init__(self, name, image_keys: list, an_input=False,price_to_buy=0.0, quantity=0):
+    def __init__(self, name, image_keys: list, an_input=False, price_to_buy=0.0, quantity=0):
         self.image = IMAGE_LIBRARY[image_keys[0]]
         image_rect = self.image.get_rect()
 
