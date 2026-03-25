@@ -52,7 +52,7 @@ DAY_END = 64800
 
 # Back room ingredients box positions
 MAX_INGREDIENT_BOXES = 4
-BOX_POSITIONS = [(50, 125), (200, 125), (350, 125), (500, 125)]
+BOX_POSITIONS = [(750, 200), (875, 200), (1000, 200), (1125, 200)]
 
 # Inventory constants
 NUM_SLOTS = 4

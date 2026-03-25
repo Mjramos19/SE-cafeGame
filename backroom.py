@@ -1,25 +1,27 @@
 from classes import *
 import pygame
 
-
 class stockingShelf(GameObject):
     def __init__(self, x, y, w, h):
-        super().__init__(x, y, w, h, (255, 0, 0))
-        self.interactionZone = pygame.Rect(self.x - 150, self.y, self.w - 50, self.h)
-        # Makes its own shelf spot objects
+        super().__init__(x, y, w, h, (255,0,0))
+        self.interactionZone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
+        #Makes its own shelf spot objects
         self.spots = [
-            shelfSpot(self.rect.x + 30, self.rect.y + 150, 20, 20),
-            shelfSpot(self.rect.x + 120, self.rect.y + 150, 20, 20),
-            shelfSpot(self.rect.x + 30, self.rect.y + 350, 20, 20),
-            shelfSpot(self.rect.x + 120, self.rect.y + 350, 20, 20)
-        ]
-
-    # the shelf renders itself as well as its shelf spots
-    def render(self, screen):
-        super().render(screen)
-        # loop through shelf spot list attribute and render each one
+            shelfSpot(self.rect.x + 60, self.rect.y + 75, 100, 50),
+            shelfSpot(self.rect.x + 340, self.rect. y + 75, 100, 50),
+            shelfSpot(self.rect.x + 60, self.rect.y + 185, 100, 50),
+            shelfSpot(self.rect.x + 340, self.rect.y + 185, 100, 50)
+            ]
+        self.icon = IMAGE_LIBRARY["fireAhhShelf"]
+        
+    
+    #the shelf renders itself as well as its shelf spots
+    def render(self, screen, font):
+        screen.blit(self.icon, self.rect)
+        #loop through shelf spot list attribute and render each one
         for spot in self.spots:
-            spot.render(screen)
+            spot.render(screen, font)
+            
 
 
 class shelfSpot(GameObject):
@@ -27,15 +29,16 @@ class shelfSpot(GameObject):
         super().__init__(x, y, w, h, (0, 0, 0))
         self.open = True
         self.held_ingredient_box = None
-
-      #Function for placing a box from hotbar to selected shelf spot
+    
+    #Function for placing a box from hotbar to selected shelf spot
     def storeIngredientBox(self, player):
         slot = player.inventory[player.selectedSlot]
         #if selected item is not an ingredient box or slot is empty, do nothing.
-        if not (isinstance(slot[0], ingredientBox)) or len(slot) == 0:
+        if len(slot) == 0 or (not (isinstance(slot[0], ingredientBox))):
                 return
         
         item = slot[0]
+        item.setSpot(self)
 
         if self.open:
                 self.held_ingredient_box = item
@@ -46,12 +49,16 @@ class shelfSpot(GameObject):
                 item.interactionZone = None
                 #clear hotbar/inventory spot
                 player.popInventoryItem(item, type(item))
+                
 
+    def removeIngredientBox(self):
+        self.open = True
+        self.held_ingredient_box = None
 
-    def render(self, screen):
+    def render(self, screen, font):
         super().render(screen)
         if self.open == False:
-            self.held_ingredient_box.render(screen)
+            self.held_ingredient_box.render(screen, font)
 
 
 class ingredientBox(GameObject):
@@ -59,53 +66,68 @@ class ingredientBox(GameObject):
         super().__init__(x, y, 100, 100, (150, 75, 0))
         self.ingredient = ingredient
         self.quantity = 10
-        self.isEmpty = False
         self.interactionZone = pygame.Rect(self.x, self.y + 100, self.w, self.h - 50)
+        self.name = f"{self.ingredient.name} Box"
+        self.spot = None
+        self.icon = IMAGE_LIBRARY["best_box_ever"]
+        self.stackable = False
 
-        # not sure yet
-        self.ingredientQuantity = ...
-
-    # helper function for placing boxes on shelves.
-    # Updates the box objects coordinates from previous floor spot to shelf spot when placed
+            
+    #helper function for placing boxes on shelves.
+    #Updates the box objects coordinates from previous floor spot to shelf spot when placed
     def updatePosition(self, center):
         self.rect.center = center
         self.x = self.rect.x
         self.y = self.rect.y
 
-    # Helper Function for removing picked up boxes
+    #Helper Function for removing picked up boxes
     def popBox(box, ingredientBoxes, backroomCollisions):
         backRoomIndex = -1
-        # loops through the list of ingredientBoxes and removed the selected one
+        #loops through the list of ingredientBoxes and removed the selected one
         for i in range(len(ingredientBoxes)):
             if box == ingredientBoxes[i]:
                 ingredientBoxes[i] = None
                 break
-
-        # loops through the list of backroomCollisions and removed selected box from there too
+        
+        #loops through the list of backroomCollisions and removed selected box from there too by index
         for i in range(len(backroomCollisions)):
             if box == backroomCollisions[i]:
                 backRoomIndex = i
                 break
         backroomCollisions.pop(backRoomIndex)
+    
+    def pickIngredient(ingredientsList):
+        #return random ingredient
+        '''return ingredientsList[random.randint(0,len(ingredientsList) - 1)]'''
+        for i in ingredientsList:
+            if i.name == "Coffee Beans":
+                return i
+    
+    def setSpot(self, spot):
+        self.spot = spot
 
     #grab ingredient object from ingredient box
     def grabIngredient(self, player):
         player.addInventoryItem(self.ingredient, type(self.ingredient))
         self.quantity -= 1
         if self.quantity == 0:
-            self.isEmpty = True
-    
+            self.spot.removeIngredientBox()
 
-    # renders ingredient boxes as well as their interaction zone if they have (if they are on the floor)
-    def render(self, screen):
-        super().render(screen)
-        font = pygame.font.SysFont(None, 22)
-        ingredientType = font.render(f"{self.ingredient}", True, (250, 0, 0))
-        screen.blit(ingredientType, (self.rect.x, self.rect.center[1]))
+
+
+    #renders ingredient boxes as well as their interaction zone if they have (if they are on the floor)
+    def render(self, screen, font):
+        ingredName = font.render(f'{self.ingredient.name}', True, (255, 255, 255))
+        screen.blit(self.icon, self.rect)
+        screen.blit(ingredName, (self.rect.center[0] - 20, self.rect.center[1] - 5))
         if self.interactionZone != None:
-            pygame.draw.rect(screen, (255, 255, 0), self.interactionZone, 2)
-
+            pygame.draw.rect(screen, (255, 255, 0), self.interactionZone, 2)        
 
 class DoorEntry(GameObject):
     def __init__(self, x, y, w, h):
         super().__init__(x, y, w, h, color=WHITE)
+        self.icon = IMAGE_LIBRARY["sick_rug"]
+        self.icon_rect = self.icon.get_rect(topleft=(x, y))
+    
+    def render(self, screen):
+        screen.blit(self.icon, self.rect)

@@ -46,6 +46,12 @@ constants.IMAGE_LIBRARY["ground_coffee"] = pygame.image.load("Cafe_Game_Art/grou
 constants.IMAGE_LIBRARY["cup"] = pygame.image.load("Cafe_Game_Art/cup.png").convert_alpha()
 constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.image.load("Cafe_Game_Art/cup_w_lid.png").convert_alpha()
 
+#coolist sickest awesomeist images ever - (Michael's backroom art)
+constants.IMAGE_LIBRARY["sick_rug"] = pygame.image.load("Cafe_Game_Art/sickestRug.png").convert_alpha()
+constants.IMAGE_LIBRARY["best_box_ever"] = pygame.image.load("Cafe_Game_Art/bestBoxEver.png").convert_alpha()
+constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.image.load("Cafe_Game_Art/fireAhShelf.png").convert_alpha()
+
+
 # Pre-scale all images in the library them once
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
@@ -72,6 +78,11 @@ constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ground_coffee"], ((348, 330)))
 constants.IMAGE_LIBRARY["cup"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cup"], ((168, 216)))
 constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cup_w_lid"], ((168, 216)))
+constants.IMAGE_LIBRARY["sick_rug"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["sick_rug"], (150, 50))
+constants.IMAGE_LIBRARY["best_box_ever"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["best_box_ever"], (100, 100))
+constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["fireAhhShelf"], (500, 300))
+
+
 
 # Defines all ingredients
 bag_coffee_beans = Ingredient("Coffee Beans", ["coffee_beans"], True, 18.35, 56)
@@ -135,7 +146,7 @@ current_screen = "game"
 # all collision lists for handling perspectives
 front_collisions = [menu_rect, counter3_rect, wall_rect2]
 middle_collisions = [menu_rect, counter1_rect, counter2_rect, wall_rect]
-backroom_collisions = [stockingShelf(900, 200, 200, 500)]
+backroom_collisions = [stockingShelf(50, 30, 500, 300)]
 
 # all interactable spots each scene (counters, register, sink, chairs, doors)
 front_counters = [c1, c2, c3, c4, c5, register1, s1, s2, s3, s4, s5, s6]
@@ -215,7 +226,7 @@ class GameManager:
         """
         Reset lightweight gameplay state used during testing.
         """
-        self.inventory.clear_all()
+        #self.inventory.clear_all()
         self.machine_loaded_slot = None
         self.message = ""
         self.message_timer = 0
@@ -582,7 +593,7 @@ class GameManager:
             m.render(screen, debug=DebugMode)
 
         sink.render(screen, DebugMode)
-
+        doorEntry.render(screen)
         player.render(screen, DebugMode)
         if currentCust != None and currentCust.state == "waiting":
             register2.render(screen)
@@ -615,28 +626,40 @@ class GameManager:
 
         self.drawHotBar(player, font)
 
-    def back_view_rendering(self, player, boxes_list, font, keys, DebugMode):
+    # def back_view_rendering(self, player, boxes_list, font, keys, DebugMode):
 
+    #     player.handle_movement(keys, backroom_collisions)
+    #     screen.fill((0, 0, 0))
+
+    #     for i in boxes_list:
+    #         if i != None:
+    #             i.render(screen)
+
+    #     for c in backroom_collisions:
+    #         if isinstance(c, pygame.Rect):
+    #             pygame.draw.rect(screen, (255, 255, 255), c, 2)
+    #         else:
+    #             c.render(screen)
+
+    #     pygame.draw.rect(screen, (255, 255, 0), doorEntry2, 2)
+    #     player.render(screen, DebugMode)
+    #     self.drawHotBar(player, font)
+
+    #     if DebugMode == True:
+    #         for c in backroom_collisions:
+    #             pygame.draw.rect(screen, (255, 255, 0), c, 2)
+
+    def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
         screen.fill((0, 0, 0))
-
-        for i in boxes_list:
-            if i != None:
-                i.render(screen)
-
         for c in backroom_collisions:
-            if isinstance(c, pygame.Rect):
-                pygame.draw.rect(screen, (255, 255, 255), c, 2)
-            else:
-                c.render(screen)
+            c.render(screen, font)
+            if isinstance(c, stockingShelf):
+                pygame.draw.rect(screen, (255, 255, 255), c.interactionZone, 2)
 
-        pygame.draw.rect(screen, (255, 255, 0), doorEntry2, 2)
+        doorEntry2.render(screen)
         player.render(screen, DebugMode)
         self.drawHotBar(player, font)
-
-        if DebugMode == True:
-            for c in backroom_collisions:
-                pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
 
 
@@ -668,6 +691,9 @@ def main():
 
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
+    BOX_SPAWN_EVENT = pygame.USEREVENT + 2 #this will change once boxes spawn after being bought, for now they are automatic
+    pygame.time.set_timer(BOX_SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
+
         
     all_sprites = pygame.sprite.Group()
     customer_group = pygame.sprite.Group()
@@ -693,9 +719,10 @@ def main():
         m_x, m_y = pygame.mouse.get_pos()
 
         # manages getting time each frame to make accurate clock for a 10 minutes cafe day
-        game_seconds += seconds_per_frame
-        if game_seconds >= REAL_DAY_SEC:
-            game_seconds = 0
+        if GameState == "PLAYING":
+            game_seconds += seconds_per_frame
+            if game_seconds >= REAL_DAY_SEC:
+                game_seconds = 0
         hours = int(game_seconds // 3600)
         minutes = int((game_seconds % 3600) // 60)
 
@@ -764,16 +791,27 @@ def main():
                         if active_machine.ingredient and active_machine.ingredient_rect.collidepoint((m_x, m_y)):
                             is_dragging = True
 
-                if GameState == "BACKROOM":
-                    # loops through all backroom objects looking for shelves
+                if CafeView == "BACKROOM":
+                    #loops through all backroom objects looking for shelves
                     for obj in backroom_collisions:
+                        #if shelf
                         if isinstance(obj, stockingShelf):
-                            # if player is standing in shelf interaction zone and clicks on shelf spot with item in hand, attempt to place it
-                            if player.get_foot_rect().colliderect(obj.interactionZone) and player.inventory[player.selectedSlot] != None:
-                                if event.button == 1:
-                                    for shelfSpot in obj.spots:
-                                        if shelfSpot.rect.collidepoint(m_x, m_y):
-                                            shelfSpot.storeIngredientBox(player.inventory[player.selectedSlot], player)
+                            #check if player is colliding with shelf interaction zone
+                            if player.get_foot_rect().colliderect(obj.interactionZone):
+                                #loops through shelf spots of shelf
+                                for shelfSpot in obj.spots:
+                                    #players selected inventory slot item
+                                    slot = player.inventory[player.selectedSlot]
+                                    #if player clicks on shelf spot
+                                    mouse_pos = pygame.mouse.get_pos()
+                                    if shelfSpot.rect.collidepoint(mouse_pos) and event.button == 1:
+                                        #if slot has items and items are ingredient voxes, store ingredient box
+                                        if len(slot) != 0 and isinstance(slot[0], ingredientBox):
+                                            shelfSpot.storeIngredientBox(player)
+                                        #else if selected slot is an ingredient
+                                        elif shelfSpot.held_ingredient_box != None:
+                                            shelfSpot.held_ingredient_box.grabIngredient(player)
+
 
             if event.type == pygame.MOUSEBUTTONUP:
                 is_dragging = False
@@ -908,24 +946,25 @@ def main():
         
 
                                     elif isinstance(curr_slot[0], Ingredient):
-                                            print("player holding an ingredient")
+                                            print("player holding an ingredient:", curr_slot[0].name)
                                             if result.an_input == True:
-                                                print(f'{result}, {result.an_input}')
+                                                print(f'{result.name}, {result.an_input}')
                                                 if player.addInventoryItem(result, Ingredient) == False:
                                                     active_machine.set_state("ready")  
                                                     active_machine.contents.append(result)
                                                     manager.set_message("Output cannot be collected: Inventory Full")
                                             else:
-                                                print(f'{result}, {result.an_input}')
+                                                print(f'{result.name}, {result.an_input}')
                                                 active_machine.state = "ready"
                                                 active_machine.contents.append(result)
                                                 manager.set_message("Output cannot be collected: Must Use A Cup")
                                     else:
                                         print("player holding something else")
+
                                 else:
                                     print("player holding nothing. Result:", result.name, result.an_input)
                                     if result.an_input == True:
-                                        curr_slot.append(result)
+                                        player.addInventoryItem(result, Ingredient)
                                         print("added to empty")
                                     else: 
                                         print("could not add to empty")
@@ -947,18 +986,19 @@ def main():
                                 break
 
                     #checking if e was pressed in any backroom box collision zones
-                    elif GameState == "BACKROOM":
+                    elif CafeView == "BACKROOM" and GameState == "PLAYING":
+                        print("checking backroom interactions")
                         for i in range(len(ingredientBoxes)):
-                            # Finds each ingredient box instance and checks for collision with interactionZone
+                            #Finds each ingredient box instance and checks for collision with interactionZone
                             if ingredientBoxes[i] != None:
                                 if player.get_foot_rect().colliderect(ingredientBoxes[i].interactionZone):
-                                    # grabs corresponding box and adds it to first open hot bar slot
-                                    for j in range(len(player.inventory)):
-                                        if player.inventory[j] == None:
-                                            player.inventory[j] = ingredientBoxes[i]
-                                            ingredientBox.popBox(ingredientBoxes[i], ingredientBoxes,backroom_collisions)
-                                            numBoxes -= 1
-                                            break
+                                    #grabs corresponding box and adds it to first open hot bar slot
+                                    result = player.addInventoryItem(ingredientBoxes[i], ingredientBox)
+                                    if result == True:
+                                        ingredientBox.popBox(ingredientBoxes[i], ingredientBoxes, backroom_collisions)
+                                        numBoxes -= 1
+                                    else:
+                                        manager.set_message("Cannot pick up box: Inventory Full")
 
                 if event.key == pygame.K_ESCAPE:
                     if GameState == "MENU_SCREEN":
@@ -1080,15 +1120,15 @@ def main():
                     customers.append(currCustomer)
                     customersWaiting.append(currCustomer)
 
-
+            if event.type == BOX_SPAWN_EVENT and GameState not in ("MENU_SCREEN", "PAUSED"):
                 # if ingredient spots open, spawn random ingredient box
                 if numBoxes < MAX_INGREDIENT_BOXES:
                     for i in range(MAX_INGREDIENT_BOXES):
                         if ingredientBoxes[i] == None:
                             x, y = BOX_POSITIONS[i]
-                            ingredBox = ingredientBox(x, y, "INGREDIENT")
+                            ingredBox = ingredientBox(x, y, ingredientBox.pickIngredient(INGREDIENTS))
                             ingredientBoxes[i] = ingredBox
-                            backroom_collisions.append(ingredBox.rect)
+                            backroom_collisions.append(ingredBox)
                             numBoxes += 1
                             break
 
@@ -1123,7 +1163,7 @@ def main():
                 elif CafeView == "MIDDLE":
                     manager.middle_view_rendering(player, font, keys, DebugMode)
                 else:
-                    manager.back_view_rendering(player, ingredientBoxes,font, keys, DebugMode)
+                    manager.back_view_rendering(player,font, keys, DebugMode)
 
         elif GameState == "REGISTER":
             register1.take_order(screen, currentCust)
