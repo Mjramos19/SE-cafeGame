@@ -80,7 +80,7 @@ class GameObject:
 # Ingredients Class for building all ingredients
 class Ingredient(GameObject):
     """An Ingredient is---"""
-    def __init__(self, name, image_keys: list, price_to_buy=0.0, quantity=0):
+    def __init__(self, name, image_keys: list, an_input=False,price_to_buy=0.0, quantity=0):
         self.image = IMAGE_LIBRARY[image_keys[0]]
         image_rect = self.image.get_rect()
 
@@ -88,9 +88,13 @@ class Ingredient(GameObject):
 
         self.name = name
         self.price = price_to_buy
+        self.an_input = an_input
         self.image_keys = image_keys
         self.quantity = quantity
 
+        self.stackable = True
+
     def render(self, screen):
         screen.blit(self.image, (self.x, self.y))
+
 

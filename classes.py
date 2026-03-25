@@ -18,7 +18,8 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_h = (8 * 4)
 
         self.selectedSlot = 0
-        self.inventory = [None, None, None, None]
+        self.inventory = [[], [], [], []]
+        self.inventoryQuants = [0, 0, 0, 0]
 
 
     def get_foot_rect(self):
@@ -54,6 +55,45 @@ class Player(GameObject, pygame.sprite.Sprite):
 
     def deliver(self, table):
         pass
+
+#helper function to update hotbar quantities every frame
+    def updateInventoryLengths(self):
+        self.inventoryQuants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
+
+    #function add a given object to players inventory
+    def addInventoryItem(self, item, type):
+        #Loops through inventory slots
+        if item.stackable == True:
+            for i in range(NUM_SLOTS):
+                #if stack of same item is found, add item to stack
+                if len(self.inventory[i]) != 0:
+                    if isinstance(self.inventory[i][0], type) and isinstance(item, type) and (self.inventory[i][0].stackable == True):
+                        if isinstance(item, Ingredient) and self.inventory[i][0].name != item.name:
+                            continue
+                        self.inventory[i].append(item)
+                        return True
+        #if stack was not found, loop again find first open slot and put it there
+        for i in range(NUM_SLOTS):
+            if len(self.inventory[i]) == 0:
+                self.inventory[i].append(item)
+                return True
+        return False #if inventory is full, return false to indicate item was not added
+
+    #function to remove a given object from players inventory
+    def popInventoryItem(self, item, type):
+        #loop through hot bar
+        for i in range(NUM_SLOTS):
+            #check if there is an item or stack in that slot and if its type matches item to remove
+            if len(self.inventory[i]) > 0 and isinstance(self.inventory[i][0], type):
+                #Then loop through that slot list
+                for j in range(len(self.inventory[i])):
+                    #find that item in slot list
+                    if self.inventory[i][j] == item:
+                        #remove and return that item
+                        print(f'popped {item.name} from inventory space list' + str(self.inventory[i]))
+                        return self.inventory[i].pop(j)
+                        
+
 
     def render(self, screen, debugmode):
         screen.blit(self.sprite, self.rect)
@@ -156,7 +196,7 @@ class Register(Counter):
             screen.blit(order_text, (80, 140))
         elif currentCust is not None and hasattr(currentCust, "orderedItem"):
             order_text = body_font.render(
-                f"Order: {currentCust.orderedItem}",
+                f"Order: {currentCust.orderedItem.get_name()}",
                 True,
                 WHITE
             )
@@ -302,7 +342,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
     def leave_cafe(self):
         """
         Move the customer toward the exit.
-        For now, the customer walks to the right side of the screen.
+        For now, the customer walks to the left side of the screen.
         Once they move off-screen, their state becomes 'gone'.
         """
         target_x = -self.w - 50
@@ -407,79 +447,20 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
 
 class Cup(GameObject):
-    def __init__(self, x, y, w, h, ):
-        super().__init__(x, y, w, h, color=WHITE)
+    def __init__(self, image_keys):
+        self.image_keys = image_keys
+        self.image = IMAGE_LIBRARY[self.image_keys[0]]
+        image_rect = self.image.get_rect()
+
+        super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=WHITE)
         self.name = "Cup"
         self.contents = []
+        self.stackable = True
 
-'''
-class Cup:
-    """Represents a drink container held in the player's inventory. A cup may be empty or filled with a specific drink."""
+    def update(self):
+        if self.contents:
+            self.stackable = False
+            self.image = IMAGE_LIBRARY[self.image_keys[1]]
 
-    def __init__(self):
-        self.contents: Optional[str] = None
-
-    def is_empty(self) -> bool:
-        return self.contents is None
-
-    def fill(self, drink_name) -> None:
-        self.contents = drink_name
-
-    def clear(self) -> None:
-        self.contents = None
-
-
-class Order:
-    """Represents a customer's drink order."""
-
-    def __init__(self, seat_number, drink_name, color):
-        self.seat_number = seat_number
-        self.drink_name = drink_name
-        self.color = color
-        self.resolved = False
-
-    def mark_resolved(self) -> None:
-        self.resolved = True
-
-
-class CupInventory:
-    """Holds the player's cup inventory."""
-    def __init__(self):
-        self.slots: list[Optional[Cup]] = [None] * MAX_CUP_SLOTS
-        self.selected_slot: Optional[int] = None
-
-    def first_empty_slot(self):
-        for i in range(len(self.slots)):
-            if self.slots[i] is None:
-                return i
-        return None
-
-    def add_empty_cup(self):
-        slot = self.first_empty_slot()
-        if slot is None:
-            return False
-
-        self.slots[slot] = Cup()
-        return True
-
-    def remove_cup(self, slot):
-        self.slots[slot] = None
-
-    def select_slot(self, slot):
-        if 0 <= slot < len(self.slots):
-            if self.selected_slot == slot:
-                self.selected_slot = None
-            else:
-                self.selected_slot = slot
-
-    def get_selected_cup(self):
-        if self.selected_slot is None:
-            return None
-        return self.slots[self.selected_slot]
-
-    def clear_all(self):
-        """Clear all cup slots and remove any current selection"""
-        for i in range(len(self.slots)):
-            self.slots[i] = None
-
-        self.selected_slot = None'''
+    def render(self, screen):
+        screen.blit(self.image, (self.x, self.y))

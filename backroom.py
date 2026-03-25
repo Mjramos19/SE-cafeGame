@@ -28,24 +28,25 @@ class shelfSpot(GameObject):
         self.open = True
         self.held_ingredient_box = None
 
-    # Function for placing a box from hotbar to selected shelf spot
-    def storeIngredientBox(self, hotBarItem, player):
-        # if selected item is not an ingredient box, do nothing. Else, if spot is empty store box in spot
-        if not (isinstance(hotBarItem, ingredientBox)):
-            return
-        else:
-            if self.open == True:
-                self.held_ingredient_box = hotBarItem
-                self.open = False
-                # set boxes new position to shelf spot
-                hotBarItem.updatePosition(self.rect.center)
-                # remove box interaction zone since its going on shelf
-                hotBarItem.interactionZone = None
-                # clear hotbar/inventory spot
-                player.inventory[player.selectedSlot] = None
+      #Function for placing a box from hotbar to selected shelf spot
+    def storeIngredientBox(self, player):
+        slot = player.inventory[player.selectedSlot]
+        #if selected item is not an ingredient box or slot is empty, do nothing.
+        if not (isinstance(slot[0], ingredientBox)) or len(slot) == 0:
+                return
+        
+        item = slot[0]
 
-    def grabIngredient(self):
-        pass
+        if self.open:
+                self.held_ingredient_box = item
+                self.open = False
+                #set boxes new position to shelf spot
+                item.updatePosition(self.rect.center)
+                #remove box interaction zone since its going on shelf
+                item.interactionZone = None
+                #clear hotbar/inventory spot
+                player.popInventoryItem(item, type(item))
+
 
     def render(self, screen):
         super().render(screen)
@@ -57,6 +58,7 @@ class ingredientBox(GameObject):
     def __init__(self, x, y, ingredient):
         super().__init__(x, y, 100, 100, (150, 75, 0))
         self.ingredient = ingredient
+        self.quantity = 10
         self.isEmpty = False
         self.interactionZone = pygame.Rect(self.x, self.y + 100, self.w, self.h - 50)
 
@@ -85,6 +87,14 @@ class ingredientBox(GameObject):
                 backRoomIndex = i
                 break
         backroomCollisions.pop(backRoomIndex)
+
+    #grab ingredient object from ingredient box
+    def grabIngredient(self, player):
+        player.addInventoryItem(self.ingredient, type(self.ingredient))
+        self.quantity -= 1
+        if self.quantity == 0:
+            self.isEmpty = True
+    
 
     # renders ingredient boxes as well as their interaction zone if they have (if they are on the floor)
     def render(self, screen):

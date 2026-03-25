@@ -38,9 +38,9 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.selected_output = None
 
         # Interaction zone sits directly in front of (below) the machine.
-        # Height of 200 ensures the zone reaches past the counter collision into the
-        # area where the player can actually stand (~y=392 in the MIDDLE view).
-        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 200)
+        # Uses the sprite rect's actual width and x so each machine's zone
+        # matches its visual footprint exactly, with no overlap between machines.
+        self.interaction_zone = pygame.Rect(self.rect.x, self.y + self.h, self.rect.width, 150)
         self.start_button = None
 
         self.ingredient = None
@@ -60,9 +60,16 @@ class Machine(GameObject, pygame.sprite.Sprite):
         '''Returns True if the player's feet are within the machine's interaction zone.'''
         return player.get_foot_rect().colliderect(self.interaction_zone)
 
-    def setup_minigame(self, ingredient):
-        self.ingredient = ingredient
-        if self.ingredient != None:
+    def setup_minigame(self, inventory):
+        self.ingredient = None
+        for slot in inventory:
+            for item in slot:
+                if item.name == self.input.name:
+                    self.ingredient = item
+                    break
+            if self.ingredient is not None:
+                break
+        if self.ingredient is not None:
             self.ingredient.x, self.ingredient.y = 20, 500
 
 
@@ -70,9 +77,19 @@ class Machine(GameObject, pygame.sprite.Sprite):
         """When the player interacts with a machine, the minigame mode is called. This mode has a new interaction zone, start button, and handles the rendering."""
 
         screen.blit(IMAGE_LIBRARY["minigame_bg"], (0, 0))
-        self.mg_interaction_zone = pygame.Rect(400, 100, 400, 200)
-        self.start_button = pygame.Rect(450, 210, 70, 70)
         self.minigame_rect = pygame.Rect(400, 100, 400, 590)
+        if self.name == "Coffee Grinder":
+            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.top + 20, 400, 200)
+            self.start_button = pygame.Rect(self.minigame_rect.centerx - 35, 480, 70, 70)
+        elif self.name == "Espresso Machine":
+            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 50, 400, 150)
+            self.start_button = pygame.Rect(490, 255, 65, 50)
+        elif self.name == "Water Boiler":
+                self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 50, 400, 200)
+                self.start_button = pygame.Rect(455, 220, 70, 90)
+        else:
+            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 100, 400, 200)
+            self.start_button = pygame.Rect(450, 210, 70, 70)
 
         # might not need this code later
         if self.state == "error":
@@ -116,8 +133,8 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.state = "error"
         else:
             self.state = "full"
+            player.popInventoryItem(self.ingredient, type(self.ingredient))
             self.ingredient = None
-            player.inventory[player.selectedSlot] = None
 
     def run_machine(self, num=0):
         '''Starts running the machine if it has been filled with the correct input.'''
