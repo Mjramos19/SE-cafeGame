@@ -19,18 +19,18 @@ class Recipe:
         self.locked = locked
 
 
-    def check_match(self, drink_ingredients: list):
+     def check_match(self, cup: list):
         """Will take the ingredients of the current drink and try to match it to whatever recipe the customer has as
         their ordered recipe. Is called when trying to deliver and returns True or False."""
-        if len(self.ingredients) != len(drink_ingredients):
+        if len(self.ingredients) != len(cup.contents):
             return False
         i = 0
         for item in self.ingredients:
-            if item != drink_ingredients[i]:
+            if item != cup.contents[i]:
                 return False
             i += 1
         return True
-
+         
     def get_name(self):
         """Returns name of recipe."""
         return self.name
