@@ -61,23 +61,31 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.inventoryQuants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
 
     #function add a given object to players inventory
-    def addInventoryItem(self, item, type):
-        #Loops through inventory slots
-        if item.stackable == True:
+    def addInventoryItem(self, item, item_type):
+        if item.stackable:
             for i in range(NUM_SLOTS):
-                #if stack of same item is found, add item to stack
-                if len(self.inventory[i]) != 0:
-                    if isinstance(self.inventory[i][0], type) and isinstance(item, type) and (self.inventory[i][0].stackable == True):
-                        if isinstance(item, Ingredient) and self.inventory[i][0].name != item.name:
+                slot = self.inventory[i]
+                if len(slot) != 0:
+                    # Check if it's the same type
+                    if isinstance(slot[0], item_type) and isinstance(item, item_type):
+                        # Only stack cups if they are both empty
+                        if isinstance(item, Cup):
+                            if (len(slot[0].contents) != 0 and len(item.contents) == 0) or (len(slot[0].contents) == 0 and len(item.contents) != 0):
+                                continue 
+                        
+                        # Ingredient name check for stackable ingredients
+                        if isinstance(item, Ingredient) and slot[0].name != item.name:
                             continue
-                        self.inventory[i].append(item)
+                            
+                        slot.append(item)
                         return True
-        #if stack was not found, loop again find first open slot and put it there
+
+        # Find empty slot logic
         for i in range(NUM_SLOTS):
             if len(self.inventory[i]) == 0:
                 self.inventory[i].append(item)
                 return True
-        return False #if inventory is full, return false to indicate item was not added
+        return False
 
     #function to remove a given object from players inventory
     def popInventoryItem(self, item, type):
@@ -100,129 +108,6 @@ class Player(GameObject, pygame.sprite.Sprite):
 
         if debugmode == True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)
-
-
-# dirty table aspect - states - money collection
-class Table(GameObject):
-    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats = []):
-        super().__init__(x, y, w, h, color)
-        self.open = True
-        self.seats = seats
-        self.open = True
-
-class Seat(GameObject):
-    def __init__(self, x, y, num, w=70, h=15, color=SEAT_COLOR):
-        super().__init__(x, y, w, h, color)
-        self.state = "open"
-        self.seatedCustomer = None
-        self.num = num
-
-    def get_seatX(self):
-        return self.rect.x
-
-    def get_seatY(self):
-        return self.rect.y
-
-    def reserveSeat(self, customer):
-        self.state = "reserved"
-        self.seatedCustomer = customer
-
-    def occupySeat(self, customer):
-        self.state = "taken"
-        self.seatedCustomer = customer
-
-    def openSeat(self):
-        self.state = "open"
-        self.seatedCustomer = None
-
-
-class Counter(GameObject):
-    '''The counter class defines the placeable part of the counter, not collisions. It takes in an x and y value to place it on the screen.
-    It has a set width and height because every counter top is the same, and a set color for debugging view.'''
-    def __init__(self, x, y, w=150, h=90, color=COUNTER_COLOR):
-        super().__init__(x, y, w, h, color)
-        self.x, self.y = x, y
-        self.placeable = True
-
-
-class Register(Counter):
-    '''A Register is a child of Counter that handles player interation within the zone and customer lineup behavior, whether a customer is at the register.'''
-    # this variable is shared amongst both register objects
-    customerWaiting = False
-    def __init__(self, x, y, iz_y, w=150, h=90): #will need to update and put a parameter for the current customer image key to be passed through.
-        super().__init__(x, y, w, h, REGISTER_COLOR)
-        self.placeable = False
-
-        # interaction box for register
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
-
-        self.icon = IMAGE_LIBRARY["register_icon"]
-        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
-
-        # order screen variables
-        self.order_screen = IMAGE_LIBRARY["order_screen"]
-        self.customer_image = IMAGE_LIBRARY["ladybug_idle"] #place holder until parameter is updated.
-        self.customer_rect = pygame.Rect(500,200,100,418)
-
-
-    def setWaiting(self):
-        Register.customerWaiting = True
-
-    def take_order(self, screen, currentCust=None):
-        """Draws the register order-taking screen and show control hints.
-        Parameters:
-            screen: The pygame surface to draw on
-            currentCust: The current customer at the register."""
-
-        # to do: learn to crop customer to rectangle
-        screen.blit(self.order_screen, (0,0))
-        screen.blit(self.customer_image, self.customer_rect)
-
-        # Fonts for register UI text
-        title_font = pygame.font.SysFont(None, 36)
-        body_font = pygame.font.SysFont(None, 28)
-
-        # Main Title
-        title_text = title_font.render("Register - Accepting an order gives you an empty cup", True, WHITE)
-        screen.blit(title_text, (80, 80))
-
-        # Show current customer order if available
-        if currentCust is not None and currentCust.order is not None:
-            order_text = body_font.render(
-                f"Order: {currentCust.order.drink_name}",
-                True,
-                WHITE
-            )
-            screen.blit(order_text, (80, 140))
-        elif currentCust is not None and hasattr(currentCust, "orderedItem"):
-            order_text = body_font.render(
-                f"Order: {currentCust.orderedItem.get_name()}",
-                True,
-                WHITE
-            )
-            screen.blit(order_text, (80, 140))
-
-        # Control hints
-        hint_accept = body_font.render("[S] Accept Order", True, WHITE)
-        hint_close = body_font.render("[ESC] Leave Register", True, WHITE)
-
-        screen.blit(hint_accept, (80, 220))
-        screen.blit(hint_close, (80, 260))
-
-
-    def render(self, screen):
-        if Register.customerWaiting == True:
-            screen.blit(self.icon, self.icon_rect)
-
-
-class Sink(Counter):
-    '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''
-    def __init__(self, x, y):
-        super().__init__(x, y)
-        self.placeable = False
-
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 50, self.rect.w, self.rect.h)
-        
 
 
 class Customer(GameObject, pygame.sprite.Sprite):
@@ -347,6 +232,9 @@ class Customer(GameObject, pygame.sprite.Sprite):
         For now, the customer walks to the left side of the screen.
         Once they move off-screen, their state becomes 'gone'.
         """
+        print("customer leaving cafe")
+        self.sprite = IMAGE_LIBRARY[self.image_keys[0]]
+          # Change back to walking sprite
         target_x = -self.w - 50
         target_y = self.rect.y
 
@@ -463,21 +351,177 @@ class Customer(GameObject, pygame.sprite.Sprite):
         return f'State: {self.state}, Target Seat: {self.targetSeat}'
 
 
+
+# dirty table aspect - states - money collection
+class Table(GameObject):
+    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats = []):
+        super().__init__(x, y, w, h, color)
+        self.open = True
+        self.seats = seats
+        self.open = True
+
+class Seat(GameObject):
+    def __init__(self, x, y, num, w=70, h=15, color=SEAT_COLOR):
+        super().__init__(x, y, w, h, color)
+        self.state = "open"
+        self.seatedCustomer = None
+        self.num = num
+
+    def get_seatX(self):
+        return self.rect.x
+
+    def get_seatY(self):
+        return self.rect.y
+
+    def reserveSeat(self, customer):
+        self.state = "reserved"
+        self.seatedCustomer = customer
+
+    def occupySeat(self, customer):
+        self.state = "taken"
+        self.seatedCustomer = customer
+
+    def openSeat(self):
+        self.state = "open"
+        self.seatedCustomer = None
+
+
+class Counter(GameObject):
+    '''The counter class defines the placeable part of the counter, not collisions. It takes in an x and y value to place it on the screen.
+    It has a set width and height because every counter top is the same, and a set color for debugging view.'''
+    def __init__(self, x, y, w=150, h=90, color=COUNTER_COLOR):
+        super().__init__(x, y, w, h, color)
+        self.x, self.y = x, y
+        self.placeable = True
+
+
+class Register(Counter):
+    '''A Register is a child of Counter that handles player interation within the zone and customer lineup behavior, whether a customer is at the register.'''
+    # this variable is shared amongst both register objects
+    customerWaiting = False
+    def __init__(self, x, y, iz_y, w=150, h=90): #will need to update and put a parameter for the current customer image key to be passed through.
+        super().__init__(x, y, w, h, REGISTER_COLOR)
+        self.placeable = False
+
+        # interaction box for register
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
+
+        self.icon = IMAGE_LIBRARY["register_icon"]
+        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
+
+        # order screen variables
+        self.order_screen = IMAGE_LIBRARY["order_screen"]
+        self.customer_image = IMAGE_LIBRARY["ladybug_idle"] #place holder until parameter is updated.
+        self.customer_rect = pygame.Rect(500,200,100,418)
+
+
+    def setWaiting(self):
+        Register.customerWaiting = True
+
+    def take_order(self, screen, currentCust=None):
+        """Draws the register order-taking screen and show control hints.
+        Parameters:
+            screen: The pygame surface to draw on
+            currentCust: The current customer at the register."""
+
+        # to do: learn to crop customer to rectangle
+        screen.blit(self.order_screen, (0,0))
+        screen.blit(self.customer_image, self.customer_rect)
+
+        # Fonts for register UI text
+        title_font = pygame.font.SysFont(None, 36)
+        body_font = pygame.font.SysFont(None, 28)
+
+        # Main Title
+        title_text = title_font.render("Register - Accepting an order gives you an empty cup", True, WHITE)
+        screen.blit(title_text, (80, 80))
+
+        # Show current customer order if available
+        if currentCust is not None and currentCust.order is not None:
+            order_text = body_font.render(
+                f"Order: {currentCust.order.drink_name}",
+                True,
+                WHITE
+            )
+            screen.blit(order_text, (80, 140))
+        elif currentCust is not None and hasattr(currentCust, "orderedItem"):
+            order_text = body_font.render(
+                f"Order: {currentCust.orderedItem.get_name()}",
+                True,
+                WHITE
+            )
+            screen.blit(order_text, (80, 140))
+
+        # Control hints
+        hint_accept = body_font.render("[S] Accept Order", True, WHITE)
+        hint_close = body_font.render("[ESC] Leave Register", True, WHITE)
+
+        screen.blit(hint_accept, (80, 220))
+        screen.blit(hint_close, (80, 260))
+
+
+    def render(self, screen):
+        if Register.customerWaiting == True:
+            screen.blit(self.icon, self.icon_rect)
+
+
+class Sink(Counter):
+    '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.placeable = False
+
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 150, self.rect.w, self.rect.h)
+
+    def clear_cup(self, player):
+        """Empties the player's cup if they are interacting with the sink. Return True if a cup was cleared, False otherwise."""
+        curr_slot = player.inventory[player.selectedSlot]
+        if curr_slot and isinstance(curr_slot[0], Cup) and curr_slot[0].contents:
+            cup_to_clear = curr_slot.pop()
+            cup_to_clear.contents.clear()
+            cup_to_clear.update()
+            print(f'{cup_to_clear}')
+            added = player.addInventoryItem(cup_to_clear, Cup)
+            if not added:
+                player.inventory[player.selectedSlot].append(cup_to_clear)
+            return True
+        return False   
+    
+    def is_player_nearby(self, player):
+        return player.get_foot_rect().colliderect(self.interactionZone)
+
+    def render(self, screen, debugmode):
+        if debugmode == True:
+            pygame.draw.rect(screen, WHITE, self.rect) 
+            pygame.draw.rect(screen, (0, 0, 255), self.interactionZone, 2)
+
 class Cup(GameObject):
-    def __init__(self, image_keys):
+    """A Cup is a GameObject that can hold an non-input ingredients."""
+    def __init__(self, image_keys, contents=[]):
+        """A cup takes in a list of image keys for the empty and filled cup states. It can also take in a list of contents at creation, but defaults to an empty cup."""
         self.image_keys = image_keys
         self.image = IMAGE_LIBRARY[self.image_keys[0]]
         image_rect = self.image.get_rect()
 
         super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=WHITE)
         self.name = "Cup"
-        self.contents = []
-        self.stackable = True
+        self.contents = contents
+        #just here for testing with an already made drink
+        if self.contents:
+            self.stackable = False
+        else:
+            self.stackable = True
 
     def update(self):
         if self.contents:
             self.stackable = False
             self.image = IMAGE_LIBRARY[self.image_keys[1]]
+        else:
+            self.stackable = True
+            self.image = IMAGE_LIBRARY[self.image_keys[0]]
 
     def render(self, screen):
         screen.blit(self.image, (self.x, self.y))
+
+    def __str__(self):
+        return f'Cup that is Stackable:{self.stackable} and contains {[ingredient.name for ingredient in self.contents]}'
