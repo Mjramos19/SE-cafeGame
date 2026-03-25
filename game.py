@@ -143,6 +143,8 @@ seats = [s1, s2, s3, s4, s5, s6]
 middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, register2]
 backroom_shelves = []
 
+sink = Sink(1015, 234)
+
 grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"])
 espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"])
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"])
@@ -354,7 +356,8 @@ class GameManager:
                                 text = font.render("Empty Cup", True, (0, 0, 0), (255, 255, 255))
                                 screen.blit(text, (slot.x + 60, slot.y + 15))
                             else:
-                                screen.blit(font.render(f'Cup with {', '.join(o.name for o in spot_list[0].contents)}', True, (255, 0, 0)), (slot.x + 60, slot.y + 15))
+                                text = font.render(f'Cup with {", ".join(o.name for o in spot_list[0].contents)}', True, (0, 0, 0), (255, 255, 255))
+                                screen.blit(text, (slot.x + 60, slot.y + 15))
 
     def draw_recipe_screen(self, screen):
         """
@@ -533,6 +536,10 @@ class GameManager:
         else:
             for c in customers:
                 c.render(screen, DebugMode)
+                if c.orderedItem is not None and (c.state == "finding seat" or c.state == "seated"):
+                    order_text = font.render(f"{c.orderedItem.get_name()}", True, (255, 255, 255), (0, 0, 0))
+                    screen.blit(order_text, (c.rect.x, c.rect.y - 50))
+
             screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
             back_img_positions = []
             back_img_y = 0
@@ -558,16 +565,11 @@ class GameManager:
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
         if DebugMode == True:
-                nearby = self.get_nearby_seated_customer(player, customers)
-                if nearby:
-                    label = font.render("[P] Deliver Order (Debug)", True, constants.WHITE, constants.BLACK)
-                    screen.blit(label, (nearby.rect.centerx - label.get_width() // 2, nearby.rect.top - 24))
-
-                for c in front_counters:
-                    pygame.draw.rect(screen, (250, 0, 0), c)
-                pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
-                for c in front_collisions:
-                    pygame.draw.rect(screen, (255, 255, 0), c, 2)
+            for c in front_counters:
+                pygame.draw.rect(screen, (250, 0, 0), c)
+            pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
+            for c in front_collisions:
+                pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
         self.drawHotBar(player, font)
 
@@ -577,6 +579,8 @@ class GameManager:
 
         for m in machines:
             m.render(screen, debug=DebugMode)
+
+        sink.render(screen, DebugMode)
 
         player.render(screen, DebugMode)
         if currentCust != None and currentCust.state == "waiting":
@@ -598,6 +602,10 @@ class GameManager:
             label = font.render("[Q] Switch View", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (switch_view_prompt_rect_middle.centerx - label.get_width() // 2,
                                 switch_view_prompt_rect_middle.top - 12,), )
+        
+        if sink.is_player_nearby(player):
+            label = font.render(f"[E] Sink: Clear Cup | [F] Collect Water", True, (255, 255, 255))
+            screen.blit(label, (sink.rect.centerx - label.get_width() // 2, sink.rect.top - 100))
 
         for m in machines:
             if m.is_player_nearby(player):
@@ -708,14 +716,6 @@ def main():
                     if event.key == pygame.K_b:
                         print("Adding $8")
                         manager.money += 8
-                
-                    if event.key == pygame.K_p and CafeView == "FRONT":
-                        nearby = manager.get_nearby_seated_customer(player, customers)
-                        if nearby and nearby.state == "seated":
-                            base_pay, tip, total = nearby.calculate_tip()
-                            manager.money += total
-                            manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
-                            nearby.start_drinking("correct")
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -805,10 +805,18 @@ def main():
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 20, 520
                         manager.change_counters_pos(CafeView)
-                    else:
+                    elif CafeView == "MIDDLE":
                         CafeView = "FRONT"
                         player.rect.x, player.rect.y = 1005, 520
                         manager.change_counters_pos(CafeView)
+
+                 if event.key == pygame.K_f:
+                    if player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
+                        result = player.addInventoryItem(water, Ingredient)
+                        if result == True:
+                            manager.set_message("Collected water!")
+                        else:
+                            manager.set_message("Cannot collect water: Inventory Full")
 
                 # if player presses e inside registers collision zone, and there is a customer, take order
                 if event.key == pygame.K_e:
@@ -822,6 +830,32 @@ def main():
                     elif player.get_foot_rect().colliderect(doorEntry2) and CafeView == "BACKROOM":
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 30, 115
+                      
+                    elif player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
+                        result = sink.clear_cup(player)
+                        if result == True:
+                            manager.set_message("Cup emptied!")
+                        else:
+                            manager.set_message("No cup with contents selected to clear!")
+
+                    elif CafeView == "FRONT" and len(manager.active_orders) > 0:
+                        nearby = manager.get_nearby_seated_customer(player, customers)
+                        if nearby and nearby.state == "seated":
+                            customer_order = nearby.orderedItem
+                            if len(player.inventory[player.selectedSlot]) > 0 and type(player.inventory[player.selectedSlot][0]) == Cup:
+                                player_hand = player.inventory[player.selectedSlot][0]
+                                if customer_order.check_match(player_hand) == True:
+                                    base_pay, tip, total = nearby.calculate_tip()
+                                    manager.money += total  
+                                    manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
+                                    nearby.start_drinking("correct")
+                                else:
+                                    nearby.start_drinking("incorrect")
+                                    manager.set_message("Customer rejected the order!", 2500)
+
+                                manager.active_orders.remove(customer_order)
+                                player.inventory[player.selectedSlot].pop(0) 
+
 
                     elif GameState == "MACHINE" and active_machine:
                         if active_machine.state == "ready":
@@ -1036,7 +1070,6 @@ def main():
 
                     customers.append(currCustomer)
                     customersWaiting.append(currCustomer)
-                    register1.setWaiting()
 
 
                 # if ingredient spots open, spawn random ingredient box
@@ -1096,6 +1129,9 @@ def main():
         # Update machine timers every frame regardless of game state
         for m in machines:
             m.update()
+
+        if currentCust != None and currentCust.state == "waiting" and GameState == "PLAYING":
+            register1.setWaiting()
 
         clock.tick(FPS)
 
