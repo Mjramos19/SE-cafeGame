@@ -110,6 +110,133 @@ class Player(GameObject, pygame.sprite.Sprite):
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)
 
 
+# dirty table aspect - states - money collection
+class Table(GameObject):
+    def __init__(self, x, y, w=70, h=40, color=TABLE_COLOR, seats = []):
+        super().__init__(x, y, w, h, color)
+        self.open = True
+        self.seats = seats
+        self.open = True
+
+class Seat(GameObject):
+    def __init__(self, x, y, num, w=70, h=15, color=SEAT_COLOR):
+        super().__init__(x, y, w, h, color)
+        self.state = "open"
+        self.seatedCustomer = None
+        self.num = num
+
+    def get_seatX(self):
+        return self.rect.x
+
+    def get_seatY(self):
+        return self.rect.y
+
+    def reserveSeat(self, customer):
+        self.state = "reserved"
+        self.seatedCustomer = customer
+
+    def occupySeat(self, customer):
+        self.state = "taken"
+        self.seatedCustomer = customer
+
+    def openSeat(self):
+        self.state = "open"
+        self.seatedCustomer = None
+
+
+class Counter(GameObject):
+    '''The counter class defines the placeable part of the counter, not collisions. It takes in an x and y value to place it on the screen.
+    It has a set width and height because every counter top is the same, and a set color for debugging view.'''
+    def __init__(self, x, y, w=150, h=90, color=COUNTER_COLOR):
+        super().__init__(x, y, w, h, color)
+        self.x, self.y = x, y
+        self.placeable = True
+
+
+class Register(Counter):
+    '''A Register is a child of Counter that handles player interation within the zone and customer lineup behavior, whether a customer is at the register.'''
+    # this variable is shared amongst both register objects
+    customerWaiting = False
+    def __init__(self, x, y, iz_y, w=150, h=90): #will need to update and put a parameter for the current customer image key to be passed through.
+        super().__init__(x, y, w, h, REGISTER_COLOR)
+        self.placeable = False
+
+        # interaction box for register
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
+
+        self.icon = IMAGE_LIBRARY["register_icon"]
+        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
+
+        # order screen variables
+        self.order_screen = IMAGE_LIBRARY["order_screen"]
+        self.customer_image = IMAGE_LIBRARY["ladybug_register"] #place holder until parameter is updated.
+        self.customer_rect = pygame.Rect(500,75,200,418)
+
+
+    def setWaiting(self):
+        Register.customerWaiting = True
+
+    def take_order(self, screen, currentCust=None):
+        """Draws the register order-taking screen and show control hints.
+        Parameters:
+            screen: The pygame surface to draw on
+            currentCust: The current customer at the register."""
+
+        # to do: learn to crop customer to rectangle
+        screen.blit(self.order_screen, (0,0))
+        screen.blit(self.customer_image, self.customer_rect)
+
+        # Fonts for register UI text
+        title_font = pygame.font.SysFont(None, 36)
+        body_font = pygame.font.SysFont(None, 28)
+
+        # Main Title
+        title_text = title_font.render("Register - Accepting an order gives you an empty cup", True, WHITE)
+        screen.blit(title_text, (80, 70))
+
+        # Show current customer order if available
+        order_name = "???"
+        if currentCust is not None and currentCust.orderedItem is not None:
+            order_name = currentCust.orderedItem.get_name()
+        
+        # Speech buubble position - to the left of the customer
+        bubble_x, bubble_y = 60, 100
+        bubble_w, bubble_h = 420, 120
+
+        # Draw bubble background
+        pygame.draw.rect(screen, WHITE, (bubble_x, bubble_y, bubble_w, bubble_h), border_radius=20)
+
+        # Draw tail pointing toward customer
+        tail_points = [(bubble_x + bubble_w - 60, bubble_y + bubble_h),
+                    (bubble_x + bubble_w + 20, bubble_y + bubble_h + 60),
+                    (bubble_x + bubble_w - 120, bubble_y + bubble_h)]
+        pygame.draw.polygon(screen, WHITE, tail_points)
+
+        # Order text inside the bubble
+        order_text = title_font.render(f"I want an {order_name}!", True, BLACK)
+        screen.blit(order_text, (bubble_x + 20, bubble_y + 20))
+
+        hint_text = body_font.render("...please :)", True, (80, 80, 80))
+        screen.blit(hint_text, (bubble_x + 20, bubble_y + 65))
+        # Control hints
+        hint_accept = body_font.render("[S] Accept Order", True, WHITE)
+        hint_close = body_font.render("[ESC] Leave Register", True, WHITE)
+
+        screen.blit(hint_accept, (80, 300))
+        screen.blit(hint_close, (80, 340))
+
+    def render(self, screen):
+        if Register.customerWaiting == True:
+            screen.blit(self.icon, self.icon_rect)
+
+
+class Sink(Counter):
+    '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        pass
+
+
 class Customer(GameObject, pygame.sprite.Sprite):
     '''The Customer class creates a customer object that walks to the register, will line up, will order a recipe, and
     will seat itself. Once the order is delivered, te customer will exit the level. A customer has a satisfaction bar determined by time.'''
@@ -464,6 +591,36 @@ class Register(Counter):
         if Register.customerWaiting == True:
             screen.blit(self.icon, self.icon_rect)
 
+
+class Sink(Counter):
+    '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.placeable = False
+
+        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 150, self.rect.w, self.rect.h)
+
+    def clear_cup(self, player):
+        """Empties the player's cup if they are interacting with the sink. Return True if a cup was cleared, False otherwise."""
+        curr_slot = player.inventory[player.selectedSlot]
+        if curr_slot and isinstance(curr_slot[0], Cup) and curr_slot[0].contents:
+            cup_to_clear = curr_slot.pop()
+            cup_to_clear.contents.clear()
+            cup_to_clear.update()
+            print(f'{cup_to_clear}')
+            added = player.addInventoryItem(cup_to_clear, Cup)
+            if not added:
+                player.inventory[player.selectedSlot].append(cup_to_clear)
+            return True
+        return False   
+    
+    def is_player_nearby(self, player):
+        return player.get_foot_rect().colliderect(self.interactionZone)
+
+    def render(self, screen, debugmode):
+        if debugmode == True:
+            pygame.draw.rect(screen, WHITE, self.rect) 
+            pygame.draw.rect(screen, (0, 0, 255), self.interactionZone, 2)
 
 class Sink(Counter):
     '''A Sink is a child of Counter that handles clearing the player's inventory cup of its contents.'''

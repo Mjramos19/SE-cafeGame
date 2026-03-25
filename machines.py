@@ -38,9 +38,9 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.selected_output = None
 
         # Interaction zone sits directly in front of (below) the machine.
-        # Height of 200 ensures the zone reaches past the counter collision into the
-        # area where the player can actually stand (~y=392 in the MIDDLE view).
-        self.interaction_zone = pygame.Rect(self.x, self.y + self.h, self.w, 150)
+        # Uses the sprite rect's actual width and x so each machine's zone
+        # matches its visual footprint exactly, with no overlap between machines.
+        self.interaction_zone = pygame.Rect(self.rect.x, self.y + self.h, self.rect.width, 150)
         self.start_button = None
 
         self.ingredient = None
@@ -75,9 +75,19 @@ class Machine(GameObject, pygame.sprite.Sprite):
         """When the player interacts with a machine, the minigame mode is called. This mode has a new interaction zone, start button, and handles the rendering."""
 
         screen.blit(IMAGE_LIBRARY["minigame_bg"], (0, 0))
-        self.mg_interaction_zone = pygame.Rect(400, 100, 400, 200)
-        self.start_button = pygame.Rect(450, 210, 70, 70)
         self.minigame_rect = pygame.Rect(400, 100, 400, 590)
+        if self.name == "Coffee Grinder":
+            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.top + 20, 400, 200)
+            self.start_button = pygame.Rect(self.minigame_rect.centerx - 35, 480, 70, 70)
+        elif self.name == "Espresso Machine":
+            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 50, 400, 150)
+            self.start_button = pygame.Rect(490, 255, 65, 50)
+        elif self.name == "Water Boiler":
+                self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 50, 400, 200)
+                self.start_button = pygame.Rect(455, 220, 70, 90)
+        else:
+            self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 100, 400, 200)
+            self.start_button = pygame.Rect(450, 210, 70, 70)
 
         # might not need this code later
         if self.state == "error":

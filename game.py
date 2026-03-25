@@ -16,6 +16,7 @@ screen = pygame.display.set_mode((1366, 768))
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
+constants.IMAGE_LIBRARY["ladybug_register"] = pygame.image.load("Cafe_Game_Art/ladybug_register.png").convert_alpha()
 constants.IMAGE_LIBRARY["order_screen"] = pygame.image.load("Cafe_Game_Art/order_screen.png").convert()
 constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
@@ -40,6 +41,7 @@ constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").
 constants.IMAGE_LIBRARY["coffee_beans"] = pygame.image.load("Cafe_Game_Art/coffee_beans.png").convert_alpha()
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
 
+
 # All Recipes Images
 constants.IMAGE_LIBRARY["cup"] = pygame.image.load("Cafe_Game_Art/cup.png").convert_alpha()
 constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.image.load("Cafe_Game_Art/cup_w_lid.png").convert_alpha()
@@ -47,6 +49,7 @@ constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.image.load("Cafe_Game_Art/cup_w_li
 # Pre-scale all images in the library them once
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
+constants.IMAGE_LIBRARY["ladybug_register"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_register"], (300, 400))
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
 constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1"], (1366, 768))
@@ -152,6 +155,14 @@ SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
 recipe_button = Button(1190, 342, 160, 78, "Recipes", "RECIPE_MENU", None)
 shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
+
+# Main menu buttons (centered on 1366x768 screen)
+menu_start_button  = Button(483, 320, 400, 70, "Start Game", "PLAYING", None)
+menu_load_button   = Button(483, 420, 400, 70, "Load Game",  "LOAD",    None)
+
+# Pause menu buttons
+pause_resume_button = Button(483, 280, 400, 70, "Resume",    "PLAYING", None)
+pause_quit_button   = Button(483, 380, 400, 70, "Quit",      "QUIT",    None)
 # Corner prompt zone for switching cafe view
 switch_view_prompt_rect_cafe = pygame.Rect(1025, 675, 100, 100)
 switch_view_prompt_rect_middle = pygame.Rect(50, 675, 100, 100)
@@ -171,12 +182,14 @@ class GameManager:
         self.machine_loaded_slot = None
         self.money = 0
         self.active_orders = []
+        self.max_orders = 2 # Upgradable via shop later
+        self.more_hands_tier = 0 # 0 = none bought, max = 3
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
-            {"name": "Faster Grinder", "cost": 25, "purchased": False},
-            {"name": "Recipe Unlock", "cost": 40, "purchased": False},
-            {"name": "Cafe Decor", "cost": 15, "purchased": False},
+            {"name": "More Hands I",   "cost": 50,  "tier": 1, "purchased": False},
+            {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
+            {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
         ]
 
     def set_message(self, text, duration_ms=1500):
@@ -220,16 +233,25 @@ class GameManager:
         upgrade = self.upgrades[upgrade_index]
 
         if upgrade["purchased"]:
-            self.set_message("Already purchased")
+            self.set_message("Already purchased!")
             return
 
+        # Must buy previous tier first
+        if upgrade["tier"] > 1:
+            prev = self.upgrades[upgrade_index - 1]
+            if not prev["purchased"]:
+                self.set_message(f"Unlock {prev['name']} first!")
+                return
+
         if self.money < upgrade["cost"]:
-            self.set_message("Not enough money")
+            self.set_message(f"Need ${upgrade['cost']:.2f} - not enough money!")
             return
 
         self.money -= upgrade["cost"]
         upgrade["purchased"] = True
-        self.set_message(f"Purchased {upgrade['name']}")
+        self.more_hands_tier += 1
+        self.max_orders += 2
+        self.set_message(f"Purchased {upgrade['name']}! Max orders: {self.max_orders}")
 
     def handle_time(self, hrs, mins):
         """Takes in the game's hours and minutes and converts them to follow standard clock rules while on a 5 minutes interval."""
@@ -370,37 +392,49 @@ class GameManager:
         """
         Draw the placeholder shop and upgrades overlay.
         """
-        overlay = pygame.Surface((700, 420))
+        overlay = pygame.Surface((700, 460))
         overlay.set_alpha(235)
         overlay.fill((25, 25, 25))
 
         box_x = constants.WIDTH // 2 - 350
-        box_y = constants.HEIGHT // 2 - 210
+        box_y = constants.HEIGHT // 2 - 230
         screen.blit(overlay, (box_x, box_y))
-        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 460), 3)
 
         title_font = pygame.font.SysFont(None, 42)
-        body_font = pygame.font.SysFont(None, 28)
+        body_font  = pygame.font.SysFont(None, 28)
         small_font = pygame.font.SysFont(None, 22)
 
         title = title_font.render("Shop / Upgrades", True, constants.WHITE)
         screen.blit(title, (box_x + 20, box_y + 20))
 
-        money_text = body_font.render(f"Money: ${self.money}", True, constants.WHITE)
-        screen.blit(money_text, (box_x + 20, box_y + 70))
+        money_text = body_font.render(f"Money: ${self.money:.2f}", True, constants.WHITE)
+        screen.blit(money_text, (box_x + 20, box_y + 65))
 
-        hint_1 = small_font.render("Press ESC to close the shop", True, constants.WHITE)
-        hint_2 = small_font.render("Press 1, 2, or 3 to buy a placeholder upgrade", True, constants.WHITE)
-        screen.blit(hint_1, (box_x + 20, box_y + 110))
-        screen.blit(hint_2, (box_x + 20, box_y + 135))
+        orders_text = small_font.render(f"Current max orders: {self.max_orders}", True, constants.WHITE)
+        screen.blit(orders_text, (box_x + 20, box_y + 95))
 
-        item_y = box_y + 185
+        hint = small_font.render("Press ESC to close  |  Press 1, 2, 3 to buy", True, constants.WHITE)
+        screen.blit(hint, (box_x + 20, box_y + 125))
+
+        item_y = box_y + 170
         for i, upgrade in enumerate(self.upgrades):
-            status = "OWNED" if upgrade["purchased"] else f"${upgrade['cost']}"
+            # Locked if previous tier not bought yet
+            locked = upgrade["tier"] > 1 and not self.upgrades[i - 1]["purchased"]
+
+            if upgrade["purchased"]:
+                status = "OWNED"
+                color = constants.GREEN
+            elif locked:
+                status = "LOCKED"
+                color = (120, 120, 120)
+            else:
+                status = f"${upgrade['cost']:.2f}"
+                color = constants.WHITE
+
             line = body_font.render(
-                f"[{i + 1}] {upgrade['name']} - {status}",
-                True,
-                constants.GREEN if upgrade["purchased"] else constants.WHITE
+                f"[{i + 1}] {upgrade['name']} (+2 max orders) - {status}",
+                True, color
             )
             screen.blit(line, (box_x + 30, item_y))
             item_y += 55
@@ -431,6 +465,36 @@ class GameManager:
         screen.blit(outline, (message_x, message_y - 1))
         screen.blit(outline, (message_x, message_y + 1))
         screen.blit(text, (message_x, message_y))
+
+    def draw_menu_screen(self, screen):
+        """Draw the main menu with Start and Load options."""
+        screen.fill((20, 12, 8))
+
+        title_font = pygame.font.SysFont(None, 90)
+        sub_font   = pygame.font.SysFont(None, 30)
+
+        title = title_font.render("Cafe", True, (220, 180, 120))
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 160))
+
+        hint = sub_font.render("A cozy cafe management game", True, (160, 130, 90))
+        screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 265))
+
+        menu_start_button.draw(screen)
+        menu_load_button.draw(screen)
+
+    def draw_pause_menu(self, screen):
+        """Draw the pause menu overlay."""
+        overlay = pygame.Surface((constants.WIDTH, constants.HEIGHT))
+        overlay.set_alpha(160)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+
+        title_font = pygame.font.SysFont(None, 72)
+        title = title_font.render("Paused", True, constants.WHITE)
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 190))
+
+        pause_resume_button.draw(screen)
+        pause_quit_button.draw(screen)
 
     def change_counters_pos(self, view):
         if view == "MIDDLE":
@@ -473,6 +537,10 @@ class GameManager:
                     screen.blit(order_text, (c.rect.x, c.rect.y - 50))
 
             screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
+            back_img_positions = []
+            back_img_y = 0
+            for key, bx in back_img_positions:
+                screen.blit(constants.IMAGE_LIBRARY[key], (bx, back_img_y))
             if currentCust != None and currentCust.state == "waiting":
                 register1.render(screen)
             #pygame.draw.rect(screen, (255, 255, 255), counterCup)
@@ -574,7 +642,7 @@ class GameManager:
 
 def main():
     global Customer, currentCust
-    pygame.display.set_caption("Cafe Sim")
+    pygame.display.set_caption("Cafe")
     font = pygame.font.SysFont(None, 22)
 
     clock_font = pygame.font.SysFont(None, 45)
@@ -585,7 +653,7 @@ def main():
     manager = GameManager()
 
     DebugMode = False
-    GameState = "PLAYING"
+    GameState = "MENU_SCREEN"
     CafeView = "FRONT"
     RecipeView = RECIPE_VIEW_NONE
     ShopView = SHOP_VIEW_NONE
@@ -654,6 +722,21 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+
+                if event.button == 1 and GameState == "MENU_SCREEN":
+                    if menu_start_button.is_clicked(event.pos):
+                        GameState = "PLAYING"
+                    elif menu_load_button.is_clicked(event.pos):
+                        manager.set_message("Load Game not yet implemented")
+                    continue
+
+                if event.button == 1 and GameState == "PAUSED":
+                    if pause_resume_button.is_clicked(event.pos):
+                        GameState = "PLAYING"
+                    elif pause_quit_button.is_clicked(event.pos):
+                        running = False
+                    continue
+
                 if event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
                     RecipeView = RECIPE_VIEW_MENU
@@ -857,7 +940,7 @@ def main():
                         for m in machines:
                             if m.is_player_nearby(player):
                                 active_machine = m
-                                active_machine.setup_minigame(player.inventory[player.selectedSlot])
+                                active_machine.setup_minigame(player.inventory)
                                 GameState = "MACHINE"
                                 break
 
@@ -876,9 +959,8 @@ def main():
                                             break
 
                 if event.key == pygame.K_ESCAPE:
-                    if GameState == "MACHINE":
-                        active_machine = None
-                    GameState = "PLAYING"
+                    if GameState == "MENU_SCREEN":
+                        continue
                     if RecipeView != RECIPE_VIEW_NONE:
                         RecipeView = RECIPE_VIEW_NONE
                         current_screen = "game"
@@ -894,14 +976,25 @@ def main():
                         GameState = "PLAYING"
                         active_machine = None
                         continue
+                    if GameState == "PAUSED":
+                        GameState = "PLAYING"
+                        continue
+                    if GameState == "PLAYING":
+                        GameState = "PAUSED"
+                        continue
 
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
                         GameState = "PLAYING"
                         continue
 
+                    active_count = sum(1 for o in manager.active_orders if o is not None)
+                    if active_count >= manager.max_orders:
+                        manager.set_message(f"Can't take more than {manager.max_orders} orders at once!")
+                        GameState = "PLAYING"
+                        continue
+
                     manager.active_orders.insert(0, currentCust.orderedItem)
-                    time.sleep(1) # will need to be updated so the whole game doesn't pause
 
                     seat = manager.findFirstOpen(seats)  # find open seat
                     if seat is None:
@@ -955,7 +1048,7 @@ def main():
                     continue
 
 
-            if event.type == SPAWN_EVENT:
+            if event.type == SPAWN_EVENT and GameState not in ("MENU_SCREEN", "PAUSED"):
                 # if wait line is not current full and total customers not at max, spawn new customer
                 if (len(customers) < MAX_CUSTOMERS and len(customersWaiting) < MAX_CUSTOMERS_WAITING and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
 
@@ -996,13 +1089,27 @@ def main():
                             numBoxes += 1
                             break
 
-        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE and GameState not in ("MENU_SCREEN", "PAUSED"):
             for c in customers:
                 c.update(seats)
 
-        manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
+        if GameState not in ("MENU_SCREEN", "PAUSED"):
+            manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
 
-        if GameState == "PLAYING":
+        if GameState == "MENU_SCREEN":
+            manager.draw_menu_screen(screen)
+
+        elif GameState == "PAUSED":
+            frozen_keys = [False] * 512  # no inputs while paused
+            if CafeView == "FRONT":
+                manager.front_view_rendering(player, customers, font, frozen_keys, DebugMode)
+            elif CafeView == "MIDDLE":
+                manager.middle_view_rendering(player, font, frozen_keys, DebugMode)
+            else:
+                manager.back_view_rendering(player, font, frozen_keys, DebugMode)
+            manager.draw_pause_menu(screen)
+
+        elif GameState == "PLAYING":
             if RecipeView != RECIPE_VIEW_NONE:
                 manager.draw_recipe_screen(screen)
             elif ShopView != SHOP_VIEW_NONE:
@@ -1016,7 +1123,7 @@ def main():
                     manager.back_view_rendering(player, ingredientBoxes,font, keys, DebugMode)
 
         elif GameState == "REGISTER":
-            register1.take_order(screen)
+            register1.take_order(screen, currentCust)
 
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, DebugMode, font)
@@ -1036,13 +1143,14 @@ def main():
 
         clock.tick(FPS)
 
-        # Handles all text +  rendering
-        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-        orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders if o is not None)}', True, (250, 0, 0))
-        clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
-        screen.blit(text, (10, 10))
-        screen.blit(orders_text, (10, 25))
-        screen.blit(clock_text, (1202, 35))
+        # Handles all text + rendering (skip HUD on menu/pause)
+        if GameState not in ("MENU_SCREEN",):
+            text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
+            orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
+            clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
+            screen.blit(text, (10, 10))
+            screen.blit(orders_text, (10, 25))
+            screen.blit(clock_text, (1202, 35))
 
         if (GameState == "PLAYING" and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
             manager.draw_money(screen, font)
