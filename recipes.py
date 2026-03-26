@@ -1,9 +1,23 @@
 from constants import *
 
 class Recipe:
-    """The Recipe class defines a recipe a customer can order and a player can make."""
+    """
+    The Recipe class defines a recipe a customer can order and a player can make.
+    
+    This class manages the required ingredients, pricing, and the locked/unlocked 
+    status of specific drinks in the cafe.
+    """
     def __init__(self, name: str, ingredients: list, price: float, image_key, locked=True):
-        """A recipe includes a name, a list of ingredients, a price, and a sprite."""
+        """
+        A recipe includes a name, a list of ingredients, a price, and a sprite.
+        
+        Args:
+            name (str): The name of the recipe.
+            ingredients (list): List of ingredient objects required.
+            price (float): The cost of the recipe.
+            image_key (str): The key to look up the image in IMAGE_LIBRARY.
+            locked (bool): Whether the recipe is available to the player.
+        """
         if isinstance(name, str):
             self.name = name
         self.ingredients = ingredients
@@ -18,10 +32,13 @@ class Recipe:
 
         self.locked = locked
 
-
     def check_match(self, cup: list):
-        """Will take the ingredients of the current drink and try to match it to whatever recipe the customer has as
-        their ordered recipe. Is called when trying to deliver and returns True or False."""
+        """
+        Will take the ingredients of the current drink and try to match it to whatever 
+        recipe the customer has as their ordered recipe. 
+        
+        Is called when trying to deliver and returns True or False.
+        """
         if len(self.ingredients) != len(cup.contents):
             return False
         i = 0
@@ -30,7 +47,7 @@ class Recipe:
                 return False
             i += 1
         return True
-         
+          
     def get_name(self):
         """Returns name of recipe."""
         return self.name
