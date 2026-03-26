@@ -56,7 +56,7 @@ class shelfSpot(GameObject):
         self.held_ingredient_box = None
 
     def render(self, screen, font):
-        super().render(screen)
+        pygame.draw.rect(screen, self.color, self.rect, 2)
         if self.open == False:
             self.held_ingredient_box.render(screen, font)
 
