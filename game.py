@@ -1,6 +1,3 @@
-#   pylint --errors-only main.py
-#   pycodestyle --statistics main.py
-#   pdoc -o ./html main.py
 
 from classes import *
 from machines import *
@@ -1211,4 +1208,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

@@ -17,7 +17,7 @@ MAX_CUSTOMERS = 10
 MAX_CUSTOMERS_WAITING = 4
 ORDER_DELAY = 4000 # milliseconds
 
-# Colors
+""" Colors """
 TABLE_COLOR = (140, 110, 70)
 REGISTER_COLOR = (0, 0, 0)
 COUNTER_COLOR = (140, 110, 70)
@@ -74,37 +74,60 @@ RECIPE_START_Y = 200
 OPEN_RECIPE_MENU_KEY = pygame.K_m
 CLOSE_MENU_KEY = pygame.K_ESCAPE
 
-
+"""
+Cafe Game Base Classes Module.
+Defines core game objects and ingredient logic for the cafe simulation.
+"""
 
 class GameObject:
-    '''A GameObject determines an objects' position and dimensions.'''
+    """
+    A base class for all interactable and rendered entities in the game.
+
+    Attributes:
+        x (int): Horizontal coordinate.
+        y (int): Vertical coordinate.
+        w (int): Width of the object.
+        h (int): Height of the object.
+        rect (pygame.Rect): The collision and boundary rectangle.
+        color (tuple): RGB color value for default rendering.
+    """
     def __init__(self, x, y, w, h, color):
-        self.x, self.y, self.w, self.h, self.color = x, y, w, h, color
-        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
+        """Initializes position, dimensions, and the pygame Rect object."""
+        self.x, self.y, self.w, self.h = x, y, w, h
         self.color = color
+        self.rect = pygame.Rect(self.x, self.y, self.w, self.h)
 
     def render(self, screen):
-        return pygame.draw.rect(screen, self.color, self.rect)  # make render apply to all after making individual renders
+        """Draws a simple rectangle to the screen if no sprite is provided."""
+        pygame.draw.rect(screen, self.color, self.rect)
 
 
-# Ingredients Class for building all ingredients
 class Ingredient(GameObject):
-    """An Ingredient is---"""
-    def __init__(self, name, image_keys: list, an_input=False, price_to_buy=0.0, quantity=0):
-        self.image = IMAGE_LIBRARY[image_keys[0]]
+    """
+    Represents individual items used in recipes or stored in inventory.
+
+    Attributes:
+        name (str): The display name of the ingredient.
+        image (pygame.Surface): The current sprite for rendering.
+        price (float): Cost to purchase the ingredient.
+        an_input (bool): True if the item is a raw material for a machine.
+        stackable (bool): Determines if multiple units occupy one inventory slot.
+    """
+    def __init__(self, name, image_keys, an_input=False, price_to_buy=0.0, quantity=0):
+        """Sets up ingredient properties and pulls the initial sprite from the library."""
+        self.image_keys = image_keys
+        self.image = IMAGE_LIBRARY[self.image_keys[0]]
         image_rect = self.image.get_rect()
 
+        # Initialize base GameObject with image dimensions
         super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=(0, 0, 0))
 
         self.name = name
         self.price = price_to_buy
         self.an_input = an_input
-        self.image_keys = image_keys
         self.quantity = quantity
-
         self.stackable = True
 
     def render(self, screen):
+        """Blits the ingredient's sprite at its current coordinates."""
         screen.blit(self.image, (self.x, self.y))
-
-

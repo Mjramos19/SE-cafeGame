@@ -1,14 +1,35 @@
 from constants import *
 
 class Machine(GameObject, pygame.sprite.Sprite):
+    """
+    Represents a functional appliance in the cafe, such as an Espresso Machine or Grinder.
+    
+    The machine follows a state-based lifecycle: empty -> full -> running -> ready.
+    It includes a 'mini_game_mode' for player interaction and internal timers to 
+    process ingredients into outputs.
+    """
     def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, mini_game_img_keys, start_button_info, w=150, h=90):
+        """
+        Initializes the machine with its processing rules and visual assets.
+        
+        Args:
+            x (int): X-coordinate on the counter.
+            y (int): Y-coordinate on the counter.
+            name (str): The display name of the machine.
+            machine_input (Ingredient): The specific ingredient type this machine accepts.
+            outputs (list): Possible items this machine can produce.
+            num_outputs (int): How many items are produced per cycle.
+            runtime (int): Processing time in seconds.
+            mini_game_img_keys (list): Keys for empty, running, and ready sprites.
+            start_button_info (list): [x, y, w, h] for the minigame start button.
+            w (int): Width of the machine's footprint.
+            h (int): Height of the machine's footprint.
+        """
         pygame.sprite.Sprite.__init__(self)
 
         self.state = 'empty'
-        # states: empty, full, running, ready
         self.mini_game_img_keys = mini_game_img_keys
 
-        # Black square placeholder — replace with real sprites later
         try:
             self.sprite = self.get_sprite()
         except:
@@ -20,7 +41,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.rect = self.sprite.get_rect(topleft=(x,y))
         self.rect.centerx = self.counter_space_rect.centerx
         self.rect.centery = self.counter_space_rect.centery
-        self.rect.y -= 50  # accounts for the height above the counter
+        self.rect.y -= 50 
 
         self.name = name
         self.input = machine_input
@@ -32,14 +53,9 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.runtime = runtime
 
         self.contents = []
-
         self.timer_start = 0
         self.error_start = 0
         self.selected_output = None
-
-        # Interaction zone sits directly in front of (below) the machine.
-        # Uses the sprite rect's actual width and x so each machine's zone
-        # matches its visual footprint exactly, with no overlap between machines.
           
         self.interaction_zone = pygame.Rect(self.rect.x, self.y + self.h, self.rect.width - 40, 100)
         self.interaction_zone.centerx = self.rect.centerx
@@ -49,6 +65,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.ingredient_rect = None
 
     def get_sprite(self):
+        """Returns the appropriate sprite from IMAGE_LIBRARY based on current state."""
         if self.state == 'running':
             self.sprite = self.mini_game_img_keys[1]
         elif self.state == 'ready':
@@ -57,12 +74,12 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.sprite = self.mini_game_img_keys[0]
         return IMAGE_LIBRARY[self.sprite]
 
-
     def is_player_nearby(self, player):
-        '''Returns True if the player's feet are within the machine's interaction zone.'''
+        """Returns True if the player's feet are within the machine's interaction zone."""
         return player.get_foot_rect().colliderect(self.interaction_zone)
 
     def setup_minigame(self, ingredient_list):
+        """Prepares the local ingredient reference for the minigame view."""
         temp_list = ingredient_list.copy()
         
         if len(temp_list) > 0:
@@ -73,15 +90,17 @@ class Machine(GameObject, pygame.sprite.Sprite):
         if self.ingredient != None:
             self.ingredient.x, self.ingredient.y = 20, 500
 
-
     def mini_game_mode(self, screen, debug, font):
-        """When the player interacts with a machine, the minigame mode is called. This mode has a new interaction zone, start button, and handles the rendering."""
-
+        """
+        Handles the specialized full-screen UI rendering for machine interaction.
+        
+        This includes scaling the machine sprite, drawing the background, 
+        and showing timer progress.
+        """
         screen.blit(IMAGE_LIBRARY["minigame_bg"], (0, 0))
         self.minigame_rect = pygame.Rect(400, 100, 400, 590)
         self.mg_interaction_zone = pygame.Rect(400, self.minigame_rect.centery - 100, 400, 200)
 
-        # might not need this code later
         if self.state == "error":
             elapsed = pygame.time.get_ticks() - self.error_start
             if elapsed >= 1500:
@@ -93,7 +112,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             screen.blit(prompt, (400, 80))
 
         def scale_image_to_fit(img, rect):
-            """Scales the machine image proportionally to fit inside the minigame_mode rect."""
+            """Internal helper to scale the machine sprite for the minigame UI."""
             img_width, img_height = img.get_size()
             rect_width, rect_height = rect.size
             scale_factor = min(rect_width / img_width, rect_height / img_height)
@@ -117,7 +136,10 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 pygame.draw.rect(screen, (255, 255, 255), self.ingredient_rect, 3)
 
     def add(self, ingredient, player):
-        """Adds the current ingredient to the machine and changes state to full."""
+        """
+        Attempts to load an ingredient into the machine. 
+        Sets state to 'error' if input is invalid.
+        """
         if ingredient != self.input:
             print(f"cannot add {ingredient} to {self.name}.")
             self.state = "error"
@@ -127,7 +149,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.ingredient = None
 
     def run_machine(self, num=0):
-        '''Starts running the machine if it has been filled with the correct input.'''
+        """Starts the production cycle if the machine is currently full."""
         if self.state != "full":
             return
         print("run machine")
@@ -135,13 +157,16 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.begin_timer()
 
     def begin_timer(self):
-        '''Record start time and transition to running state.'''
+        """Captures start ticks and transitions machine to the running state."""
         self.timer_start = pygame.time.get_ticks()
         self.state = "running"
         print("machine running")
 
     def update(self):
-        '''Check if the running timer has elapsed and transition to ready if so.'''
+        """
+        Monitors the active timer. 
+        Transitions state to 'ready' and spawns contents once runtime expires.
+        """
         if self.state == "running":
             elapsed = pygame.time.get_ticks() - self.timer_start
             if elapsed >= self.runtime * 1000:
@@ -149,11 +174,11 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 self.contents = [self.selected_output] * self.num_outputs
 
     def select_output(self, index=0):
-        """Returns the selceted output index from the list of outputs."""
+        """Determines which output from the list will be produced."""
         return self.outputs[0]
 
     def remove_output(self):
-        """Returns the output from the ready machine."""
+        """Returns one item from the machine's contents if the state is 'ready'."""
         if self.state != "ready":
             print("nothing is brewed")
         else:
@@ -161,7 +186,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
                 return self.contents.pop()
 
     def render(self, screen, debug=False):
-        """Renders the machine sprite in cafe view."""
+        """Draws the machine in the standard cafe view."""
         screen.blit(self.get_sprite(), self.rect)
         if debug:
             pygame.draw.rect(screen, (255, 255, 0), self.interaction_zone, 2)
