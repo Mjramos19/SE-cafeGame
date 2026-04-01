@@ -101,33 +101,14 @@ class GameObject:
         """Draws a simple rectangle to the screen if no sprite is provided."""
         pygame.draw.rect(screen, self.color, self.rect)
 
-
-class Ingredient(GameObject):
+class Counter(GameObject):
     """
-    Represents individual items used in recipes or stored in inventory.
-
+    Defines the visual and placeable part of a counter unit.
+    
     Attributes:
-        name (str): The display name of the ingredient.
-        image (pygame.Surface): The current sprite for rendering.
-        price (float): Cost to purchase the ingredient.
-        an_input (bool): True if the item is a raw material for a machine.
-        stackable (bool): Determines if multiple units occupy one inventory slot.
+        placeable (bool): Whether objects can be placed on this unit.
     """
-    def __init__(self, name, image_keys, an_input=False, price_to_buy=0.0, quantity=0):
-        """Sets up ingredient properties and pulls the initial sprite from the library."""
-        self.image_keys = image_keys
-        self.image = IMAGE_LIBRARY[self.image_keys[0]]
-        image_rect = self.image.get_rect()
-
-        # Initialize base GameObject with image dimensions
-        super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=(0, 0, 0))
-
-        self.name = name
-        self.price = price_to_buy
-        self.an_input = an_input
-        self.quantity = quantity
-        self.stackable = True
-
-    def render(self, screen):
-        """Blits the ingredient's sprite at its current coordinates."""
-        screen.blit(self.image, (self.x, self.y))
+    def __init__(self, x, y, w=150, h=90, color=COUNTER_COLOR):
+        super().__init__(x, y, w, h, color)
+        self.x, self.y = x, y
+        self.placeable = True
