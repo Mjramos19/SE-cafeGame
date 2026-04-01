@@ -2,10 +2,10 @@
 
 # Web & Brew Cafe
 
-# description (purpose and functionality)
+<summary>description (purpose and functionality)</summary>
 
 # Instructions 
-# how to install, configure, run
+<summary>how to install, configure, run</summary>
 
 # Credits
 
