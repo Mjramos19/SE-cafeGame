@@ -1,4 +1,4 @@
-from classes import *
+from game import *
 from machines import *
 import constants
 from recipes import *

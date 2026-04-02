@@ -1,5 +1,9 @@
-
-from classes import *
+from furniture import *
+from items import *
+from manager import *
+from others import *
+from player import *
+from customer import *
 from machines import *
 import constants
 from recipes import *

@@ -5,8 +5,9 @@ This module defines the classes for managing the backroom storage system,
 including shelving units, individual shelf spots, and ingredient containers.
 """
 
-from classes import *
 import pygame
+
+from constants import *
 
 class stockingShelf(GameObject):
     """
