@@ -892,9 +892,15 @@ def main():
                                         if cup.contents:
                                             print("cup has something in it already")
                                             if result.an_input == False:
-                                                print("ingredient added to current cup")
-                                                cup.contents.append(result)
-                                                cup.update()
+                                                # adding check for max_capacity
+                                                if len(cup.contents) < cup.max_capacity:
+                                                    print("ingredient added to current cup")
+                                                    cup.contents.append(result)
+                                                    cup.update()
+                                                else:
+                                                    manager.set_message("Output cannot be collected: Cup is Full Capacity")
+                                                    active_machine.state = "ready" 
+                                                    active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
                                             else:
                                                 if player.addInventoryItem(result, Ingredient) == False:
                                                     active_machine.state = "ready"  
