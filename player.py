@@ -1,4 +1,5 @@
 from constants import *
+from items import *
 
 class Player(GameObject, pygame.sprite.Sprite):
     """
