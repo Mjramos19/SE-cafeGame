@@ -1120,7 +1120,7 @@ def main():
             manager.draw_menu_screen(screen)
 
         elif GameState == "PAUSED":
-            frozen_keys = [False] * 512  # no inputs while paused
+            frozen_keys = {k: False for k in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_ESCAPE]}  # no inputs while paused
             if CafeView == "FRONT":
                 manager.front_view_rendering(player, customers, font, frozen_keys, DebugMode)
             elif CafeView == "MIDDLE":
