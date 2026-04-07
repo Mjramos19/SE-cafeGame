@@ -48,7 +48,7 @@ class Cup(GameObject):
         super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=WHITE)
         self.name = "Cup"
 
-        if contents != None:
+        if contents is not None:
             self.contents = contents
         else:
             self.contents = []

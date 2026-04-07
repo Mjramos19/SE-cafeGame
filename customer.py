@@ -6,12 +6,12 @@ class Customer(GameObject, pygame.sprite.Sprite):
     
     Attributes:
         sprite (pygame.Surface): The current visual image of the customer.
-        recipesUnlocked (list): The list of available recipes the customer can pick from.
-        orderedItem (Recipe): The specific recipe the customer has ordered.
+        recipes_unlocked (list): The list of available recipes the customer can pick from.
+        ordered_item (Recipe): The specific recipe the customer has ordered.
         state (str): The current behavior state (waiting, finding seat, etc.).
-        waitBar_length (int): The current satisfaction/timer value.
+        wait_bar_length (int): The current satisfaction/timer value.
     """
-    def __init__(self, x, y, image_keys, recipesUnlockedList, linePosition):
+    def __init__(self, x, y, image_keys, recipes_unlocked_list, line_position):
         """
         Initializes a customer with a random order and a designated line position.
         
@@ -19,15 +19,15 @@ class Customer(GameObject, pygame.sprite.Sprite):
             x (int): Starting horizontal position.
             y (int): Starting vertical position.
             image_keys (list): Keys for retrieved sprites from IMAGE_LIBRARY.
-            recipesUnlockedList (list): List of Recipe objects available for ordering.
-            linePosition (tuple): The (x, y) coordinate for the customer's spot in line.
+            recipes_unlocked_list (list): List of Recipe objects available for ordering.
+            line_position (tuple): The (x, y) coordinate for the customer's spot in line.
         """
         pygame.sprite.Sprite.__init__(self)
 
         self.image_keys = image_keys
         try:
             self.sprite = IMAGE_LIBRARY[self.image_keys[0]]
-        except:
+        except KeyError:
             self.sprite = pygame.Surface((30 * 4, 67 * 4))
             self.sprite.fill((255, 0, 0))
 
@@ -35,59 +35,55 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.image = self.sprite
         self.rect = self.image.get_rect(topleft=(x, y))
 
-        self.recipesUnlocked = recipesUnlockedList
-        self.orderedItem = self.pickItem()
+        self.recipes_unlocked = recipes_unlocked_list
+        self.ordered_item = self.pick_item()
         self.state = "waiting"
-        self.targetSeat = None
-        self.targetPosition = None
-        self.linePosition = linePosition
+        self.target_seat = None
+        self.target_position = None
+        self.line_position = line_position
         self.foot_w, self.foot_h = (18 * 4), (8 * 4)
 
-        self.waitBar_length = 10000
+        self.wait_bar_length = 10000
 
         # Drinking / leaving behavior
         self.drink_start_time = None
         self.drink_duration = 1500  # milliseconds
         self.serve_result = None
 
-    def pickItem(self):
+    def pick_item(self):
         """
         Picks a random item from the list of unlocked recipes.
         
         Returns:
             Recipe: The randomly selected recipe object.
         """
-        itemNum = random.randint(0, len(self.recipesUnlocked) - 1)
-        return self.recipesUnlocked[itemNum]
+        item_num = random.randint(0, len(self.recipes_unlocked) - 1)
+        return self.recipes_unlocked[item_num]
 
-    def findSeat(self):
+    def find_seat(self):
         """Moves the customer toward a target seat and occupies it upon arrival."""
 
-        if self.targetSeat is None:
+        if self.target_seat is None:
             return
 
-        target_x, target_y = self.targetSeat.rect.x, self.targetSeat.rect.y
-
-        # calculate remaining distance between customer and seat every iteration
-        distanceY = self.targetSeat.rect.y - self.rect.y
-        distanceX = self.targetSeat.rect.x - self.rect.x
+        target_x, target_y = self.target_seat.rect.x, self.target_seat.rect.y
 
         reached = self.move_toward_point(target_x, target_y)
 
         if reached:
-            self.rect.center = self.targetSeat.rect.center
+            self.rect.center = self.target_seat.rect.center
             self.x, self.y = self.rect.x, self.rect.y
             self.state = "seated"
             # Changes the direction the customer is seated depending on the seat's number
             self.sprite = IMAGE_LIBRARY[self.image_keys[1]]
-            if self.targetSeat.num % 2 != 0:
+            if self.target_seat.num % 2 != 0:
                 self.sprite = pygame.transform.flip(self.sprite, True, False)
-            self.targetSeat.occupySeat(self)
+            self.target_seat.occupy_seat(self)
 
             # Now that the customer is sitting, get rid of foot rect. Logic handled in get_foot_rect()
             self.foot_w = 0
             # Also reset wait bar
-            self.waitBar_length = 10000
+            self.wait_bar_length = 10000
 
     def move_toward_point(self, target_x, target_y):
         """
@@ -117,15 +113,15 @@ class Customer(GameObject, pygame.sprite.Sprite):
         return self.rect.x == target_x and self.rect.y == target_y
 
 
-    def moveUpInLine(self):
+    def move_up_in_line(self):
         """Move smoothly to the customer's next assigned line position."""
-        target_x, target_y = self.linePosition[0], self.linePosition[1]
+        target_x, target_y = self.line_position[0], self.line_position[1]
 
         reached = self.move_toward_point(target_x, target_y)
         if reached:
             self.state = "waiting"
 
-    def start_drinking(self, result):  # should be finding the result using the check_match() func from recipes
+    def start_drinking(self, result):
         """
         Put the customer into the drinking state after being served.
         
@@ -143,13 +139,13 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
         # Free the seat immediately so it can be reused once the customer
         # finishes this short drinking phase.
-        if self.targetSeat is not None:
-            self.targetSeat.openSeat()
+        if self.target_seat is not None:
+            self.target_seat.open_seat()
 
     def leave_cafe(self):
         """Moves the customer toward the exit coordinate off-screen."""
         self.sprite = IMAGE_LIBRARY[self.image_keys[0]]
-          # Change back to walking sprite
+        # Change back to walking sprite
         target_x = -self.w - 50
         target_y = self.rect.y
 
@@ -163,20 +159,20 @@ class Customer(GameObject, pygame.sprite.Sprite):
         """Sets the customer's behavioral state."""
         self.state = state
 
-    def set_targetSeat(self, seat):
+    def set_target_seat(self, seat):
         """Assigns a target seat and sets a waypoint in front of it."""
-        self.targetSeat = seat
+        self.target_seat = seat
         # First walk up to a point in front of the chair area, then go to the exact seat
-        self.targetPosition = (seat.rect.x, 330)
+        self.target_position = (seat.rect.x, 330)
 
-    def render(self, screen, debugmode):
+    def render(self, screen, debugmode=False):
         """Renders customer and satisfaction bar."""
         screen.blit(self.sprite, self.rect)
 
-        waitRect = pygame.Rect(self.rect.x, self.rect.y - 20, self.waitBar_length // 100, 10)
-        pygame.draw.rect(screen, (255, 255, 255), waitRect)
+        wait_rect = pygame.Rect(self.rect.x, self.rect.y - 20, self.wait_bar_length // 100, 10)
+        pygame.draw.rect(screen, (255, 255, 255), wait_rect)
 
-        if debugmode == True:
+        if debugmode is True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 1)
 
     def calculate_tip(self):
@@ -186,73 +182,70 @@ class Customer(GameObject, pygame.sprite.Sprite):
         Returns:
             tuple: (base_pay, tip, total)
         """
-        base_pay = self.orderedItem.get_price()
-        tip_percent = self.waitBar_length / 10000
+        base_pay = self.ordered_item.get_price()
+        tip_percent = self.wait_bar_length / 10000
         tip = round(base_pay * tip_percent, 2)
         total = round(base_pay + tip, 2)
         return base_pay, tip, total
 
 
+    def _update_wait_bar(self):
+        """Decrements the wait bar while seated or waiting; triggers leaving when empty."""
+        if self.wait_bar_length == 0:
+            self.state = "leaving"
+        else:
+            self.wait_bar_length -= 1
+
+    def _handle_walking_to_line(self):
+        """Walks the customer from off-screen to their line position."""
+        target_x, target_y = self.line_position[0], self.line_position[1]
+        if self.move_toward_point(target_x, target_y):
+            self.state = "waiting"
+
+    def _handle_walking_to_table(self):
+        """Walks the customer to the waypoint in front of the table area."""
+        if self.target_position is None:
+            return
+        if self.move_toward_point(self.target_position[0], self.target_position[1]):
+            self.state = "finding seat"
+
+    def _handle_drinking(self):
+        """Waits out the drink timer then transitions to leaving."""
+        if self.drink_start_time is not None:
+            elapsed = pygame.time.get_ticks() - self.drink_start_time
+            if elapsed >= self.drink_duration:
+                self.state = "leaving"
+
+    def _clamp_to_screen(self):
+        """Keeps the customer inside the game window boundaries."""
+        self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
+        self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
+
     def update(self, collisions):
         """
         Updates the customer's behavior every frame using a state machine.
-        
+
         Args:
-            collisions (list): List of collision boundaries.
+            collisions (list): List of collision boundaries (reserved for future use).
         """
+        if self.state in ("waiting", "seated"):
+            self._update_wait_bar()
 
-        #if customers wait bar is empty, set their state to leaving. Else, decrement by 1
-        if self.state == "waiting" or self.state == "seated":
-            if self.waitBar_length == 0:
-                self.state = "leaving"
-            else:
-                self.waitBar_length -= 1
+        state_handlers = {
+            "walking to line": self._handle_walking_to_line,
+            "walking to table": self._handle_walking_to_table,
+            "finding seat": self.find_seat,
+            "moving up in line": self.move_up_in_line,
+            "drinking": self._handle_drinking,
+            "leaving": self.leave_cafe,
+        }
 
-        # State 0: Walk in from off-screen to line position
-        if self.state == "walking to line":
-            target_x, target_y = self.linePosition[0], self.linePosition[1]
-            reached = self.move_toward_point(target_x, target_y)
-            if reached:
-                self.state = "waiting"
+        handler = state_handlers.get(self.state)
+        if handler is not None:
+            handler()
 
-        # State 1: Walking toward the table area
-        if self.state == "walking to table" and self.targetPosition is not None:
-            # Move toward the temporary target position
-            reached = self.move_toward_point(
-                self.targetPosition[0],
-                self.targetPosition[1]
-            )
-
-            # Once the temporary position is reached switch state
-            if reached:
-                self.state = "finding seat"
-
-        # State 2: Move toward assigned seat
-        if self.state == "finding seat" and self.targetSeat is not None:
-            self.findSeat()
-
-        # State 3: Moving forward in the line
-        if self.state == "moving up in line" and self.linePosition is not None:
-            self.moveUpInLine()
-
-        # State 4: Pause briefly to simulate drinking
-        if self.state == "drinking":
-            current_time = pygame.time.get_ticks()
-
-            # Once the drink delay is over, begin leaving.
-            if self.drink_start_time is not None:
-                if current_time - self.drink_start_time >= self.drink_duration:
-                    self.state = "leaving"
-
-        # State 5: Leave the cafe
-        if self.state == "leaving":
-            self.leave_cafe()
-
-        # Keep customer inside the game window unless they are
-        # actively leaving or already gone.
-        if self.state != "leaving" and self.state != "gone":
-            self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
-            self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
+        if self.state not in ("leaving", "gone"):
+            self._clamp_to_screen()
 
         # Synchronize logical position with sprite position
         self.x, self.y = self.rect.x, self.rect.y
@@ -263,7 +256,8 @@ class Customer(GameObject, pygame.sprite.Sprite):
             foot_x = self.x + (self.w // 2) - (self.foot_w // 2)
             foot_y = self.y + self.h - self.foot_h
             return pygame.Rect(foot_x, foot_y, self.foot_w, self.foot_h)
+        return None
 
     def __str__(self):
         """Returns current state and assigned seat as a string."""
-        return f'State: {self.state}, Target Seat: {self.targetSeat}'
+        return f'State: {self.state}, Target Seat: {self.target_seat}'

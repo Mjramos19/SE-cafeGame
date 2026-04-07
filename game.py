@@ -313,19 +313,19 @@ class GameManager:
                 customer_group.remove(customer)
 
             # Remove the customer's resolved order card once they are fully gone.
-            if customer.orderedItem is not None:
+            if customer.ordered_item is not None:
                 for i in range(len(manager.active_orders)):
-                    if manager.active_orders[i] is customer.orderedItem:
+                    if manager.active_orders[i] is customer.ordered_item:
                         manager.active_orders[i] = None
                         break
-                customer.orderedItem = None
+                customer.ordered_item = None
 
         # Recalculate the current waiting customer.
         if len(customersWaiting) > 0:
             currentCust = customersWaiting[0]
         else:
             currentCust = None
-            Register.customerWaiting = False
+            Register.customer_waiting = False
 
     def drawHotBar(self, player, font):
         player.updateInventoryLengths()
@@ -536,8 +536,8 @@ class GameManager:
         depth_list.sort(key=lambda obj: obj.rect.bottom)
 
         for c in customers:
-            if c.orderedItem is not None and (c.state == "finding seat" or c.state == "seated"):
-                order_text = font.render(f"{c.orderedItem.get_name()}", True, (255, 255, 255), (0, 0, 0))
+            if c.ordered_item is not None and (c.state == "finding seat" or c.state == "seated"):
+                order_text = font.render(f"{c.ordered_item.get_name()}", True, (255, 255, 255), (0, 0, 0))
                 screen.blit(order_text, (c.rect.x, c.rect.y - 50))
 
         if player.rect.bottom < 610:
@@ -565,10 +565,10 @@ class GameManager:
         recipe_button.draw(screen)
         shop_button.draw(screen)
 
-        if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
+        if player.rect.colliderect(register1.interaction_zone) and register1.customer_waiting:
             label = font.render("[E] Take Order", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (
-            register1.interactionZone.centerx - label.get_width() // 2, register1.interactionZone.top - 24,), )
+            register1.interaction_zone.centerx - label.get_width() // 2, register1.interaction_zone.top - 24,), )
 
         if player.rect.colliderect(switch_view_prompt_rect_cafe):
             label = font.render("[Q] Switch View", True, constants.WHITE, constants.BLACK)
@@ -578,7 +578,7 @@ class GameManager:
         if DebugMode == True:
             for c in front_counters:
                 pygame.draw.rect(screen, (250, 0, 0), c)
-            pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
+            pygame.draw.rect(screen, (255, 255, 0), register1.interaction_zone, 3)
             for c in front_collisions:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
@@ -604,7 +604,7 @@ class GameManager:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
             for c in middle_counters:
                 pygame.draw.rect(screen, (250, 0, 0), c)
-            pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
+            pygame.draw.rect(screen, (255, 255, 0), register2.interaction_zone, 3)
             pygame.draw.rect(screen, (255, 255, 0), doorEntry, 2)
 
         recipe_button.draw(screen)
@@ -818,7 +818,7 @@ def main():
                     customers.clear()
                     customersWaiting.clear()
                     manager.clear_round_state()
-                    Register.customerWaiting = False
+                    Register.customer_waiting = False
                     currentCust = None
 
                 if event.key == pygame.K_q and GameState=="PLAYING":
@@ -832,7 +832,7 @@ def main():
                         manager.change_counters_pos(CafeView)
 
                 if event.key == pygame.K_f:
-                    if player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
+                    if player.get_foot_rect().colliderect(sink.interaction_zone) and CafeView == "MIDDLE":
                         result = player.addInventoryItem(water, Ingredient)
                         if result == True:
                             manager.set_message("Collected water!")
@@ -841,9 +841,9 @@ def main():
 
                 # if player presses e inside registers collision zone, and there is a customer, take order
                 if event.key == pygame.K_e:
-                    if player.get_foot_rect().colliderect(register1.interactionZone) and register1.customerWaiting and CafeView == "FRONT":
+                    if player.get_foot_rect().colliderect(register1.interaction_zone) and register1.customer_waiting and CafeView == "FRONT":
                         GameState = "REGISTER"
-                    elif player.get_foot_rect().colliderect(register2.interactionZone) and register2.customerWaiting and CafeView == "MIDDLE":
+                    elif player.get_foot_rect().colliderect(register2.interaction_zone) and register2.customer_waiting and CafeView == "MIDDLE":
                         GameState = "REGISTER"
                     elif player.get_foot_rect().colliderect(doorEntry) and GameState == "PLAYING" and CafeView == "MIDDLE":
                         CafeView = "BACKROOM"
@@ -852,7 +852,7 @@ def main():
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 30, 115
                       
-                    elif player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
+                    elif player.get_foot_rect().colliderect(sink.interaction_zone) and CafeView == "MIDDLE":
                         result = sink.clear_cup(player)
                         if result == True:
                             manager.set_message("Cup emptied!")
@@ -862,7 +862,7 @@ def main():
                     elif CafeView == "FRONT" and len(manager.active_orders) > 0:
                         nearby = manager.get_nearby_seated_customer(player, customers)
                         if nearby and nearby.state == "seated":
-                            customer_order = nearby.orderedItem
+                            customer_order = nearby.ordered_item
                             if len(player.inventory[player.selectedSlot]) > 0 and type(player.inventory[player.selectedSlot][0]) == Cup:
                                 player_hand = player.inventory[player.selectedSlot][0]
                                 if customer_order.check_match(player_hand) == True:
@@ -966,7 +966,7 @@ def main():
                     elif CafeView == "BACKROOM" and GameState == "PLAYING":
                         print("checking backroom interactions")
                         for i in range(len(ingredientBoxes)):
-                            #Finds each ingredient box instance and checks for collision with interactionZone
+                            #Finds each ingredient box instance and checks for collision with interaction_zone
                             if ingredientBoxes[i] != None:
                                 if player.get_foot_rect().colliderect(ingredientBoxes[i].interactionZone):
                                     #grabs corresponding box and adds it to first open hot bar slot
@@ -1013,7 +1013,7 @@ def main():
                         GameState = "PLAYING"
                         continue
 
-                    manager.active_orders.insert(0, currentCust.orderedItem)
+                    manager.active_orders.insert(0, currentCust.ordered_item)
 
                     seat = manager.findFirstOpen(seats)  # find open seat
                     if seat is None:
@@ -1022,16 +1022,16 @@ def main():
 
                     # If the order could not be accepted because cup slots are full,
                     # keep the customer at the register and undo the seat reservation.
-                    if currentCust.orderedItem is None:
-                        seat.openSeat()
-                        currentCust.targetSeat = None
+                    if currentCust.ordered_item is None:
+                        seat.open_seat()
+                        currentCust.target_seat = None
                         currentCust.seat_number = None
-                        currentCust.targetPosition = None
+                        currentCust.target_position = None
                         currentCust.set_state("waiting")
                         continue
                     else:
-                        seat.reserveSeat(currentCust)
-                        currentCust.set_targetSeat(seat)
+                        seat.reserve_seat(currentCust)
+                        currentCust.set_target_seat(seat)
                         currentCust.set_state("walking to table")
 
                         # When taking an order, create a cup object, then add it.
@@ -1044,13 +1044,13 @@ def main():
                         # Move remaining customers up in line.
                         for i in range(len(customersWaiting)):
                             customersWaiting[i].state = "moving up in line"
-                            customersWaiting[i].linePosition = LINE_POSITIONS[i]
+                            customersWaiting[i].line_position = LINE_POSITIONS[i]
                         # Update current front-of-line customer.
                         if len(customersWaiting) > 0:
                             currentCust = customersWaiting[0]
                         else:
                             currentCust = None
-                            Register.customerWaiting = False
+                            Register.customer_waiting = False
 
                     GameState = "PLAYING"
 
@@ -1082,7 +1082,7 @@ def main():
                     '''Each customer we design will have a list of image keys. Eventually we will have s system to make
                     different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
                     currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
-                                            linePosition=LINE_POSITIONS[index])
+                                            line_position=LINE_POSITIONS[index])
                     
                     currCustomer.set_state("walking to line")
                     if index == 0:
@@ -1157,7 +1157,7 @@ def main():
             m.update()
 
         if currentCust != None and currentCust.state == "waiting" and GameState == "PLAYING":
-            register1.setWaiting()
+            register1.set_waiting()
 
         clock.tick(FPS)
 
