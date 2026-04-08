@@ -84,10 +84,6 @@ class Player(GameObject, pygame.sprite.Sprite):
                 self.x, self.y = old_x, old_y
                 break
 
-    def deliver(self, table):
-        """Placeholder for the item delivery function."""
-        pass
-
 #helper function to update hotbar quantities every frame
     def updateInventoryLengths(self):
         """Updates the inventoryQuants list with current lengths of inventory slots."""
