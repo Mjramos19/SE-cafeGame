@@ -57,7 +57,7 @@ class shelfSpot(GameObject):
         Args:
             player (Player): The player object attempting to store an item.
         """
-        slot = player.inventory[player.selectedSlot]
+        slot = player.inventory[player.selected_slot]
         if len(slot) == 0 or (not (isinstance(slot[0], ingredientBox))):
                 return
         
@@ -69,7 +69,7 @@ class shelfSpot(GameObject):
                 self.open = False
                 item.updatePosition(self.rect.center)
                 item.interactionZone = None
-                player.popInventoryItem(item, type(item))
+                player.pop_inv_item(item, type(item))
                 
     def removeIngredientBox(self):
         """Clears the spot, allowing a new box to be placed."""
@@ -79,7 +79,7 @@ class shelfSpot(GameObject):
     def render(self, screen, font):
         """Renders the spot and its contained box if it is currently occupied."""
         super().render(screen)
-        if self.open == False:
+        if self.open is False:
             self.held_ingredient_box.render(screen, font)
 
 class ingredientBox(GameObject):
@@ -146,7 +146,7 @@ class ingredientBox(GameObject):
         Args:
             player (Player): The player retrieving the ingredient.
         """
-        player.addInventoryItem(self.ingredient, type(self.ingredient))
+        player.add_item_to_inv(self.ingredient, type(self.ingredient))
         self.quantity -= 1
         if self.quantity == 0:
             self.spot.removeIngredientBox()

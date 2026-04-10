@@ -107,15 +107,15 @@ class Sink(Counter):
         Args:
             player (Player): The player instance performing the action.
         """
-        curr_slot = player.inventory[player.selectedSlot]
+        curr_slot = player.inventory[player.selected_slot]
         if curr_slot and isinstance(curr_slot[0], Cup) and curr_slot[0].contents:
             cup_to_clear = curr_slot.pop()
             cup_to_clear.contents.clear()
             cup_to_clear.update()
             print(f'{cup_to_clear}')
-            added = player.addInventoryItem(cup_to_clear, Cup)
+            added = player.add_item_to_inv(cup_to_clear, Cup)
             if not added:
-                player.inventory[player.selectedSlot].append(cup_to_clear)
+                player.inventory[player.selected_slot].append(cup_to_clear)
             return True
         return False
 

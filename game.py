@@ -328,7 +328,7 @@ class GameManager:
             Register.customer_waiting = False
 
     def drawHotBar(self, player, font):
-        player.updateInventoryLengths()
+        player.update_inv_lengths()
         for i in range(NUM_SLOTS):
             # makes rectangle object for that inventory slot at corresponding inventory position
             slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1], SLOT_SIZE, SLOT_SIZE)
@@ -336,7 +336,7 @@ class GameManager:
             # draws the grey slot background at that spot
             pygame.draw.rect(screen, (40, 40, 40), slot)
 
-            quantNum = font.render(f"{player.inventoryQuants[i]}", True, (255, 255, 255))
+            quantNum = font.render(f"{player.inventory_quants[i]}", True, (255, 255, 255))
             screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
 
 
@@ -347,7 +347,7 @@ class GameManager:
                 pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
 
             # if that inventory slot is selected, draw thick white border, else: draw thin black border
-            if i == player.selectedSlot:
+            if i == player.selected_slot:
                 pygame.draw.rect(screen, (255, 255, 255), slot, 3)
             else:
                 pygame.draw.rect(screen, (0, 0, 0), slot, 2)
@@ -361,7 +361,7 @@ class GameManager:
                         if spot_list[0].name != "Cup":
                             screen.blit(font.render(f'{spot_list[0].name}', True, (0, 0, 0), (255, 255, 255)), (slot.x + 60, slot.y + 15))
                         else:
-                            if spot_list[0].stackable == True:
+                            if spot_list[0].stackable is True:
                                 text = font.render("Empty Cup", True, (0, 0, 0), (255, 255, 255))
                                 screen.blit(text, (slot.x + 60, slot.y + 15))
                             else:
@@ -575,7 +575,7 @@ class GameManager:
             screen.blit(label, (switch_view_prompt_rect_cafe.centerx - label.get_width() // 2,
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
-        if DebugMode == True:
+        if DebugMode is True:
             for c in front_counters:
                 pygame.draw.rect(screen, (250, 0, 0), c)
             pygame.draw.rect(screen, (255, 255, 0), register1.interaction_zone, 3)
@@ -599,7 +599,7 @@ class GameManager:
 
         screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
-        if DebugMode == True:
+        if DebugMode is True:
             for c in middle_collisions:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
             for c in middle_counters:
@@ -686,7 +686,7 @@ def main():
 
 
     for recipe in ALL_RECIPES:
-        if recipe.locked == False:
+        if recipe.locked is False:
             RECIPES_UNLOCKED.append(recipe)
 
     running = True
@@ -717,7 +717,7 @@ def main():
 
 
             '''IMPORTANT: here is a spot to add key presses that do what you might need without having the logic behind it'''
-            if DebugMode == True:
+            if DebugMode is True:
                 if event.type == pygame.MOUSEMOTION:
                     #print(f"Mouse position: X={m_x}, Y={m_y}")
                     pass
@@ -778,7 +778,7 @@ def main():
                                 #loops through shelf spots of shelf
                                 for shelfSpot in obj.spots:
                                     #players selected inventory slot item
-                                    slot = player.inventory[player.selectedSlot]
+                                    slot = player.inventory[player.selected_slot]
                                     #if player clicks on shelf spot
                                     mouse_pos = pygame.mouse.get_pos()
                                     if shelfSpot.rect.collidepoint(mouse_pos) and event.button == 1:
@@ -800,16 +800,16 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if GameState == "PLAYING" and not active_machine:
                     if event.key == pygame.K_1:
-                        player.selectedSlot = 0
+                        player.selected_slot = 0
                     elif event.key == pygame.K_2:
-                        player.selectedSlot = 1
+                        player.selected_slot = 1
                     elif event.key == pygame.K_3:
-                        player.selectedSlot = 2
+                        player.selected_slot = 2
                     elif event.key == pygame.K_4:
-                        player.selectedSlot = 3
+                        player.selected_slot = 3
 
                 if event.key == pygame.K_0:
-                    if DebugMode == False:
+                    if DebugMode is False:
                         DebugMode = True
                     else:
                         DebugMode = False
@@ -833,8 +833,8 @@ def main():
 
                 if event.key == pygame.K_f:
                     if player.get_foot_rect().colliderect(sink.interaction_zone) and CafeView == "MIDDLE":
-                        result = player.addInventoryItem(water, Ingredient)
-                        if result == True:
+                        result = player.add_item_to_inv(water, Ingredient)
+                        if result is True:
                             manager.set_message("Collected water!")
                         else:
                             manager.set_message("Cannot collect water: Inventory Full")
@@ -854,7 +854,7 @@ def main():
                       
                     elif player.get_foot_rect().colliderect(sink.interaction_zone) and CafeView == "MIDDLE":
                         result = sink.clear_cup(player)
-                        if result == True:
+                        if result is True:
                             manager.set_message("Cup emptied!")
                         else:
                             manager.set_message("No cup with contents selected to clear!")
@@ -863,9 +863,9 @@ def main():
                         nearby = manager.get_nearby_seated_customer(player, customers)
                         if nearby and nearby.state == "seated":
                             customer_order = nearby.ordered_item
-                            if len(player.inventory[player.selectedSlot]) > 0 and type(player.inventory[player.selectedSlot][0]) == Cup:
-                                player_hand = player.inventory[player.selectedSlot][0]
-                                if customer_order.check_match(player_hand) == True:
+                            if len(player.inventory[player.selected_slot]) > 0 and type(player.inventory[player.selected_slot][0]) == Cup:
+                                player_hand = player.inventory[player.selected_slot][0]
+                                if customer_order.check_match(player_hand) is True:
                                     base_pay, tip, total = nearby.calculate_tip()
                                     manager.money += total  
                                     manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
@@ -875,14 +875,14 @@ def main():
                                     manager.set_message("Customer rejected the order!", 2500)
 
                                 manager.active_orders.remove(customer_order)
-                                player.inventory[player.selectedSlot].pop(0) 
+                                player.inventory[player.selected_slot].pop(0) 
 
 
                     elif GameState == "MACHINE" and active_machine:
                         if active_machine.state == "ready":
                             result = active_machine.remove_output()
                             if result:
-                                curr_slot = player.inventory[player.selectedSlot]
+                                curr_slot = player.inventory[player.selected_slot]
                                 # also check if the spot has a cup or if the spot is full already
                                 if len(curr_slot) > 0: 
                                     if type(curr_slot[0]) == Cup: 
@@ -891,7 +891,7 @@ def main():
 
                                         if cup.contents:
                                             print("cup has something in it already")
-                                            if result.an_input == False:
+                                            if result.an_input is False:
                                                 # adding check for max_capacity
                                                 if len(cup.contents) < cup.max_capacity:
                                                     print("ingredient added to current cup")
@@ -902,20 +902,20 @@ def main():
                                                     active_machine.state = "ready" 
                                                     active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
                                             else:
-                                                if player.addInventoryItem(result, Ingredient) == False:
+                                                if player.add_item_to_inv(result, Ingredient) is False:
                                                     active_machine.state = "ready"  
                                                     active_machine.contents.append(result)
                                                     manager.set_message("Output cannot be collected: Must Use A Cup")
                                         else:
                                             print("trying to add to empty cup")
-                                            if result.an_input == False:
+                                            if result.an_input is False:
                                                 pulled_cup = curr_slot.pop(0) #pull the cup out of the inventory
                                                 #pulled_cup = copy.deepcopy(pulled_cup)
                                                 pulled_cup.contents.append(result) #add the machine output to the cup's contents
                                                 pulled_cup.update()
                                                 print("pulled cup:", pulled_cup.name, "with contents:", [o.name for o in pulled_cup.contents], pulled_cup.stackable)
                                                 
-                                                if player.addInventoryItem(pulled_cup, Cup) == False:
+                                                if player.add_item_to_inv(pulled_cup, Cup) is False:
                                                     manager.set_message("Output cannot be collected: Inventory Full")
                                                     pulled_cup.contents.remove(result) #remove the machine output from the cup's contents since it can't be added to inventory
                                                     pulled_cup.update()
@@ -930,9 +930,9 @@ def main():
 
                                     elif isinstance(curr_slot[0], Ingredient):
                                             print("player holding an ingredient:", curr_slot[0].name)
-                                            if result.an_input == True:
+                                            if result.an_input is True:
                                                 print(f'{result.name}, {result.an_input}')
-                                                if player.addInventoryItem(result, Ingredient) == False:
+                                                if player.add_item_to_inv(result, Ingredient) is False:
                                                     active_machine.set_state("ready")  
                                                     active_machine.contents.append(result)
                                                     manager.set_message("Output cannot be collected: Inventory Full")
@@ -946,8 +946,8 @@ def main():
 
                                 else:
                                     print("player holding nothing. Result:", result.name, result.an_input)
-                                    if result.an_input == True:
-                                        player.addInventoryItem(result, Ingredient)
+                                    if result.an_input is True:
+                                        player.add_item_to_inv(result, Ingredient)
                                         print("added to empty")
                                     else: 
                                         print("could not add to empty")
@@ -964,7 +964,7 @@ def main():
                         for m in machines:
                             if m.is_player_nearby(player):
                                 active_machine = m
-                                active_machine.setup_minigame(player.inventory[player.selectedSlot])
+                                active_machine.setup_minigame(player.inventory[player.selected_slot])
                                 GameState = "MACHINE"
                                 break
 
@@ -976,8 +976,8 @@ def main():
                             if ingredientBoxes[i] != None:
                                 if player.get_foot_rect().colliderect(ingredientBoxes[i].interactionZone):
                                     #grabs corresponding box and adds it to first open hot bar slot
-                                    result = player.addInventoryItem(ingredientBoxes[i], ingredientBox)
-                                    if result == True:
+                                    result = player.add_item_to_inv(ingredientBoxes[i], ingredientBox)
+                                    if result is True:
                                         ingredientBox.popBox(ingredientBoxes[i], ingredientBoxes, backroom_collisions)
                                         numBoxes -= 1
                                     else:
@@ -1042,7 +1042,7 @@ def main():
 
                         # When taking an order, create a cup object, then add it.
                         new_cup_instance = Cup(["cup", "cup_w_lid"])
-                        player.addInventoryItem(new_cup_instance, Cup)
+                        player.add_item_to_inv(new_cup_instance, Cup)
 
                         # Remove from line.
                         if len(customersWaiting) > 0:
@@ -1107,7 +1107,7 @@ def main():
                 # if ingredient spots open, spawn random ingredient box
                 if numBoxes < MAX_INGREDIENT_BOXES:
                     for i in range(MAX_INGREDIENT_BOXES):
-                        if ingredientBoxes[i] == None:
+                        if ingredientBoxes[i] is None:
                             x, y = BOX_POSITIONS[i]
                             ingredBox = ingredientBox(x, y, ingredientBox.pickIngredient(INGREDIENTS))
                             ingredientBoxes[i] = ingredBox
@@ -1176,7 +1176,7 @@ def main():
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
             screen.blit(orders_text, (10, 25))
             screen.blit(clock_text, (1202, 35))
-            if DebugMode == True:
+            if DebugMode is True:
                 text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
                 screen.blit(text, (10, 10))
 

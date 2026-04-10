@@ -156,7 +156,7 @@ class GameManager:
             Register.customer_waiting = False
 
     def drawHotBar(self, player, font):
-        player.updateInventoryLengths()
+        player.update_inv_lengths()
         for i in range(NUM_SLOTS):
             # makes rectangle object for that inventory slot at corresponding inventory position
             slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1], SLOT_SIZE, SLOT_SIZE)
@@ -164,7 +164,7 @@ class GameManager:
             # draws the grey slot background at that spot
             pygame.draw.rect(screen, (40, 40, 40), slot)
 
-            quantNum = font.render(f"{player.inventoryQuants[i]}", True, (255, 255, 255))
+            quantNum = font.render(f"{player.inventory_quants[i]}", True, (255, 255, 255))
             screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
 
 
@@ -175,7 +175,7 @@ class GameManager:
                 pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
 
             # if that inventory slot is selected, draw thick white border, else: draw thin black border
-            if i == player.selectedSlot:
+            if i == player.selected_slot:
                 pygame.draw.rect(screen, (255, 255, 255), slot, 3)
             else:
                 pygame.draw.rect(screen, (0, 0, 0), slot, 2)
@@ -189,7 +189,7 @@ class GameManager:
                         if spot_list[0].name != "Cup":
                             screen.blit(font.render(f'{spot_list[0].name}', True, (0, 0, 0), (255, 255, 255)), (slot.x + 60, slot.y + 15))
                         else:
-                            if spot_list[0].stackable == True:
+                            if spot_list[0].stackable is True:
                                 text = font.render("Empty Cup", True, (0, 0, 0), (255, 255, 255))
                                 screen.blit(text, (slot.x + 60, slot.y + 15))
                             else:
@@ -403,7 +403,7 @@ class GameManager:
             screen.blit(label, (switch_view_prompt_rect_cafe.centerx - label.get_width() // 2,
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
-        if DebugMode == True:
+        if DebugMode is True:
             for c in front_counters:
                 pygame.draw.rect(screen, (250, 0, 0), c)
             pygame.draw.rect(screen, (255, 255, 0), register1.interaction_zone, 3)
@@ -427,7 +427,7 @@ class GameManager:
 
         screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
-        if DebugMode == True:
+        if DebugMode is True:
             for c in middle_collisions:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
             for c in middle_counters:
