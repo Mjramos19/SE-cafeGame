@@ -269,7 +269,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>shelfSpot.render</td>
-                <td><pre>Comparison &#39;self.open == False&#39; should be &#39;self.open is False&#39; if checking for the singleton value False, or &#39;not self.open&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;self.open is False&#39; should be &#39;self.open is False&#39; if checking for the singleton value False, or &#39;not self.open&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -757,7 +757,7 @@
                 <td><code>invalid-name</code></td>
                 <td>C0103</td>
                 <td>Player.__init__</td>
-                <td><pre>Attribute name &#34;selectedSlot&#34; doesn&#39;t conform to snake_case naming style</pre></td>
+                <td><pre>Attribute name &#34;selected_slot&#34; doesn&#39;t conform to snake_case naming style</pre></td>
             </tr>
             
             <tr>
@@ -767,7 +767,7 @@
                 <td><code>invalid-name</code></td>
                 <td>C0103</td>
                 <td>Player.__init__</td>
-                <td><pre>Attribute name &#34;inventoryQuants&#34; doesn&#39;t conform to snake_case naming style</pre></td>
+                <td><pre>Attribute name &#34;inventory_quants&#34; doesn&#39;t conform to snake_case naming style</pre></td>
             </tr>
             
             <tr>
@@ -876,8 +876,8 @@
                 <td>convention</td>
                 <td><code>invalid-name</code></td>
                 <td>C0103</td>
-                <td>Player.updateInventoryLengths</td>
-                <td><pre>Method name &#34;updateInventoryLengths&#34; doesn&#39;t conform to snake_case naming style</pre></td>
+                <td>Player.update_inv_lengths</td>
+                <td><pre>Method name &#34;update_inv_lengths&#34; doesn&#39;t conform to snake_case naming style</pre></td>
             </tr>
             
             <tr>
@@ -896,8 +896,8 @@
                 <td>convention</td>
                 <td><code>invalid-name</code></td>
                 <td>C0103</td>
-                <td>Player.addInventoryItem</td>
-                <td><pre>Method name &#34;addInventoryItem&#34; doesn&#39;t conform to snake_case naming style</pre></td>
+                <td>Player.add_item_to_inv</td>
+                <td><pre>Method name &#34;add_item_to_inv&#34; doesn&#39;t conform to snake_case naming style</pre></td>
             </tr>
             
             <tr>
@@ -906,7 +906,7 @@
                 <td>refactor</td>
                 <td><code>too-many-nested-blocks</code></td>
                 <td>R1702</td>
-                <td>Player.addInventoryItem</td>
+                <td>Player.add_item_to_inv</td>
                 <td><pre>Too many nested blocks (6/5)</pre></td>
             </tr>
             
@@ -926,8 +926,8 @@
                 <td>convention</td>
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
-                <td>Player.addInventoryItem</td>
-                <td><pre>Comparison &#39;slot[0] == None&#39; should be &#39;slot[0] is None&#39;</pre></td>
+                <td>Player.add_item_to_inv</td>
+                <td><pre>Comparison &#39;slot[0] is None&#39; should be &#39;slot[0] is None&#39;</pre></td>
             </tr>
             
             <tr>
@@ -936,8 +936,8 @@
                 <td>convention</td>
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
-                <td>Player.addInventoryItem</td>
-                <td><pre>Comparison &#39;item.contents == None&#39; should be &#39;item.contents is None&#39;</pre></td>
+                <td>Player.add_item_to_inv</td>
+                <td><pre>Comparison &#39;item.contents is None&#39; should be &#39;item.contents is None&#39;</pre></td>
             </tr>
             
             <tr>
@@ -976,8 +976,8 @@
                 <td>convention</td>
                 <td><code>invalid-name</code></td>
                 <td>C0103</td>
-                <td>Player.popInventoryItem</td>
-                <td><pre>Method name &#34;popInventoryItem&#34; doesn&#39;t conform to snake_case naming style</pre></td>
+                <td>Player.pop_inv_item</td>
+                <td><pre>Method name &#34;pop_inv_item&#34; doesn&#39;t conform to snake_case naming style</pre></td>
             </tr>
             
             <tr>
@@ -986,7 +986,7 @@
                 <td>warning</td>
                 <td><code>redefined-builtin</code></td>
                 <td>W0622</td>
-                <td>Player.popInventoryItem</td>
+                <td>Player.pop_inv_item</td>
                 <td><pre>Redefining built-in &#39;type&#39;</pre></td>
             </tr>
             
@@ -996,7 +996,7 @@
                 <td>refactor</td>
                 <td><code>inconsistent-return-statements</code></td>
                 <td>R1710</td>
-                <td>Player.popInventoryItem</td>
+                <td>Player.pop_inv_item</td>
                 <td><pre>Either all return statements in a function should return an expression, or none of them should.</pre></td>
             </tr>
             
@@ -1037,7 +1037,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>Player.render</td>
-                <td><pre>Comparison &#39;debugmode == True&#39; should be &#39;debugmode is True&#39; if checking for the singleton value True, or &#39;debugmode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;debugmode is True&#39; should be &#39;debugmode is True&#39; if checking for the singleton value True, or &#39;debugmode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -1277,7 +1277,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>Customer.render</td>
-                <td><pre>Comparison &#39;debugmode == True&#39; should be &#39;debugmode is True&#39; if checking for the singleton value True, or &#39;debugmode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;debugmode is True&#39; should be &#39;debugmode is True&#39; if checking for the singleton value True, or &#39;debugmode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -1597,7 +1597,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>Register.render</td>
-                <td><pre>Comparison &#39;Register.customerWaiting == True&#39; should be &#39;Register.customerWaiting is True&#39; if checking for the singleton value True, or &#39;Register.customerWaiting&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;Register.customerWaiting is True&#39; should be &#39;Register.customerWaiting is True&#39; if checking for the singleton value True, or &#39;Register.customerWaiting&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -1657,7 +1657,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>Sink.render</td>
-                <td><pre>Comparison &#39;debugmode == True&#39; should be &#39;debugmode is True&#39; if checking for the singleton value True, or &#39;debugmode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;debugmode is True&#39; should be &#39;debugmode is True&#39; if checking for the singleton value True, or &#39;debugmode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -2885,7 +2885,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>GameManager.drawHotBar</td>
-                <td><pre>Comparison &#39;spot_list[0].stackable == True&#39; should be &#39;spot_list[0].stackable is True&#39; if checking for the singleton value True, or &#39;spot_list[0].stackable&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;spot_list[0].stackable is True&#39; should be &#39;spot_list[0].stackable is True&#39; if checking for the singleton value True, or &#39;spot_list[0].stackable&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -3115,7 +3115,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>GameManager.front_view_rendering</td>
-                <td><pre>Comparison &#39;DebugMode == True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;DebugMode is True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -3155,7 +3155,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>GameManager.middle_view_rendering</td>
-                <td><pre>Comparison &#39;DebugMode == True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;DebugMode is True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -3405,7 +3405,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;recipe.locked == False&#39; should be &#39;recipe.locked is False&#39; if checking for the singleton value False, or &#39;not recipe.locked&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;recipe.locked is False&#39; should be &#39;recipe.locked is False&#39; if checking for the singleton value False, or &#39;not recipe.locked&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -3595,7 +3595,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;DebugMode == True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;DebugMode is True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -3865,7 +3865,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;DebugMode == False&#39; should be &#39;DebugMode is False&#39; if checking for the singleton value False, or &#39;not DebugMode&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;DebugMode is False&#39; should be &#39;DebugMode is False&#39; if checking for the singleton value False, or &#39;not DebugMode&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -3955,7 +3955,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result == True&#39; should be &#39;result is True&#39; if checking for the singleton value True, or &#39;result&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;result is True&#39; should be &#39;result is True&#39; if checking for the singleton value True, or &#39;result&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -4075,7 +4075,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result == True&#39; should be &#39;result is True&#39; if checking for the singleton value True, or &#39;result&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;result is True&#39; should be &#39;result is True&#39; if checking for the singleton value True, or &#39;result&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -4105,7 +4105,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;customer_order.check_match(player_hand) == True&#39; should be &#39;customer_order.check_match(player_hand) is True&#39; if checking for the singleton value True, or &#39;customer_order.check_match(player_hand)&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;customer_order.check_match(player_hand) is True&#39; should be &#39;customer_order.check_match(player_hand) is True&#39; if checking for the singleton value True, or &#39;customer_order.check_match(player_hand)&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -4175,7 +4175,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result.an_input == False&#39; should be &#39;result.an_input is False&#39; if checking for the singleton value False, or &#39;not result.an_input&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;result.an_input is False&#39; should be &#39;result.an_input is False&#39; if checking for the singleton value False, or &#39;not result.an_input&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -4195,7 +4195,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;player.addInventoryItem(result, Ingredient) == False&#39; should be &#39;player.addInventoryItem(result, Ingredient) is False&#39; if checking for the singleton value False, or &#39;not player.addInventoryItem(result, Ingredient)&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;player.add_item_to_inv(result, Ingredient) is False&#39; should be &#39;player.add_item_to_inv(result, Ingredient) is False&#39; if checking for the singleton value False, or &#39;not player.add_item_to_inv(result, Ingredient)&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -4225,7 +4225,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result.an_input == False&#39; should be &#39;result.an_input is False&#39; if checking for the singleton value False, or &#39;not result.an_input&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;result.an_input is False&#39; should be &#39;result.an_input is False&#39; if checking for the singleton value False, or &#39;not result.an_input&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -4285,7 +4285,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;player.addInventoryItem(pulled_cup, Cup) == False&#39; should be &#39;player.addInventoryItem(pulled_cup, Cup) is False&#39; if checking for the singleton value False, or &#39;not player.addInventoryItem(pulled_cup, Cup)&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;player.add_item_to_inv(pulled_cup, Cup) is False&#39; should be &#39;player.add_item_to_inv(pulled_cup, Cup) is False&#39; if checking for the singleton value False, or &#39;not player.add_item_to_inv(pulled_cup, Cup)&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -4405,7 +4405,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result.an_input == True&#39; should be &#39;result.an_input is True&#39; if checking for the singleton value True, or &#39;result.an_input&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;result.an_input is True&#39; should be &#39;result.an_input is True&#39; if checking for the singleton value True, or &#39;result.an_input&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -4445,7 +4445,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;player.addInventoryItem(result, Ingredient) == False&#39; should be &#39;player.addInventoryItem(result, Ingredient) is False&#39; if checking for the singleton value False, or &#39;not player.addInventoryItem(result, Ingredient)&#39; if testing for falsiness</pre></td>
+                <td><pre>Comparison &#39;player.add_item_to_inv(result, Ingredient) is False&#39; should be &#39;player.add_item_to_inv(result, Ingredient) is False&#39; if checking for the singleton value False, or &#39;not player.add_item_to_inv(result, Ingredient)&#39; if testing for falsiness</pre></td>
             </tr>
             
             <tr>
@@ -4575,7 +4575,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result.an_input == True&#39; should be &#39;result.an_input is True&#39; if checking for the singleton value True, or &#39;result.an_input&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;result.an_input is True&#39; should be &#39;result.an_input is True&#39; if checking for the singleton value True, or &#39;result.an_input&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -4675,7 +4675,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;result == True&#39; should be &#39;result is True&#39; if checking for the singleton value True, or &#39;result&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;result is True&#39; should be &#39;result is True&#39; if checking for the singleton value True, or &#39;result&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -4975,7 +4975,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;ingredientBoxes[i] == None&#39; should be &#39;ingredientBoxes[i] is None&#39;</pre></td>
+                <td><pre>Comparison &#39;ingredientBoxes[i] is None&#39; should be &#39;ingredientBoxes[i] is None&#39;</pre></td>
             </tr>
             
             <tr>
@@ -5055,7 +5055,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>main</td>
-                <td><pre>Comparison &#39;DebugMode == True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;DebugMode is True&#39; should be &#39;DebugMode is True&#39; if checking for the singleton value True, or &#39;DebugMode&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -5299,7 +5299,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>Machine.mini_game_mode</td>
-                <td><pre>Comparison &#39;debug == True&#39; should be &#39;debug is True&#39; if checking for the singleton value True, or &#39;debug&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;debug is True&#39; should be &#39;debug is True&#39; if checking for the singleton value True, or &#39;debug&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>
@@ -5433,7 +5433,7 @@
                 <td><code>singleton-comparison</code></td>
                 <td>C0121</td>
                 <td>Recipe.str</td>
-                <td><pre>Comparison &#39;self.locked == True&#39; should be &#39;self.locked is True&#39; if checking for the singleton value True, or &#39;self.locked&#39; if testing for truthiness</pre></td>
+                <td><pre>Comparison &#39;self.locked is True&#39; should be &#39;self.locked is True&#39; if checking for the singleton value True, or &#39;self.locked&#39; if testing for truthiness</pre></td>
             </tr>
             
             <tr>

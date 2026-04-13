@@ -141,22 +141,22 @@ class GameManager:
                 customer_group.remove(customer)
 
             # Remove the customer's resolved order card once they are fully gone.
-            if customer.orderedItem is not None:
+            if customer.ordered_item is not None:
                 for i in range(len(manager.active_orders)):
-                    if manager.active_orders[i] is customer.orderedItem:
+                    if manager.active_orders[i] is customer.ordered_item:
                         manager.active_orders[i] = None
                         break
-                customer.orderedItem = None
+                customer.ordered_item = None
 
         # Recalculate the current waiting customer.
         if len(customersWaiting) > 0:
             currentCust = customersWaiting[0]
         else:
             currentCust = None
-            Register.customerWaiting = False
+            Register.customer_waiting = False
 
     def drawHotBar(self, player, font):
-        player.updateInventoryLengths()
+        player.update_inv_lengths()
         for i in range(NUM_SLOTS):
             # makes rectangle object for that inventory slot at corresponding inventory position
             slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1], SLOT_SIZE, SLOT_SIZE)
@@ -164,7 +164,7 @@ class GameManager:
             # draws the grey slot background at that spot
             pygame.draw.rect(screen, (40, 40, 40), slot)
 
-            quantNum = font.render(f"{player.inventoryQuants[i]}", True, (255, 255, 255))
+            quantNum = font.render(f"{player.inventory_quants[i]}", True, (255, 255, 255))
             screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
 
 
@@ -175,7 +175,7 @@ class GameManager:
                 pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
 
             # if that inventory slot is selected, draw thick white border, else: draw thin black border
-            if i == player.selectedSlot:
+            if i == player.selected_slot:
                 pygame.draw.rect(screen, (255, 255, 255), slot, 3)
             else:
                 pygame.draw.rect(screen, (0, 0, 0), slot, 2)
@@ -189,7 +189,7 @@ class GameManager:
                         if spot_list[0].name != "Cup":
                             screen.blit(font.render(f'{spot_list[0].name}', True, (0, 0, 0), (255, 255, 255)), (slot.x + 60, slot.y + 15))
                         else:
-                            if spot_list[0].stackable == True:
+                            if spot_list[0].stackable is True:
                                 text = font.render("Empty Cup", True, (0, 0, 0), (255, 255, 255))
                                 screen.blit(text, (slot.x + 60, slot.y + 15))
                             else:
@@ -364,8 +364,8 @@ class GameManager:
         depth_list.sort(key=lambda obj: obj.rect.bottom)
 
         for c in customers:
-            if c.orderedItem is not None and (c.state == "finding seat" or c.state == "seated"):
-                order_text = font.render(f"{c.orderedItem.get_name()}", True, (255, 255, 255), (0, 0, 0))
+            if c.ordered_item is not None and (c.state == "finding seat" or c.state == "seated"):
+                order_text = font.render(f"{c.ordered_item.get_name()}", True, (255, 255, 255), (0, 0, 0))
                 screen.blit(order_text, (c.rect.x, c.rect.y - 50))
 
         if player.rect.bottom < 610:
@@ -393,20 +393,20 @@ class GameManager:
         recipe_button.draw(screen)
         shop_button.draw(screen)
 
-        if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
+        if player.rect.colliderect(register1.interaction_zone) and register1.customer_waiting:
             label = font.render("[E] Take Order", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (
-            register1.interactionZone.centerx - label.get_width() // 2, register1.interactionZone.top - 24,), )
+            register1.interaction_zone.centerx - label.get_width() // 2, register1.interaction_zone.top - 24,), )
 
         if player.rect.colliderect(switch_view_prompt_rect_cafe):
             label = font.render("[Q] Switch View", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (switch_view_prompt_rect_cafe.centerx - label.get_width() // 2,
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
-        if DebugMode == True:
+        if DebugMode is True:
             for c in front_counters:
                 pygame.draw.rect(screen, (250, 0, 0), c)
-            pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
+            pygame.draw.rect(screen, (255, 255, 0), register1.interaction_zone, 3)
             for c in front_collisions:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
@@ -427,12 +427,12 @@ class GameManager:
 
         screen.blit(constants.IMAGE_LIBRARY["bg2_top"], (0, 0))
 
-        if DebugMode == True:
+        if DebugMode is True:
             for c in middle_collisions:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
             for c in middle_counters:
                 pygame.draw.rect(screen, (250, 0, 0), c)
-            pygame.draw.rect(screen, (255, 255, 0), register2.interactionZone, 3)
+            pygame.draw.rect(screen, (255, 255, 0), register2.interaction_zone, 3)
             pygame.draw.rect(screen, (255, 255, 0), doorEntry, 2)
 
         recipe_button.draw(screen)

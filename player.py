@@ -1,4 +1,5 @@
 from constants import *
+from items import *
 
 class Player(GameObject, pygame.sprite.Sprite):
     """
@@ -9,11 +10,11 @@ class Player(GameObject, pygame.sprite.Sprite):
         rect (pygame.Rect): The collision and position rectangle.
         foot_w (int): The width of the specialized foot collision box.
         foot_h (int): The height of the specialized foot collision box.
-        selectedSlot (int): The index of the currently active inventory slot.
+        selected_slot (int): The index of the currently active inventory slot.
         inventory (list): A 2D list containing item objects for each slot.
-        inventoryQuants (list): A list tracking the quantity of items in each slot.
+        inventory_quants (list): A list tracking the quantity of items in each slot.
     """
-    def __init__(self, x, y, image_key):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
+    def __init__(self, x: int, y: int, image_key: str):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
         """
         Initializes the player with a sprite and an empty 4-slot inventory.
         
@@ -36,9 +37,9 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_w = (18 * 4)
         self.foot_h = (8 * 4)
 
-        self.selectedSlot = 0
+        self.selected_slot = 0
         self.inventory = [[], [], [], []]
-        self.inventoryQuants = [0, 0, 0, 0]
+        self.inventory_quants = [0, 0, 0, 0]
 
 
     def get_foot_rect(self):
@@ -67,10 +68,14 @@ class Player(GameObject, pygame.sprite.Sprite):
         old_x, old_y = self.rect.x, self.rect.y
 
         # Inputs for movement
-        if keys[pygame.K_LEFT]:  self.rect.x -= PLAYER_SPEED
-        if keys[pygame.K_RIGHT]: self.rect.x += PLAYER_SPEED
-        if keys[pygame.K_UP]:    self.rect.y -= PLAYER_SPEED
-        if keys[pygame.K_DOWN]:  self.rect.y += PLAYER_SPEED
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= PLAYER_SPEED
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += PLAYER_SPEED
+        if keys[pygame.K_UP]:
+            self.rect.y -= PLAYER_SPEED
+        if keys[pygame.K_DOWN]:
+            self.rect.y += PLAYER_SPEED
 
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
         self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
@@ -83,17 +88,13 @@ class Player(GameObject, pygame.sprite.Sprite):
                 self.x, self.y = old_x, old_y
                 break
 
-    def deliver(self, table):
-        """Placeholder for the item delivery function."""
-        pass
-
 #helper function to update hotbar quantities every frame
-    def updateInventoryLengths(self):
-        """Updates the inventoryQuants list with current lengths of inventory slots."""
-        self.inventoryQuants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
+    def update_inv_lengths(self):
+        """Updates the inventory_quants list with current lengths of inventory slots."""
+        self.inventory_quants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
 
     #function add a given object to players inventory
-    def addInventoryItem(self, item, item_type):
+    def add_item_to_inv(self, item, item_type):
         """
         Adds a given object to the player's inventory, handling stacking logic.
         
@@ -109,7 +110,7 @@ class Player(GameObject, pygame.sprite.Sprite):
                     if isinstance(slot[0], item_type) and isinstance(item, item_type):
                         # Only stack cups if they are both empty
                         if isinstance(item, Cup):
-                            if (slot[0] == None and item.contents) or (slot[0].contents and item.contents == None):
+                            if (slot[0] is None and item.contents) or (slot[0].contents and item.contents is None):
                                 continue 
                         
                         # Ingredient name check for stackable ingredients
@@ -128,7 +129,7 @@ class Player(GameObject, pygame.sprite.Sprite):
         return False
 
     #function to remove a given object from players inventory
-    def popInventoryItem(self, item, type):
+    def pop_inv_item(self, item, type):
         """
         Removes a given object from the player's inventory and returns it.
         
@@ -160,5 +161,5 @@ class Player(GameObject, pygame.sprite.Sprite):
         """
         screen.blit(self.sprite, self.rect)
 
-        if debugmode == True:
+        if debugmode is True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)

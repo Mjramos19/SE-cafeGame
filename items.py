@@ -47,16 +47,20 @@ class Cup(GameObject):
 
         super().__init__(x=0, y=0, w=image_rect.width, h=image_rect.height, color=WHITE)
         self.name = "Cup"
+        self.max_capacity = 5
 
-        if contents != None:
+        if contents is not None:
             self.contents = contents
         else:
             self.contents = []
-        #just here for testing with an already made drink
+
+        # just here for testing with an already made drink. in game the player alaways starts with an empty cup.
         if self.contents:
             self.stackable = False
         else:
             self.stackable = True
+
+        self.max_capacity = 5
 
     def update(self):
         """Updates cup state and visuals based on contents."""
