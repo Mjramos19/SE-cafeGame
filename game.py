@@ -696,7 +696,7 @@ def main():
         m_x, m_y = pygame.mouse.get_pos()
 
         # manages getting time each frame to make accurate clock for a 10 minutes cafe day
-        if GameState == "PLAYING":
+        if GameState == "PLAYING" and (ShopView == SHOP_VIEW_NONE and RecipeView == RECIPE_VIEW_NONE):
             game_seconds += seconds_per_frame
             if game_seconds >= REAL_DAY_SEC:
                 game_seconds = 0
