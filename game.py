@@ -1,3 +1,6 @@
+import json
+import os
+
 from furniture import *
 from items import *
 from others import *
@@ -12,6 +15,7 @@ from button import *
 
 pygame.init()
 screen = pygame.display.set_mode((1366, 768))
+pygame.mixer.init()
 
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
@@ -160,6 +164,8 @@ grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground
 espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"], (490, 255, 65, 50))
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (455, 220, 70, 90))
 
+ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
+
 machines = [grinder, espresso_mach, water_boiler]
 
 SHOP_VIEW_NONE = None
@@ -169,11 +175,26 @@ shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
 
 # Main menu buttons (centered on 1366x768 screen)
 menu_start_button  = Button(483, 320, 400, 70, "Start Game", "PLAYING", None)
-menu_load_button   = Button(483, 420, 400, 70, "Load Game",  "LOAD",    None)
 
 # Pause menu buttons
 pause_resume_button = Button(483, 280, 400, 70, "Resume",    "PLAYING", None)
-pause_quit_button   = Button(483, 380, 400, 70, "Quit",      "QUIT",    None)
+pause_quit_button   = Button(483, 380, 400, 70, "Quit to Menu",      "QUIT",    None)
+
+next_day_button = Button(100, 100, 100, 100, "Next Day", "NEXT_DAY", None)
+quit_button = Button(266, 100, 100, 100, "Quit to Menu", "QUIT", None)
+
+delete_save_button1 = Button(483, 320, 20, 20, "D", "DELETE_SAVE", None)
+delete_save_button2 = Button(483, 420, 20, 20, "D", "DELETE_SAVE", None)
+delete_save_button3 = Button(483, 520, 20, 20, "D", "DELETE_SAVE", None)
+save1_button = Button(483, 320, 400, 70, "Save Slot 1", "SAVE1", None)
+save2_button = Button(483, 420, 400, 70, "Save Slot 2", "SAVE2", None)
+save3_button = Button(483, 520, 400, 70, "Save Slot 3", "SAVE3", None)
+save_game1 = {"file": "save1.json","button": save1_button}
+save_game2 = {"file": "save2.json","button": save2_button}
+save_game3 = {"file": "save3.json","button": save3_button}
+current_save_file = None
+all_save_files = [save_game1, save_game2, save_game3]
+
 # Corner prompt zone for switching cafe view
 switch_view_prompt_rect_cafe = pygame.Rect(1025, 675, 100, 100)
 switch_view_prompt_rect_middle = pygame.Rect(50, 675, 100, 100)
@@ -190,10 +211,22 @@ class GameManager:
         self.message = ""
         self.message_timer = 0
         self.machine_loaded_slot = None
-        self.money = 0
         self.active_orders = []
         self.max_orders = 2 # Upgradable via shop later
         self.more_hands_tier = 0 # 0 = none bought, max = 3
+
+        # day sequence variables
+        self.money = 0
+        self.money_earned_today = 0
+        self.day_num = 1
+        self.num_customers_today = 0
+        self.customers_unhappy_today = 0
+
+        # for taking a name when creating a new save file
+        self.name_input_box = pygame.Rect(200, 200, 240, 40)
+        self.name_prompt = "Enter Save Name..."
+        self.name_input_text = ""
+        self.name_input_active = False
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
@@ -201,6 +234,17 @@ class GameManager:
             {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
             {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
         ]
+
+        self.save_name = "Empty Slot"
+
+        self.data = {
+            "name": self.save_name,
+            "money": self.money,
+            "day_num": self.day_num,
+            "upgrades": self.upgrades,
+            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)]
+        }
+
 
     def set_message(self, text, duration_ms=1500):
         """
@@ -291,7 +335,6 @@ class GameManager:
                 if player.rect.colliderect(interaction_rect):
                     return customer
         return None
-
 
     def cleanup_gone_customers(self, customers, customersWaiting, all_sprites, customer_group, manager):
         """Remove customers that have fully left the cafe. Also remove their resolved order cards once they are gone."""
@@ -395,7 +438,7 @@ class GameManager:
 
         item_y = box_y + 155
         for i, recipe in enumerate(RECIPES_UNLOCKED):
-            line = body_font.render(f"[{i + 1}] {recipe}", True, constants.WHITE)
+            line = body_font.render(f"[{i + 1}] {recipe.name}", True, constants.WHITE)
             screen.blit(line, (box_x + 30, item_y))
             item_y += 45
 
@@ -493,7 +536,6 @@ class GameManager:
         screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 265))
 
         menu_start_button.draw(screen)
-        menu_load_button.draw(screen)
 
     def draw_pause_menu(self, screen):
         """Draw the pause menu overlay."""
@@ -508,6 +550,34 @@ class GameManager:
 
         pause_resume_button.draw(screen)
         pause_quit_button.draw(screen)
+
+    def draw_load_menu(self, screen):
+        """Draw the load menu with Load File options."""
+        screen.fill((20, 12, 8))
+
+        title_font = pygame.font.SysFont(None, 90)
+        sub_font   = pygame.font.SysFont(None, 30)
+
+        title = title_font.render("Saved Games", True, (220, 180, 120))
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 160))
+
+        hint = sub_font.render("Select a saved game file to load", True, (160, 130, 90))
+        screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 265))
+
+        for save in all_save_files:
+            try:
+                data = self.load_game(save["file"])
+                if data["day_num"] == 1:
+                    save["button"].text = f"Empty Slot - New Game"
+                else: 
+                    save["button"].text = f"{data['name']} - Day {data['day_num']}"
+            except:
+                save["button"].text = f"Empty Slot - New Game"
+            save["button"].draw(screen)
+
+        delete_save_button1.draw(screen)
+        delete_save_button2.draw(screen)
+        delete_save_button3.draw(screen)
 
     def change_counters_pos(self, view):
         if view == "MIDDLE":
@@ -638,6 +708,94 @@ class GameManager:
         self.drawHotBar(player, font)
 
 
+    def save_game(self, filename):
+        """Save the current game state to a JSON file."""
+        data_to_save = {
+            "name": self.save_name,
+            "money": self.money,
+            "day_num": self.day_num,
+            "upgrades": self.upgrades,
+            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)]
+        }
+        with open(filename, 'w') as f:
+            json.dump(data_to_save, f, indent=4)
+            
+        
+    def load_game(self, filename):
+        """Load the game state safely."""
+        if not os.path.exists(filename):
+            return None  # Return None so the menu knows it's empty
+        try:
+            with open(filename, 'r') as file:
+                return json.load(file)
+        except (json.JSONDecodeError, IOError):
+            return None
+            
+    def reset_day(self, player):
+        """Reset the game state for a new day within the same load."""
+        self.money_earned_today = 0
+        self.num_customers_today = 0
+        self.customers_unhappy_today = 0
+        player.x, player.y = 40, 600
+        for machine in ALL_MACHINES:
+            machine.state = "empty"
+
+    def reset_new_game(self):
+        """Reset the entire game state for starting a new game."""
+        self.save_name = "Empty Slot"
+        self.money = 0
+        self.day_num = 1
+        self.upgrades = [{"name": upgrade["name"], "cost": upgrade["cost"], "tier": upgrade["tier"], "purchased": False} for upgrade in self.upgrades]
+
+        ALL_MACHINES = [grinder, espresso_mach, water_boiler]
+        for machine in ALL_MACHINES:
+            machine.state = "empty"
+            machine.x = -300        # puts machine off screen until bought and placed by player, will change to actual position once placed.
+            machine.y = 0
+
+        """Reset the unlocked recipes list to only include starting recipes."""
+        #RECIPES_UNLOCKED.clear()
+
+        self.data = {
+            "name": self.save_name,
+            "money": self.money,
+            "day_num": self.day_num,
+            "upgrades": self.upgrades,
+            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)],
+        }
+
+        return self.data   # Return the reset data for any additional handling if needed
+
+    def delete_save_file(self, save):
+        """Delete the current save file if it exists."""
+        if save is not None and os.path.exists(save["file"]):
+            data = self.reset_new_game()  # Get the reset game data
+            file = save["file"]
+            with open(file, 'w') as f:
+                json.dump(data, f, indent=4)
+            print(f"Deleted save file: {save['file']}")
+        else:
+            print("No save file to delete.")
+
+
+    def end_of_day_sequence(self, screen, font):
+
+        screen.fill((0, 0, 0))
+        details_text = font.render(f"Game Saved!End of Day {self.day_num-1} || Earned ${self.money_earned_today:.2f} || Total Customers: {self.num_customers_today} || Unhappy: {self.customers_unhappy_today}", True, (255, 255, 255))
+        screen.blit(details_text, (constants.WIDTH // 2 - details_text.get_width() // 2, constants.HEIGHT // 2 - details_text.get_height() // 2))
+
+        # updates data
+        self.data = {
+                "name": self.save_name,
+                "money": self.money,
+                "day_num": self.day_num,
+                "upgrades": self.upgrades,
+                "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)],
+            }
+
+        next_day_button.draw(screen)
+        quit_button.draw(screen)
+        
 
 
 def main():
@@ -666,6 +824,8 @@ def main():
     ingredientBoxes = [None, None, None, None]
     numBoxes = 0
 
+
+
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
     BOX_SPAWN_EVENT = pygame.USEREVENT + 2 #this will change once boxes spawn after being bought, for now they are automatic
@@ -684,10 +844,10 @@ def main():
     player.inventory[1] = [bag_coffee_beans, bag_coffee_beans]
     is_dragging = False
 
-
     for recipe in ALL_RECIPES:
         if recipe.locked is False:
             RECIPES_UNLOCKED.append(recipe)
+
 
     running = True
     while running:
@@ -709,11 +869,41 @@ def main():
         if int(game_seconds) == DAY_END:
             pygame.time.set_timer(SPAWN_EVENT, 0)
 
+        # checking for day end
+        if int(game_seconds) >= DAY_END and GameState == "PLAYING":
+            print(f"Day had ended {game_seconds}, {DAY_END}")
+            GameState = "END_OF_DAY"
+            pygame.mixer.music.load("Audio Files/end_of_day.mp3")
+            pygame.mixer.music.play(-1)
+            print("playing end of day music")
+            manager.day_num += 1
+            manager.end_of_day_sequence(screen, font)
+
+
+
         manager.update_message()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+
+            if manager.name_input_active:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        if len(manager.name_input_text) > 0:
+                            manager.save_name = manager.name_input_text
+                            manager.name_input_active = False
+                            GameState = "PLAYING"
+                    elif event.key == pygame.K_BACKSPACE:
+                        manager.name_input_text = manager.name_input_text[:-1]
+                    elif event.key == pygame.K_ESCAPE:
+                        manager.name_input_active = False 
+                    else:
+                        if len(manager.name_input_text) < 15:
+                            manager.name_input_text += pygame.key.name(event.key)
+
+                continue
 
 
             '''IMPORTANT: here is a spot to add key presses that do what you might need without having the logic behind it'''
@@ -726,6 +916,13 @@ def main():
                     if event.key == pygame.K_b:
                         print("Adding $8")
                         manager.money += 8
+                        manager.money_earned_today += 8
+                    if event.key == pygame.K_t:
+                        game_seconds += 7200
+                        print("Advancing 2 hours")
+                    if event.key == pygame.K_y:
+                        game_seconds += (DAY_END - 2000)  # Fast forward to end of day
+                        print("Advancing to 5:55pm")
 
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -733,28 +930,88 @@ def main():
 
                 if event.button == 1 and GameState == "MENU_SCREEN":
                     if menu_start_button.is_clicked(event.pos):
-                        GameState = "PLAYING"
-                    elif menu_load_button.is_clicked(event.pos):
-                        manager.set_message("Load Game not yet implemented")
-                    continue
+                        GameState = "LOAD_MENU"
+                    
 
-                if event.button == 1 and GameState == "PAUSED":
+                elif event.button == 1 and GameState == "LOAD_MENU" and GameState != "MENU_SCREEN":
+                    def check_save(save, data):
+                        if data is None or data.get("day_num", 1) == 1:
+                            manager.reset_new_game()
+                        else:
+                            # Sync the manager's variables with the loaded file
+                            manager.save_name = data.get("name", "Unnamed Save")
+                            manager.money = loaded_data.get("money", 0)
+                            manager.day_num = loaded_data.get("day_num", 1)
+                            manager.upgrades = loaded_data.get("upgrades", manager.upgrades)
+                        return save
+                            
+                    if save1_button.is_clicked(event.pos):
+                        loaded_data = manager.load_game("save1.json")
+                        save = check_save(save_game1, loaded_data)
+                       
+                    elif save2_button.is_clicked(event.pos):
+                        loaded_data = manager.load_game("save2.json")
+                        save = check_save(save_game2, loaded_data)
+                        
+                    elif save3_button.is_clicked(event.pos):
+                        loaded_data = manager.load_game("save3.json")
+                        save = check_save(save_game3, loaded_data)
+
+
+                    if delete_save_button1.is_clicked(event.pos):
+                        manager.delete_save_file(save_game1)
+                        print("file deleted for slot 1")
+                        break
+                    elif delete_save_button2.is_clicked(event.pos):
+                        manager.delete_save_file(save_game2)
+                        print("file deleted for slot 2")
+                        break 
+                    elif delete_save_button3.is_clicked(event.pos):
+                        manager.delete_save_file(save_game3)
+                        print("file deleted for slot 3")
+                        break
+                        
+                        
+                    current_save_file = save
+                    print(f"Current save file set to: {current_save_file}, data: {loaded_data}, GameState: {GameState}")
+
+                    if loaded_data is None or loaded_data.get("day_num", 1) == 1:
+                        manager.name_input_active = True
+                    else:
+                        GameState = "PLAYING"
+
+
+                elif event.button == 1 and GameState == "PAUSED":
                     if pause_resume_button.is_clicked(event.pos):
                         GameState = "PLAYING"
                     elif pause_quit_button.is_clicked(event.pos):
-                        running = False
+                        GameState = "MENU_SCREEN"
                     continue
 
-                if event.button == 1 and recipe_button.is_clicked(event.pos):
+                elif event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
                     RecipeView = RECIPE_VIEW_MENU
 
-                if event.button == 1 and shop_button.is_clicked(event.pos):
+                elif event.button == 1 and shop_button.is_clicked(event.pos):
                     current_screen = "shop"
                     ShopView = SHOP_VIEW_MENU
 
+                elif event.button == 1 and GameState == "END_OF_DAY":
+                    if next_day_button.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
+                        GameState = "PLAYING"
+                        game_seconds = DAY_START
+                        manager.reset_day(player)
+                        customers.clear()
+                        customersWaiting.clear()
+                        manager.set_message(f"New Day | {manager.day_num}")
+                        print(f"Starting next day, data: {manager.data}, GameState: {GameState}")
+                    elif quit_button.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
+                        GameState = "MENU_SCREEN"
 
-                if GameState == "MACHINE":
+
+                elif GameState == "MACHINE":
                     if active_machine.start_button != None:
                         if active_machine.start_button.collidepoint((m_x, m_y)) and event.button == 1:
                             # here is where any logic for different outputs would be handled. we can have two start buttons,
@@ -768,7 +1025,7 @@ def main():
                         if active_machine.ingredient and active_machine.ingredient_rect.collidepoint((m_x, m_y)):
                             is_dragging = True
 
-                if CafeView == "BACKROOM":
+                elif CafeView == "BACKROOM":
                     #loops through all backroom objects looking for shelves
                     for obj in backroom_collisions:
                         #if shelf
@@ -798,6 +1055,7 @@ def main():
 
 
             if event.type == pygame.KEYDOWN:
+
                 if GameState == "PLAYING" and not active_machine:
                     if event.key == pygame.K_1:
                         player.selected_slot = 0
@@ -820,6 +1078,9 @@ def main():
                     manager.clear_round_state()
                     Register.customer_waiting = False
                     currentCust = None
+
+                if event.key == pygame.K_p and GameState == "PLAYING":
+                    GameState = "PAUSED"
 
                 if event.key == pygame.K_q and GameState=="PLAYING":
                     if CafeView == "FRONT":
@@ -867,12 +1128,14 @@ def main():
                                 player_hand = player.inventory[player.selected_slot][0]
                                 if customer_order.check_match(player_hand) is True:
                                     base_pay, tip, total = nearby.calculate_tip()
-                                    manager.money += total  
+                                    manager.money += total
+                                    manager.money_earned_today += total  
                                     manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
                                     nearby.start_drinking("correct")
                                 else:
                                     nearby.start_drinking("incorrect")
                                     manager.set_message("Customer rejected the order!", 2500)
+                                    manager.customers_unhappy_today += 1
 
                                 manager.active_orders.remove(customer_order)
                                 player.inventory[player.selected_slot].pop(0) 
@@ -1089,11 +1352,9 @@ def main():
                     different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
                     currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
                                             line_position=LINE_POSITIONS[index])
+                    manager.num_customers_today += 1
                     
                     currCustomer.set_state("walking to line")
-                    if index == 0:
-                        currentCust = currCustomer
-
                     if index == 0:
                         currentCust = currCustomer
 
@@ -1124,6 +1385,13 @@ def main():
 
         if GameState == "MENU_SCREEN":
             manager.draw_menu_screen(screen)
+
+        elif GameState == "LOAD_MENU":
+            manager.draw_load_menu(screen)
+
+        elif GameState == "END_OF_DAY":
+            manager.save_game(current_save_file["file"])
+            manager.end_of_day_sequence(screen, font)
 
         elif GameState == "PAUSED":
             frozen_keys = {k: False for k in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_ESCAPE]}  # no inputs while paused
@@ -1158,6 +1426,18 @@ def main():
                 active_machine.ingredient.x = active_machine.ingredient_rect.x
                 active_machine.ingredient.y = active_machine.ingredient_rect.y
 
+        # checking for prompt name box at start of new save
+        if manager.name_input_active:
+            pygame.draw.rect(screen, (50, 50, 50), manager.name_input_box) # Dark grey box
+            pygame.draw.rect(screen, (0, 255, 255), manager.name_input_box, 2) # Cyan border
+
+            if len(manager.name_input_text) == 0:
+                prompt_surface = font.render(manager.name_prompt, True, (255, 255, 255))
+                screen.blit(prompt_surface, (manager.name_input_box.x + 5, manager.name_input_box.y + 5))
+
+            name_surface = font.render(manager.name_input_text, True, (255, 255, 255))
+            screen.blit(name_surface, (manager.name_input_box.x + 5, manager.name_input_box.y + 5))
+
         # Update machine timers every frame regardless of game state
         for m in machines:
             m.update()
@@ -1168,7 +1448,7 @@ def main():
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
-        if GameState not in ("MENU_SCREEN",):
+        if GameState not in ("MENU_SCREEN","PAUSED", "LOAD_MENU"):
             for item in manager.active_orders:
                 if item is None:
                     manager.active_orders.remove(item)
@@ -1182,8 +1462,7 @@ def main():
 
         if (GameState == "PLAYING" and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
             manager.draw_money(screen, font)
-            #manager.draw_orders(screen)
-            #manager.draw_inventory(screen, player)
+
 
         manager.draw_message(screen)
 
