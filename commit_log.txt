@@ -1,0 +1,147 @@
+669ed19 Merge pull request #9 from Mjramos19/strings
+acf7052 Added necessary docstrings for all files
+c31cbba added michael's backroom art
+e059312 merged michael's backroom and fixed a couple rendering and inventory bugs
+c9ffaef final touches where I fixed bugs that either arose from merging or I missed
+207e5dd updated machine and sink interaction zones and machine start buttons
+8b7b3d5 Update game.py
+8c5bc03 Updated check_match method to work with cups
+27746ce Merged game.py with taylor/delivery logic
+f9f2576 Refactor Player and Customer classes with inventory updates from trying to merge
+ad907f8 Add files via upload
+08f86d9 Delete Cafe_Game_Art/cafe_bg_2.png
+21780dd Added start menu and changed the start button positions for machines
+7ddde7c Changes to machine
+f800141 Corrected the start button on the machine and made changes to the minigame mode
+be8e23e Updated the upgrades shop to allow buying 'more hands', allowing the player to hold more than two orders at once. Also got rid of the time sleep when accepting an order
+baa98ec Fixed the issue where you can accept infinite orders, the max is now two
+35ffda0 Updated the order taking screen
+44ca5ba Added debug delivery system with tip calculation based on customer wait time. You press P while in debug mode to instantly deliver the correct order. Tip is calculated as a percentage of the time left over multiplied by the base pay. EX: 50% wait bar left, with a 0 order, gives 0 base pay plus  dollar tip.
+8bc8c74 Fixed the customer line and them walking in line
+74d9b97 fixed the issue where the game would crash when customers wait timer expired and they left
+d2b0bcc Added a start game menu to the game
+fedf440 Adding some machine art but not implemented them yet
+f88bb62 fixed all bugs I could find in the inventory system and with cups. added assets for the machines we have right now. next step is delivering.
+d82bf8d updated the inventory system using michaels quantity stacking. inventory is working well with machines and cups now.
+36f3334 Merge branch 'main' of github.com:Mjramos19/SE-cafeGame
+a0ae66b added some assets and fixed register interaction bug
+cadf8ae Merge pull request #8 from Mjramos19/taylor/delivery
+aed2210 test
+2bce75b Merge pull request #7 from Mjramos19/taylor/most_recent
+9b9ec33 got rid of machine art folder, put those images in the cafe_game_art folder
+2fbb698 combined mario and michaels code
+9e57746 Delete DONT_USE_THIS_FOLDER directory
+aa2960f Delete button.py
+2174b80 Delete classes.py
+e743db1 Delete game.py
+1090f11 Delete machines.py
+2df225d Delete constants.py
+66448e3 Delete recipes.py
+ebef367 Added a tooltip for switching views
+945b387 Added a register tooltip, added text to the register menu. Changed the tooltips to have white text and black background
+a997bf6 polished up the UI a lil bit
+f3d5002 There was an extra folder called Cafe_Game that had duplicates of our files and looked like the normal directory, I think this may have caused confusion and people may have worked within that folder instead of the real files
+ad6e074 Refactored game.py by creaing a game manager class that holds game-wide progression and UI state. Our game.py was turning into a real crazy bowl of spagehtti code so i figured this would help. I also added a Shop/Upgrades menu.
+6021f34 got a very basic economy system, you earn 5 bucks with every succesfull serve and 0 for incorrect serves
+a611159 Made it so the player can walk through customers
+0687e8e Fixed an issue where clicking 'r' to reset didnt fully reset inventory/cup slots.
+ee9cc98 Added a gameplay loop so you can now take orders, create drinks and serve them. This is a very simple first iteration, all machines make the same thing right now, black coffee and that is also all the customers order.
+bfc791a Fixed an issue where customers would teleport to their seats, now they walk to them. Made it so the customers get closer to the counter as they get closer to the register.
+79a8691 Fixed an issue where you could take infinite orders once all seats were full.
+d7fc8ef No changes
+cdee11b Fixing merge conflits
+e719cac Merge branch 'main' of https://github.com/Mjramos19/SE-cafeGame
+e3d60d4 Added new class and new image for machines
+89cb9ea New images for the machines
+dbbf42c No changes
+31211a6 Adding this file to lavisha/machines branch
+cf5b2e1 No changes
+7428037 No changes
+51c7ec4 Added new manchine images
+2a6fc29 Added new classes and images for machines
+1006dcc Added images for three machines
+8d02e29 Merge pull request #5 from Mjramos19/taylor/minigame
+cc3dd9c Merge branch 'main' of github.com:Mjramos19/SE-cafeGame into taylor/minigame
+3252f56 added a new handle_time function in game and some variables to make a working clock for day cycle/ level management.
+d131ac9 updated some logic to make the error red light only last a couple seconds
+072c7c1 added some ladybug assets - idle + sitting. these are integrated in game.py by creating the customer object using a list of image keys now. we can update logic once more assets are done for customers to spawn with a random image_keys list. the Customer class now has new logic to update the sprite based on state and the seat's num (a new variable in seat).
+7db9d84 one line change to get rid of pylance errors
+6bf66f4 OMG i got itgit add .!
+4161206 Merge branch 'ava/recipes' into mario/mergeRecipe
+6397359 Trying to fix this stuff lol
+620b6e3 Merge branch 'mario/mergeRecipe' into ava/recipes
+f6b46fa done a lot of work in machines and game to make the minigame logic. Look closely at all machine variables + functions. In game I moved some logic to the bottom to reduce clutter in the running loop. Also changed a little about the Ingredient class.
+c223cd1 Completely re-updated recipes.py Updated orders variable to be called orders_list Changed line 343 in game.py to display recipe name once ordered
+3dd979e I have had to re set up my version control
+54cab0d Added recipe menu button
+14ff04f Added recipe button
+73e2d4b Added recipe button
+0281abc Added recipe menu
+85876d1 assets
+8037cc3 Clean up game.py by removing unused code
+d1ec115 fixed register stuff
+1bdfd78 deleted zone identifier stuff
+588086a Added recipe button
+1064fc6 Recipe button added. Not finished yet
+7194fb7 small fix
+9d5c06e Removed pycache from repo
+30bb03e Delete entities.py
+48309ef Delete base.py
+eeb209c Merge pull request #3 from Mjramos19/integrate/taylor-base
+e1cf706 Delete player1.py - old code that has been updated
+e68c472 finished mege
+74b6894 small fix
+77d1737 merged main, taylor, lavisha, and michael
+a2d2c83 Added menu button class
+aa4c11f merged main, taylor, and lavisha
+07d1b22 merged taylor and main
+350d725 merging taylor into main on test branch
+d526102 my recent work on these files
+8f203cc Delete Coffeegrinder_art/maingrinder.png.png
+e9457df Delete Coffeegrinder_art/beanholder.png.png
+bd26f89 Delete Coffeegrinder_art/Time pannel.png.png
+c2d2f48 Delete Coffeegrinder_art/Coffeebeanslayer.png.png
+e5a6425 Add files via upload
+6707617 Machines.py 3 machines working yet
+5ebd6b0 Added my changes for machines.py to work and labled as LAVISHA...
+5f557fd No changes to this file
+04b74c5 I took the ingredents list and INGREDIENTS from taylors constant.py
+b2a8d6b fixed a small syntax error
+830a4b8 Fixed a couple bugs and combined basic serving with updated visuals
+e7660ab added recipe logic to game.py. Haven't merged with main
+dc98b0c My additions to the constants file. Can push to main when ready
+55501cb My edits to the game.py file from main to add recipe logic
+8b3c88a ingredients class
+c98417f trying to update the code
+097aa74 Merge branch 'main' of https://github.com/Mjramos19/SE-cafeGame into lavisha/machines
+a194e6b Merge branch 'main' of https://github.com/Mjramos19/SE-cafeGame into lavisha/machines
+3146dc9 clearing unnecessary stuff
+ef043e1 began framework of machine class logic
+797ff88 deleted like one empty line I think
+f56524e Adds logic for images for each recipe
+caaf16a Expanded Recipes class
+0f970e8 idk
+d2c6617 uploading the combined work from me and Michael
+b6c7832 Rename cafe_bg_top.png to Cafe_Game_Art/cafe_bg_top.png
+da33109 Rename cafe_bg_2_top.png to Cafe_Game_Art/cafe_bg_2_top.png
+6ce58cc Rename cafe_bg.png to Cafe_Game_Art/cafe_bg.png
+0c9251f Rename Customer.png to Cafe_Game_Art/Customer.png
+c8b5a72 added more assets
+55cd8a4 Added basic oven/food preparation class. Implemented basic food serving
+1605be4 Added to customer/line functionality
+6e14beb added some assets: player, background2
+3db4652 New changes
+1b895e9 Deleted empty base.py
+b31d271 Register class, seat class and logic,  register interaction zone, updated NPC AI
+0695581 added machines.py
+73899f1 made a player sprite w/o animation
+0139e3b added sprite image and footbox collision logic, needs revision
+ca918bd added game.py and entities.py
+3a82bec Recipes class created
+8122049 made player1 file and put player class in it
+a533daa began player class framework and base game mechanics
+0d316a3 test2
+a7320dc Merge pull request #1 from Mjramos19/taylor/base
+3c5f26f testing out git, disregard
+67df5bc Update project title in README
+84e3dcb Initial commit

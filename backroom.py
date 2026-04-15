@@ -1,132 +1,241 @@
+"""
+Cafe Simulator Inventory and Environment Module.
+
+This module defines the classes for managing the backroom storage system,
+including shelving units, individual shelf spots, and ingredient containers.
+"""
+
 from classes import *
 import pygame
 
-class stockingShelf(GameObject):
+class StockingShelf(GameObject):
+    """
+    A large shelving unit that manages multiple individual storage spots.
+    
+    Attributes:
+        interactionZone (pygame.Rect): The area where a player must stand to interact.
+        spots (list): A collection of shelfSpot objects contained within this shelf.
+        icon (pygame.Surface): The visual sprite for the shelf unit.
+    """
     def __init__(self, x, y, w, h):
+        """
+        Initializes the shelf and generates its internal grid of storage spots.
+        """
         super().__init__(x, y, w, h, (255,0,0))
-        self.interactionZone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
-        #Makes its own shelf spot objects
+        self.interaction_zone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
         self.spots = [
-            shelfSpot(self.rect.x + 60, self.rect.y + 75, 100, 50),
-            shelfSpot(self.rect.x + 340, self.rect. y + 75, 100, 50),
-            shelfSpot(self.rect.x + 60, self.rect.y + 185, 100, 50),
-            shelfSpot(self.rect.x + 340, self.rect.y + 185, 100, 50)
+            ShelfSpot(self.rect.x + 60, self.rect.y + 55, 90, 100),
+            ShelfSpot(self.rect.x + 340, self.rect. y + 55, 90, 100),
+            ShelfSpot(self.rect.x + 60, self.rect.y + 170, 90, 100),
+            ShelfSpot(self.rect.x + 340, self.rect.y + 170, 90, 100)
             ]
         self.icon = IMAGE_LIBRARY["fireAhhShelf"]
-        
     
-    #the shelf renders itself as well as its shelf spots
+    #unfinished function
+    def placeShelfSpot(self, num):
+        """Updates given shelf spot"""
+        for i in range(len(self.spots)):
+            if i == num:
+                pass
+        
     def render(self, screen, font):
+        """
+        Draws the shelf icon and triggers the render method for all nested spots.
+        """
         screen.blit(self.icon, self.rect)
-        #loop through shelf spot list attribute and render each one
         for spot in self.spots:
             spot.render(screen, font)
-            
 
-
-class shelfSpot(GameObject):
+class ShelfSpot(GameObject):
+    """
+    An individual slot on a shelf that can hold a single ingredient box.
+    
+    Attributes:
+        open (bool): Whether the spot is currently empty.
+        held_ingredient_box (ingredientBox): The box object currently stored in this spot.
+    """
     def __init__(self, x, y, w, h):
+        """Initializes an empty shelf spot."""
         super().__init__(x, y, w, h, (0, 0, 0))
         self.open = True
         self.held_ingredient_box = None
     
-    #Function for placing a box from hotbar to selected shelf spot
-    def storeIngredientBox(self, player):
+    def store_ingredient_box(self, player):
+        """
+        Transfers an ingredient box from the player's active inventory slot to this spot.
+        
+        Args:
+            player (Player): The player object attempting to store an item.
+        """
         slot = player.inventory[player.selectedSlot]
-        #if selected item is not an ingredient box or slot is empty, do nothing.
-        if len(slot) == 0 or (not (isinstance(slot[0], ingredientBox))):
+        if len(slot) == 0 or (not (isinstance(slot[0], IngredientBox))):
                 return
         
         item = slot[0]
-        item.setSpot(self)
+        item.set_spot(self)
 
         if self.open:
                 self.held_ingredient_box = item
                 self.open = False
                 #set boxes new position to shelf spot
-                item.updatePosition(self.rect.center)
+                item.update_position(self.rect.center)
                 #remove box interaction zone since its going on shelf
-                item.interactionZone = None
+                item.interaction_zone = None
                 #clear hotbar/inventory spot
                 player.popInventoryItem(item, type(item))
                 
 
-    def removeIngredientBox(self):
+    def remove_ingredient_box(self):
+        """
+        Resets box to open state
+        """
         self.open = True
         self.held_ingredient_box = None
 
     def render(self, screen, font):
-        pygame.draw.rect(screen, self.color, self.rect, 2)
+        """
+        Renders its contained box if it is currently occupied.
+        """
         if self.open == False:
             self.held_ingredient_box.render(screen, font)
 
 
-class ingredientBox(GameObject):
+class IngredientBox(GameObject):
+    """
+    A container for raw ingredients with a limited quantity.
+    
+    Attributes:
+        ingredient (Ingredient): The type of ingredient stored inside.
+        quantity (int): Remaining units before the box is depleted.
+        interactionZone (pygame.Rect): Clickable area when the box is on the floor.
+    """
     def __init__(self, x, y, ingredient):
+        """
+        Initializes the box with a specific ingredient and a default quantity of 10.
+        """
         super().__init__(x, y, 100, 100, (150, 75, 0))
         self.ingredient = ingredient
         self.quantity = 10
-        self.interactionZone = pygame.Rect(self.x, self.y + 100, self.w, self.h - 50)
+        self.interaction_zone = pygame.Rect(self.x, self.y - 50, self.w, self.h - 50)
         self.name = f"{self.ingredient.name} Box"
         self.spot = None
         self.icon = IMAGE_LIBRARY["best_box_ever"]
+        self.ingredient_icon = IMAGE_LIBRARY[f"{ingredient.name}_icon"]
+        self.stackable = False
 
-            
-    #helper function for placing boxes on shelves.
-    #Updates the box objects coordinates from previous floor spot to shelf spot when placed
-    def updatePosition(self, center):
+    def update_position(self, center):
+        """Updates the physical coordinates of the box to align with a shelf spot's center."""
         self.rect.center = center
         self.x = self.rect.x
         self.y = self.rect.y
 
-    #Helper Function for removing picked up boxes
-    def popBox(box, ingredientBoxes, backroomCollisions):
+    def pop_box(box, ingredientBoxes, backroomCollisions):
+        """
+        Static helper to remove a box from the global game tracking lists.
+        
+        Args:
+            box (ingredientBox): The box instance to remove.
+            ingredientBoxes (list): The list of all boxes in the room.
+            backroomCollisions (list): The list of active collision rects.
+        """
         backRoomIndex = -1
-        #loops through the list of ingredientBoxes and removed the selected one
         for i in range(len(ingredientBoxes)):
             if box == ingredientBoxes[i]:
                 ingredientBoxes[i] = None
                 break
         
-        #loops through the list of backroomCollisions and removed selected box from there too by index
         for i in range(len(backroomCollisions)):
             if box == backroomCollisions[i]:
                 backRoomIndex = i
                 break
         backroomCollisions.pop(backRoomIndex)
     
-    def pickIngredient(ingredientsList):
-        #return random ingredient
-        '''return ingredientsList[random.randint(0,len(ingredientsList) - 1)]'''
-        for i in ingredientsList:
-            if i.name == "Coffee Beans":
-                return i
+    def pick_ingredient(ingredients_list):
+        """
+        Returns the 'Coffee Beans' ingredient from a list (currently hardcoded logic).
+        """
+        num = None
+        while num != 0 and num != 3 and num != 5:
+            num = random.randint(0, len(ingredients_list) - 1)
+        return ingredients_list[num]
     
-    def setSpot(self, spot):
+    def set_spot(self, spot):
+        """
+        Links this box to a specific shelf spot.
+        """
         self.spot = spot
 
-    #grab ingredient object from ingredient box
-    def grabIngredient(self, player):
+    def grab_ingredient(self, player):
+        """
+        Removes one unit from the box and adds it to the player's inventory.
+        
+        Args:
+            player (Player): The player retrieving the ingredient.
+        """
         player.addInventoryItem(self.ingredient, type(self.ingredient))
         self.quantity -= 1
         if self.quantity == 0:
-            self.spot.removeIngredientBox()
+            self.spot.remove_ingredient_box()
+        
+    def place_ingredient_in_box(self, player):
+        """
+        Removes one unit from the players inventory and adds it a box.
 
+        Args:
+            player (Player): The player storing the ingredient
+        """
+        slot = player.inventory[player.selectedSlot]
 
+        if len(slot) == 0 or (not (isinstance(slot[0], Ingredient))) or self.quantity == 10:
+            return
+        
+        player.popInventoryItem(slot[0], type(slot[0]))
+        self.quantity += 1
 
-    #renders ingredient boxes as well as their interaction zone if they have (if they are on the floor)
     def render(self, screen, font):
-        ingredName = font.render(f'{self.ingredient.name}', True, (255, 255, 255))
+        """
+        Draws the box icon, ingredient icon, and interaction zone if applicable.
+        """
+        ingred_icon_rect = self.ingredient_icon.get_rect()
+        ingred_icon_rect.center = self.rect.center
         screen.blit(self.icon, self.rect)
-        screen.blit(ingredName, (self.rect.center[0] - 20, self.rect.center[1] - 5))
-        if self.interactionZone != None:
-            pygame.draw.rect(screen, (255, 255, 0), self.interactionZone, 2)        
+        screen.blit(self.ingredient_icon, ingred_icon_rect)
+        if self.interaction_zone != None:
+            pygame.draw.rect(screen, (255, 255, 0), self.interaction_zone, 2)        
 
 class DoorEntry(GameObject):
+    """
+    A floor rug representing a transition point between different cafe rooms.
+    """
     def __init__(self, x, y, w, h):
+        """Initializes the entry point with a rug graphic."""
         super().__init__(x, y, w, h, color=WHITE)
         self.icon = IMAGE_LIBRARY["sick_rug"]
         self.icon_rect = self.icon.get_rect(topleft=(x, y))
     
     def render(self, screen):
+        """
+        Renders the entry rug at its designated coordinates.
+        """
         screen.blit(self.icon, self.rect)
+
+
+class Refrigerator(StockingShelf):
+    """
+    A Refrigerator unit that manages two storage spots for cold ingredients
+    
+    Attributes:
+        ...
+    """
+    def __init__(self, x, y, w, h):
+        """
+        Initializes the refrigerator object for back room storage
+        """
+        super(StockingShelf, self).__init__(x, y, w, h, (255, 0, 0))
+        self.interaction_zone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
+        self.spots = [
+            ShelfSpot(self.rect.x + 7, self.rect.y + 75, 100, 200),
+            ShelfSpot(self.rect.x + 121, self.rect.y + 75, 100, 200)
+        ]
+        self.icon = IMAGE_LIBRARY["fridge"]
+

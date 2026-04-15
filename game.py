@@ -1,8 +1,3 @@
-#   pylint --errors-only main.py
-#   pycodestyle --statistics main.py
-#   pdoc -o ./html main.py
-from backroom import *
-from recipes import *
 from classes import *
 from machines import Machine
 import constants
@@ -17,16 +12,17 @@ from button import *
 pygame.init()
 screen = pygame.display.set_mode((1366, 768))
 
-constants.IMAGE_LIBRARY["player"] = pygame.image.load("Cafe_Game_Art/player.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
+constants.IMAGE_LIBRARY["ladybug_register"] = pygame.image.load("Cafe_Game_Art/ladybug_register.png").convert_alpha()
 constants.IMAGE_LIBRARY["order_screen"] = pygame.image.load("Cafe_Game_Art/order_screen.png").convert()
 constants.IMAGE_LIBRARY["bg1"] = pygame.image.load("Cafe_Game_Art/cafe_bg.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg1_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_top.png").convert_alpha()
 constants.IMAGE_LIBRARY["bg2"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2.png").convert()
-constants.IMAGE_LIBRARY["bg2_top"] = pygame.image.load("Cafe_Game_Art/cafe_bg_2_top.png").convert_alpha()
+constants.IMAGE_LIBRARY["bg2_top"] = pygame.image.load("Cafe_Game_Art/bg2_top.png").convert_alpha()
 constants.IMAGE_LIBRARY["register_icon"] = pygame.image.load("Cafe_Game_Art/register_icon.png").convert_alpha()
-constants.IMAGE_LIBRARY["minigame_bg"] = pygame.image.load("Cafe_Game_Art/minigame background.png").convert()
+constants.IMAGE_LIBRARY["minigame_bg"] = pygame.image.load("Cafe_Game_Art/minigame_bg.png").convert()
 
 # All Machine Images
 constants.IMAGE_LIBRARY["cg_empty"] = pygame.image.load("Cafe_Game_Art/CGEmpty-removebg-preview.png").convert_alpha()
@@ -39,21 +35,38 @@ constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WBempty.p
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WBinprogress.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WBready.png").convert_alpha()
 
-#coolist sickest awesomeist images ever
-constants.IMAGE_LIBRARY["sick_rug"] = pygame.image.load("Cafe_Game_Art/sickestRug.png").convert_alpha()
-constants.IMAGE_LIBRARY["best_box_ever"] = pygame.image.load("Cafe_Game_Art/bestBoxEver.png").convert_alpha()
-constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.image.load("Cafe_Game_Art/fireAhShelf.png").convert_alpha()
-
-
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
+constants.IMAGE_LIBRARY["coffee_beans"] = pygame.image.load("Cafe_Game_Art/coffee_beans.png").convert_alpha()
+constants.IMAGE_LIBRARY["ground_coffee"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+
 
 # All Recipes Images
+constants.IMAGE_LIBRARY["cup"] = pygame.image.load("Cafe_Game_Art/cup.png").convert_alpha()
+constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.image.load("Cafe_Game_Art/cup_w_lid.png").convert_alpha()
+
+#coolist sickest awesomeist images ever - (Michael's backroom art)
+constants.IMAGE_LIBRARY["sick_rug"] = pygame.image.load("Cafe_Game_Art/sickestRug.png").convert_alpha()
+constants.IMAGE_LIBRARY["best_box_ever"] = pygame.image.load("Cafe_Game_Art/bestBoxEver.png").convert_alpha()
+constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.image.load("Cafe_Game_Art/bettershelf.png").convert_alpha()
+constants.IMAGE_LIBRARY["best_backroom_ever"] = pygame.image.load("Cafe_Game_Art/BestStorageRoom (1).png").convert_alpha()
+constants.IMAGE_LIBRARY["fridge"] = pygame.image.load("Cafe_Game_Art/EvenBetterFridge.png").convert_alpha()
+constants.IMAGE_LIBRARY["day_window"] = pygame.image.load("Cafe_Game_Art/BasicDayWindow (1).png").convert_alpha()
+constants.IMAGE_LIBRARY["night_window"] = pygame.image.load("Cafe_Game_Art/BasicNightWindow.png").convert_alpha()
+constants.IMAGE_LIBRARY["sunset_window"] = pygame.image.load("Cafe_Game_Art/SunsetWindow.png").convert_alpha()
+constants.IMAGE_LIBRARY["sunrise_window"] = pygame.image.load("Cafe_Game_Art/SunriseWindow.png").convert_alpha()
+constants.IMAGE_LIBRARY["Ice_icon"] = pygame.image.load("Cafe_Game_Art/IceIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Water_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.image.load("Cafe_Game_Art/CoffeeBeanIcon.png").convert_alpha()
+
+
+
 
 
 # Pre-scale all images in the library them once
-constants.IMAGE_LIBRARY["player"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player"], (120, 268))
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
+constants.IMAGE_LIBRARY["ladybug_register"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_register"], (300, 400))
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
 constants.IMAGE_LIBRARY["order_screen"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["order_screen"], (1366, 768))
 constants.IMAGE_LIBRARY["bg1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["bg1"], (1366, 768))
@@ -72,37 +85,54 @@ constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (130, 200))
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (130, 200))
 constants.IMAGE_LIBRARY["water"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["water"], ((348, 330)))
+constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["coffee_beans"], ((348, 330)))
+constants.IMAGE_LIBRARY["ground_coffee"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ground_coffee"], ((348, 330)))
+constants.IMAGE_LIBRARY["cup"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cup"], ((168, 216)))
+constants.IMAGE_LIBRARY["cup_w_lid"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cup_w_lid"], ((168, 216)))
 constants.IMAGE_LIBRARY["sick_rug"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["sick_rug"], (150, 50))
 constants.IMAGE_LIBRARY["best_box_ever"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["best_box_ever"], (100, 100))
 constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["fireAhhShelf"], (500, 300))
+constants.IMAGE_LIBRARY["best_backroom_ever"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["best_backroom_ever"], (1366, 768))
+constants.IMAGE_LIBRARY["fridge"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["fridge"], (225, 300))
+constants.IMAGE_LIBRARY["day_window"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["day_window"], (128, 163))
+constants.IMAGE_LIBRARY["night_window"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["night_window"], (128, 163))
+constants.IMAGE_LIBRARY["sunset_window"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["sunset_window"], (128, 163))
+constants.IMAGE_LIBRARY["sunrise_window"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["sunrise_window"], (128, 163))
+constants.IMAGE_LIBRARY["Ice_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Ice_icon"], (40, 40))
+constants.IMAGE_LIBRARY["Water_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Water_icon"], (22, 40))
+constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Coffee Beans_icon"], (40, 40))
+
+
+
+
 
 
 # Defines all ingredients
-bag_coffee_beans = Ingredient("Coffee Beans", ["water"], 18.35, 56)
-ground_coffee = Ingredient("Ground Coffee",["water"])
+bag_coffee_beans = Ingredient("Coffee Beans", ["coffee_beans"], True, 18.35, 56)
+ground_coffee = Ingredient("Ground Coffee",["ground_coffee"], True)
 espresso_shot = Ingredient("Espresso Shot",["water"])
 espresso_doubleShot = Ingredient("Espresso Double Shot",["water"])
-water = Ingredient("Water",["water"])
+water = Ingredient("Water",["water"], True)
 hot_water = Ingredient("Hot Water",["water"])
 ice = Ingredient("Ice",["water"])
-milk = Ingredient("Milk",["water"], 3.28, 16)
+milk = Ingredient("Milk",["water"], True, 3.28, 16)
 steamed_milk = Ingredient("Steamed Milk",["water"])
 foamed_milk = Ingredient("Foamed Milk",["water"])
-cocoa_powder = Ingredient("Cocoa Powder",["water"], 9.40, 64)
-hot_chocolate = Ingredient("Hot Chocolate",["water"])
+cocoa_powder = Ingredient("Cocoa Powder",["water"], True, 9.40, 64)
 
 # Ingredients List
-INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water, ice, milk, steamed_milk, foamed_milk, cocoa_powder, hot_chocolate]
+INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water, ice, milk, steamed_milk, foamed_milk, cocoa_powder]
 
 # Defines all Recipes
 Espresso = Recipe("Espresso Shot" ,[espresso_shot],6.50, "N/A", False)
-Iced_Coffee = Recipe("Iced Coffee" ,[espresso_shot, ice],6.50, "N/A", False)
-Americano = Recipe("Americano" ,[hot_water, espresso_shot],6.50, "N/A", False)
+Iced_Coffee = Recipe("Iced Coffee" ,[espresso_shot, ice],6.50, "N/A")
+Americano = Recipe("Americano" ,[hot_water, espresso_shot],7.50, "N/A", False)
 Latte = Recipe("Latte" ,[espresso_shot, steamed_milk],6.50, "N/A")
 Iced_Latte = Recipe("Iced Latte" ,[espresso_shot, ice, milk],6.50, "N/A")
+Hot_Chocolate = Recipe("Hot Chocolate" ,[hot_water, cocoa_powder, steamed_milk],6.50, "N/A")
 
 # Recipes Lists
-ALL_RECIPES = [Espresso, Iced_Coffee, Americano, Latte, Iced_Latte]
+ALL_RECIPES = [Espresso, Iced_Coffee, Americano, Latte, Iced_Latte, Hot_Chocolate]
 RECIPES_UNLOCKED = []
 
 
@@ -115,9 +145,11 @@ counter1_rect = pygame.Rect(187, 336, 983, 50)
 counter2_rect = pygame.Rect(187, 718, 983, 50)
 wall_rect = pygame.Rect(0, 333, 1400, 10)
 menu_rect = pygame.Rect(1150, 0, 100, 800)
+back_wall_rect = pygame.Rect(0, 320, 1400, 10)
 
-#Counter cup
-counterCup = Cup(780,525,20,20)
+windows = [Window(105, 0, 128, 163), Window(245, 0, 128, 163), Window(453, 0, 128, 163), 
+           Window(593, 0, 128, 163) , Window(802, 0, 128, 163), Window(942, 0, 128, 163)]
+
 
 # builds all counters (about 165 apart from each other)
 # Builds all counters (about 165 apart from each other)
@@ -134,7 +166,7 @@ doorEntry, doorEntry2 = DoorEntry(20, 345, 150, 50), DoorEntry(15, 718, 150, 50)
 register1 = Register(829, 487, 110)
 register2 = Register(193, 615, 10)
 
-counterCup = Cup(780,525,20,20)
+#counterCup = Cup(["cup", "cup_w_lid"])
 
 currentCust = None
 currCustomer = None
@@ -143,17 +175,18 @@ current_screen = "game"
 # all collision lists for handling perspectives
 front_collisions = [menu_rect, counter3_rect, wall_rect2]
 middle_collisions = [menu_rect, counter1_rect, counter2_rect, wall_rect]
+backroom_collisions = [StockingShelf(50, 90, 500, 300), Refrigerator(700, 90, 225, 300), back_wall_rect]
 
 # all interactable spots each scene (counters, register, sink, chairs, doors)
 front_counters = [c1, c2, c3, c4, c5, register1, s1, s2, s3, s4, s5, s6]
 seats = [s1, s2, s3, s4, s5, s6]
 middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, register2]
-backroom_collisions = [stockingShelf(50, 30, 500, 300)]
 
-#LAVISHA Three machines placed at the back-counter positions (matching c6, c7, c8 widths: 150x90)
-grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"])
-espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogess", "em_ready"])
-water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"])
+sink = Sink(1015, 234)
+
+grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"], (510, 480, 150, 70))
+espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"], (490, 255, 65, 50))
+water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (455, 220, 70, 90))
 
 machines = [grinder, espresso_mach, water_boiler]
 
@@ -161,6 +194,14 @@ SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
 recipe_button = Button(1190, 342, 160, 78, "Recipes", "RECIPE_MENU", None)
 shop_button = Button(1190, 468, 160, 78, "Shop", "SHOP_MENU", None)
+
+# Main menu buttons (centered on 1366x768 screen)
+menu_start_button  = Button(483, 320, 400, 70, "Start Game", "PLAYING", None)
+menu_load_button   = Button(483, 420, 400, 70, "Load Game",  "LOAD",    None)
+
+# Pause menu buttons
+pause_resume_button = Button(483, 280, 400, 70, "Resume",    "PLAYING", None)
+pause_quit_button   = Button(483, 380, 400, 70, "Quit",      "QUIT",    None)
 # Corner prompt zone for switching cafe view
 switch_view_prompt_rect_cafe = pygame.Rect(1025, 675, 100, 100)
 switch_view_prompt_rect_middle = pygame.Rect(50, 675, 100, 100)
@@ -179,12 +220,15 @@ class GameManager:
         self.message_timer = 0
         self.machine_loaded_slot = None
         self.money = 0
+        self.active_orders = []
+        self.max_orders = 2 # Upgradable via shop later
+        self.more_hands_tier = 0 # 0 = none bought, max = 3
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
-            {"name": "Faster Grinder", "cost": 25, "purchased": False},
-            {"name": "Recipe Unlock", "cost": 40, "purchased": False},
-            {"name": "Cafe Decor", "cost": 15, "purchased": False},
+            {"name": "More Hands I",   "cost": 50,  "tier": 1, "purchased": False},
+            {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
+            {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
         ]
 
     def set_message(self, text, duration_ms=1500):
@@ -206,68 +250,11 @@ class GameManager:
         if self.message != "" and current_time >= self.message_timer:
             self.message = ""
 
-    def first_empty_order_slot(self):
-        """
-        Return the index of the first empty order slot.
-
-        Returns:
-            int | None: The first empty slot index, or None if all are occupied.
-        """
-        for i in range(len(self.active_orders)):
-            if self.active_orders[i] is None:
-                return i
-        return None
-
-    def serve_customer(self, customer):
-        """
-        Attempt to serve the selected cup to the given customer.
-
-        Correct serves resolve the order.
-        Incorrect serves still consume the cup and make the customer leave.
-        """
-        if customer is None:
-            return
-
-        cup = self.inventory.get_selected_cup()
-
-        if cup is None:
-            self.set_message("Select a cup first")
-            return
-
-        if customer.order is None:
-            return
-
-        # Determine if the serve is correct.
-        if cup.is_empty():
-            result = "incorrect"
-        elif cup.contents == customer.order.drink_name:
-            result = "correct"
-        else:
-            result = "incorrect"
-
-        # Remove the cup entirely from the selected inventory slot.
-        if self.inventory.selected_slot is not None:
-            self.inventory.remove_cup(self.inventory.selected_slot)
-            self.inventory.selected_slot = None
-
-        # Determine payout
-        if result == "correct":
-            self.money += 5
-            self.set_message("Served Correctly: +$5")
-        else:
-            self.set_message("Incorrect Serve")
-
-            # Mark the order as resolved.
-        customer.order.mark_resolved()
-
-        # Start the short drinking phase.
-        customer.start_drinking(result)
-
     def clear_round_state(self):
         """
         Reset lightweight gameplay state used during testing.
         """
-        self.inventory.clear_all()
+        #self.inventory.clear_all()
         self.machine_loaded_slot = None
         self.message = ""
         self.message_timer = 0
@@ -285,16 +272,25 @@ class GameManager:
         upgrade = self.upgrades[upgrade_index]
 
         if upgrade["purchased"]:
-            self.set_message("Already purchased")
+            self.set_message("Already purchased!")
             return
 
+        # Must buy previous tier first
+        if upgrade["tier"] > 1:
+            prev = self.upgrades[upgrade_index - 1]
+            if not prev["purchased"]:
+                self.set_message(f"Unlock {prev['name']} first!")
+                return
+
         if self.money < upgrade["cost"]:
-            self.set_message("Not enough money")
+            self.set_message(f"Need ${upgrade['cost']:.2f} - not enough money!")
             return
 
         self.money -= upgrade["cost"]
         upgrade["purchased"] = True
-        self.set_message(f"Purchased {upgrade['name']}")
+        self.more_hands_tier += 1
+        self.max_orders += 2
+        self.set_message(f"Purchased {upgrade['name']}! Max orders: {self.max_orders}")
 
     def handle_time(self, hrs, mins):
         """Takes in the game's hours and minutes and converts them to follow standard clock rules while on a 5 minutes interval."""
@@ -325,12 +321,9 @@ class GameManager:
                     return customer
         return None
 
-    def cleanup_gone_customers(self, customers, customersWaiting, all_sprites, customer_group, manager):
-        """
-        Remove customers that have fully left the cafe.
 
-        Also remove their resolved order cards once they are gone.
-        """
+    def cleanup_gone_customers(self, customers, customersWaiting, all_sprites, customer_group, manager):
+        """Remove customers that have fully left the cafe. Also remove their resolved order cards once they are gone."""
         global currentCust
 
         gone_customers = [c for c in customers if c.state == "gone"]
@@ -349,12 +342,12 @@ class GameManager:
                 customer_group.remove(customer)
 
             # Remove the customer's resolved order card once they are fully gone.
-            if customer.order is not None:
+            if customer.orderedItem is not None:
                 for i in range(len(manager.active_orders)):
-                    if manager.active_orders[i] is customer.order:
+                    if manager.active_orders[i] is customer.orderedItem:
                         manager.active_orders[i] = None
                         break
-                customer.order = None
+                customer.orderedItem = None
 
         # Recalculate the current waiting customer.
         if len(customersWaiting) > 0:
@@ -364,6 +357,7 @@ class GameManager:
             Register.customerWaiting = False
 
     def drawHotBar(self, player, font):
+        player.updateInventoryLengths()
         for i in range(NUM_SLOTS):
             # makes rectangle object for that inventory slot at corresponding inventory position
             slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1], SLOT_SIZE, SLOT_SIZE)
@@ -376,7 +370,7 @@ class GameManager:
             screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
 
             # if that inventory slot has an item, draw that icon inside
-            if player.inventoryQuants[i] != 0:
+            if player.inventoryQuants[i] > 0:
                 # placeholder for item pictures
                 tempItemPic = pygame.Rect(slot.center[0], slot.center[1], 10, 10)
                 pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
@@ -392,6 +386,20 @@ class GameManager:
                 if player.inventoryQuants[i] > 0:
                     screen.blit(font.render(f'{player.inventory[i][0].name}', True, (250, 0, 0)), (slot.x + 60, slot.y + 15))
                     
+            m_x, m_y = pygame.mouse.get_pos()
+            if slot.collidepoint((m_x, m_y)):
+                if player.inventoryQuants[i] > 0:
+                    spot_list = player.inventory[i]
+                    if len(spot_list) > 0:
+                        if spot_list[0].name != "Cup":
+                            screen.blit(font.render(f'{spot_list[0].name}', True, (0, 0, 0), (255, 255, 255)), (slot.x + 60, slot.y + 15))
+                        else:
+                            if spot_list[0].stackable == True:
+                                text = font.render("Empty Cup", True, (0, 0, 0), (255, 255, 255))
+                                screen.blit(text, (slot.x + 60, slot.y + 15))
+                            else:
+                                text = font.render(f'Cup with {", ".join(o.name for o in spot_list[0].contents)}', True, (0, 0, 0), (255, 255, 255))
+                                screen.blit(text, (slot.x + 60, slot.y + 15))
 
     def draw_recipe_screen(self, screen):
         """
@@ -430,37 +438,49 @@ class GameManager:
         """
         Draw the placeholder shop and upgrades overlay.
         """
-        overlay = pygame.Surface((700, 420))
+        overlay = pygame.Surface((700, 460))
         overlay.set_alpha(235)
         overlay.fill((25, 25, 25))
 
         box_x = constants.WIDTH // 2 - 350
-        box_y = constants.HEIGHT // 2 - 210
+        box_y = constants.HEIGHT // 2 - 230
         screen.blit(overlay, (box_x, box_y))
-        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 460), 3)
 
         title_font = pygame.font.SysFont(None, 42)
-        body_font = pygame.font.SysFont(None, 28)
+        body_font  = pygame.font.SysFont(None, 28)
         small_font = pygame.font.SysFont(None, 22)
 
         title = title_font.render("Shop / Upgrades", True, constants.WHITE)
         screen.blit(title, (box_x + 20, box_y + 20))
 
-        money_text = body_font.render(f"Money: ${self.money}", True, constants.WHITE)
-        screen.blit(money_text, (box_x + 20, box_y + 70))
+        money_text = body_font.render(f"Money: ${self.money:.2f}", True, constants.WHITE)
+        screen.blit(money_text, (box_x + 20, box_y + 65))
 
-        hint_1 = small_font.render("Press ESC to close the shop", True, constants.WHITE)
-        hint_2 = small_font.render("Press 1, 2, or 3 to buy a placeholder upgrade", True, constants.WHITE)
-        screen.blit(hint_1, (box_x + 20, box_y + 110))
-        screen.blit(hint_2, (box_x + 20, box_y + 135))
+        orders_text = small_font.render(f"Current max orders: {self.max_orders}", True, constants.WHITE)
+        screen.blit(orders_text, (box_x + 20, box_y + 95))
 
-        item_y = box_y + 185
+        hint = small_font.render("Press ESC to close  |  Press 1, 2, 3 to buy", True, constants.WHITE)
+        screen.blit(hint, (box_x + 20, box_y + 125))
+
+        item_y = box_y + 170
         for i, upgrade in enumerate(self.upgrades):
-            status = "OWNED" if upgrade["purchased"] else f"${upgrade['cost']}"
+            # Locked if previous tier not bought yet
+            locked = upgrade["tier"] > 1 and not self.upgrades[i - 1]["purchased"]
+
+            if upgrade["purchased"]:
+                status = "OWNED"
+                color = constants.GREEN
+            elif locked:
+                status = "LOCKED"
+                color = (120, 120, 120)
+            else:
+                status = f"${upgrade['cost']:.2f}"
+                color = constants.WHITE
+
             line = body_font.render(
-                f"[{i + 1}] {upgrade['name']} - {status}",
-                True,
-                constants.GREEN if upgrade["purchased"] else constants.WHITE
+                f"[{i + 1}] {upgrade['name']} (+2 max orders) - {status}",
+                True, color
             )
             screen.blit(line, (box_x + 30, item_y))
             item_y += 55
@@ -471,7 +491,7 @@ class GameManager:
         """
         Draw the current money total in the HUD.
         """
-        money_text = font.render(f"Money: ${self.money}", True, constants.BLACK)
+        money_text = font.render(f"Money: ${self.money:.2f}", True, constants.BLACK)
         screen.blit(money_text, (1000, 48))
 
     def draw_message(self, screen):
@@ -492,6 +512,36 @@ class GameManager:
         screen.blit(outline, (message_x, message_y + 1))
         screen.blit(text, (message_x, message_y))
 
+    def draw_menu_screen(self, screen):
+        """Draw the main menu with Start and Load options."""
+        screen.fill((20, 12, 8))
+
+        title_font = pygame.font.SysFont(None, 90)
+        sub_font   = pygame.font.SysFont(None, 30)
+
+        title = title_font.render("Cafe", True, (220, 180, 120))
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 160))
+
+        hint = sub_font.render("A cozy cafe management game", True, (160, 130, 90))
+        screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 265))
+
+        menu_start_button.draw(screen)
+        menu_load_button.draw(screen)
+
+    def draw_pause_menu(self, screen):
+        """Draw the pause menu overlay."""
+        overlay = pygame.Surface((constants.WIDTH, constants.HEIGHT))
+        overlay.set_alpha(160)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+
+        title_font = pygame.font.SysFont(None, 72)
+        title = title_font.render("Paused", True, constants.WHITE)
+        screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 190))
+
+        pause_resume_button.draw(screen)
+        pause_quit_button.draw(screen)
+
     def change_counters_pos(self, view):
         if view == "MIDDLE":
             c1.rect.x, c1.rect.y = 1014, 615
@@ -506,17 +556,27 @@ class GameManager:
             c4.rect.x, c4.rect.y = 500, 487
             c5.rect.x, c5.rect.y = 664, 487
 
-    def front_view_rendering(self, player, customers, font, keys, DebugMode):
+    def front_view_rendering(self, player, customers, font, keys, DebugMode, game_seconds):
         temp_cols = list(front_collisions)
+
         for c in customers:
             temp_cols.append(c.get_foot_rect())
+
         player.handle_movement(keys, temp_cols)
 
         # handles all layering with renders
+        for w in windows:
+            w.render(screen, game_seconds)
+
         screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
 
         depth_list = customers + [player]
         depth_list.sort(key=lambda obj: obj.rect.bottom)
+
+        for c in customers:
+            if c.orderedItem is not None and (c.state == "finding seat" or c.state == "seated"):
+                order_text = font.render(f"{c.orderedItem.get_name()}", True, (255, 255, 255), (0, 0, 0))
+                screen.blit(order_text, (c.rect.x, c.rect.y - 50))
 
         if player.rect.bottom < 610:
             for entity in depth_list:
@@ -524,19 +584,25 @@ class GameManager:
             screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
             if currentCust != None and currentCust.state == "waiting":
                 register1.render(screen)
-            pygame.draw.rect(screen, (255, 255, 255), counterCup)
+            #pygame.draw.rect(screen, (255, 255, 255), counterCup)
         else:
             for c in customers:
                 c.render(screen, DebugMode)
+
             screen.blit(constants.IMAGE_LIBRARY["bg1_top"], (0, 0))
+            back_img_positions = []
+            back_img_y = 0
+            for key, bx in back_img_positions:
+                screen.blit(constants.IMAGE_LIBRARY[key], (bx, back_img_y))
             if currentCust != None and currentCust.state == "waiting":
                 register1.render(screen)
-            pygame.draw.rect(screen, (255, 255, 255), counterCup)
+            #pygame.draw.rect(screen, (255, 255, 255), counterCup)
             # 3. Draw the player last (on top of everything)
             player.render(screen, DebugMode)
 
         recipe_button.draw(screen)
         shop_button.draw(screen)
+
         if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting:
             label = font.render("[E] Take Order", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (
@@ -548,13 +614,14 @@ class GameManager:
                                 switch_view_prompt_rect_cafe.top - 12,), )
 
         if DebugMode == True:
-                for c in front_counters:
-                    pygame.draw.rect(screen, (250, 0, 0), c)
-                pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
-                for c in front_collisions:
-                    pygame.draw.rect(screen, (255, 255, 0), c, 2)
+            for c in front_counters:
+                pygame.draw.rect(screen, (250, 0, 0), c)
+            pygame.draw.rect(screen, (255, 255, 0), register1.interactionZone, 3)
+            for c in front_collisions:
+                pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
         self.drawHotBar(player, font)
+
 
     def middle_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, middle_collisions)
@@ -562,7 +629,8 @@ class GameManager:
 
         for m in machines:
             m.render(screen, debug=DebugMode)
-        
+
+        sink.render(screen, DebugMode)
         doorEntry.render(screen)
         player.render(screen, DebugMode)
         if currentCust != None and currentCust.state == "waiting":
@@ -583,6 +651,10 @@ class GameManager:
             label = font.render("[Q] Switch View", True, constants.WHITE, constants.BLACK)
             screen.blit(label, (switch_view_prompt_rect_middle.centerx - label.get_width() // 2,
                                 switch_view_prompt_rect_middle.top - 12,), )
+        
+        if sink.is_player_nearby(player):
+            label = font.render(f"[E] Clear Cup | [F] Collect Water", True, (255, 255, 255))
+            screen.blit(label, (sink.rect.centerx - label.get_width() // 2, sink.rect.top - 100))
 
         for m in machines:
             if m.is_player_nearby(player):
@@ -591,36 +663,41 @@ class GameManager:
 
         self.drawHotBar(player, font)
 
-
     def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
-        screen.fill((0, 0, 0))
+        screen.blit(constants.IMAGE_LIBRARY["best_backroom_ever"], (0, 0))
         for c in backroom_collisions:
-            c.render(screen, font)
-            if isinstance(c, stockingShelf):
-                pygame.draw.rect(screen, (255, 255, 255), c.interactionZone, 2)
 
+            if c != back_wall_rect:
+                c.render(screen, font)
+                if isinstance(c, StockingShelf):
+                    pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
+        
+        
+        recipe_button.draw(screen)
+        shop_button.draw(screen)
+
+        
         doorEntry2.render(screen)
         player.render(screen, DebugMode)
         self.drawHotBar(player, font)
-        
 
 
 
 def main():
     global Customer, currentCust
-    pygame.display.set_caption("Cafe Sim")
+    pygame.display.set_caption("Cafe")
     font = pygame.font.SysFont(None, 22)
 
     clock_font = pygame.font.SysFont(None, 45)
     clock = pygame.time.Clock()
     seconds_per_frame = TIME_SPEED / 60
-    game_seconds = 21600  # Start day at 6:00 AM
+    game_seconds = DAY_START  # Start day at 6:00 AM
 
     manager = GameManager()
 
-    DebugMode = True
-    GameState = "PLAYING"
+    DebugMode = False
+    GameState = "MENU_SCREEN"
     CafeView = "FRONT"
     RecipeView = RECIPE_VIEW_NONE
     ShopView = SHOP_VIEW_NONE
@@ -635,20 +712,19 @@ def main():
 
     # Spawn timer
     SPAWN_EVENT = pygame.USEREVENT + 1
-    pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
+    BOX_SPAWN_EVENT = pygame.USEREVENT + 2 #this will change once boxes spawn after being bought, for now they are automatic
+    pygame.time.set_timer(BOX_SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
 
+        
     all_sprites = pygame.sprite.Group()
     customer_group = pygame.sprite.Group()
 
     # Player
-    player = Player(40, 600, "player")
+    player = Player(40, 600, "player_idle_front")
     all_sprites.add(player)
 
-    """for testing the minigame mode I'm defaulting the player with water"""
     is_dragging = False
 
-    # orders list
-    orders_list = []
 
     for recipe in ALL_RECIPES:
         if recipe.locked == False:
@@ -659,13 +735,21 @@ def main():
         screen.fill((0, 0, 0))
         keys = pygame.key.get_pressed()
         m_x, m_y = pygame.mouse.get_pos()
+        '''print(f'{m_x}, {m_y}')'''
 
         # manages getting time each frame to make accurate clock for a 10 minutes cafe day
-        game_seconds += seconds_per_frame
-        if game_seconds >= REAL_DAY_SEC:
-            game_seconds = 0
+        if GameState == "PLAYING":
+            game_seconds += seconds_per_frame
+            if game_seconds >= REAL_DAY_SEC:
+                game_seconds = 0
         hours = int(game_seconds // 3600)
         minutes = int((game_seconds % 3600) // 60)
+
+        # Set the customer spawn timer to start at 8:00 AM and stop at 6:00 PM
+        if int(game_seconds) == SEVEN_AM:
+            pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
+        if int(game_seconds) == DAY_END:
+            pygame.time.set_timer(SPAWN_EVENT, 0)
 
         manager.update_message()
 
@@ -677,7 +761,8 @@ def main():
             '''IMPORTANT: here is a spot to add key presses that do what you might need without having the logic behind it'''
             if DebugMode == True:
                 if event.type == pygame.MOUSEMOTION:
-                    print(f"Mouse position: X={m_x}, Y={m_y}")
+                    #print(f"Mouse position: X={m_x}, Y={m_y}")
+                    pass
 
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_b:
@@ -687,16 +772,31 @@ def main():
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
+
+                if event.button == 1 and GameState == "MENU_SCREEN":
+                    if menu_start_button.is_clicked(event.pos):
+                        GameState = "PLAYING"
+                    elif menu_load_button.is_clicked(event.pos):
+                        manager.set_message("Load Game not yet implemented")
+                    continue
+
+                if event.button == 1 and GameState == "PAUSED":
+                    if pause_resume_button.is_clicked(event.pos):
+                        GameState = "PLAYING"
+                    elif pause_quit_button.is_clicked(event.pos):
+                        running = False
+                    continue
+
                 if event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
                     RecipeView = RECIPE_VIEW_MENU
 
-                elif event.button == 1 and shop_button.is_clicked(event.pos):
+                if event.button == 1 and shop_button.is_clicked(event.pos):
                     current_screen = "shop"
                     ShopView = SHOP_VIEW_MENU
 
 
-                elif GameState == "MACHINE":
+                if GameState == "MACHINE":
                     if active_machine.start_button != None:
                         if active_machine.start_button.collidepoint((m_x, m_y)) and event.button == 1:
                             # here is where any logic for different outputs would be handled. we can have two start buttons,
@@ -710,16 +810,38 @@ def main():
                         if active_machine.ingredient and active_machine.ingredient_rect.collidepoint((m_x, m_y)):
                             is_dragging = True
 
-                elif GameState == "PLAYING" and CafeView == "BACKROOM":
-                    # loops through all backroom objects looking for shelves
+                    
+                if CafeView == "BACKROOM":
+                    #loops through all backroom objects looking for shelves
                     for obj in backroom_collisions:
-                        if isinstance(obj, stockingShelf):
-                            # if player is standing in shelf interaction zone and clicks on shelf spot with item in hand, attempt to place it
-                            if player.get_foot_rect().colliderect(obj.interactionZone) and player.inventory[player.selectedSlot] != None:
-                                if event.button == 1:
-                                    for shelfSpot in obj.spots:
-                                        if shelfSpot.rect.collidepoint(m_x, m_y):
-                                            shelfSpot.storeIngredientBox(player)
+                        #if shelf
+                        if isinstance(obj, StockingShelf) or isinstance(obj, Refrigerator):
+                            if player.get_foot_rect().colliderect(obj.interaction_zone):
+                                for shelfSpot in obj.spots:
+                                    if shelfSpot.rect.collidepoint(pygame.mouse.get_pos()) and event.button == 1:
+                                        if isinstance(obj, Refrigerator):
+                                            slot = player.inventory[player.selectedSlot]
+                                            if len(slot) != 0:
+                                                if isinstance(slot[0], IngredientBox) and shelfSpot.open and slot[0].name == "Ice Box":
+                                                    shelfSpot.store_ingredient_box(player)
+                                                    break
+                                                elif isinstance(slot[0], Ingredient) and shelfSpot.open == False and slot[0].name == "Ice":
+                                                    shelfSpot.held_ingredient_box.place_ingredient_in_box(player)
+                                                    break
+                                            if shelfSpot.held_ingredient_box != None:
+                                                shelfSpot.held_ingredient_box.grab_ingredient(player)
+                                        else:
+                                            slot = player.inventory[player.selectedSlot]
+                                            if len(slot) != 0 : 
+                                                if isinstance(slot[0], IngredientBox) and shelfSpot.open == True:
+                                                    shelfSpot.store_ingredient_box(player)
+                                                    break
+                                                elif isinstance(slot[0], Ingredient) and shelfSpot.open == False:
+                                                    shelfSpot.held_ingredient_box.place_ingredient_in_box(player)
+                                                    break
+                                            if shelfSpot.held_ingredient_box != None:
+                                                shelfSpot.held_ingredient_box.grab_ingredient(player)
+
 
             if event.type == pygame.MOUSEBUTTONUP:
                 is_dragging = False
@@ -728,61 +850,162 @@ def main():
                         active_machine.add(active_machine.ingredient, player)
 
 
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
-                    player.selectedSlot = 0
-                elif event.key == pygame.K_2:
-                    player.selectedSlot = 1
-                elif event.key == pygame.K_3:
-                    player.selectedSlot = 2
-                elif event.key == pygame.K_4:
-                    player.selectedSlot = 3
+            if event.type == pygame.KEYDOWN:
+                if GameState == "PLAYING" and not active_machine:
+                    if event.key == pygame.K_1:
+                        player.selectedSlot = 0
+                    elif event.key == pygame.K_2:
+                        player.selectedSlot = 1
+                    elif event.key == pygame.K_3:
+                        player.selectedSlot = 2
+                    elif event.key == pygame.K_4:
+                        player.selectedSlot = 3
 
-                elif event.key == pygame.K_0:
+                if event.key == pygame.K_0:
                     if DebugMode == False:
                         DebugMode = True
                     else:
                         DebugMode = False
 
-                elif event.key == pygame.K_r:  # R clears the customers for testing
+                if event.key == pygame.K_r:  # R clears the customers for testing
                     customers.clear()
                     customersWaiting.clear()
                     manager.clear_round_state()
                     Register.customerWaiting = False
                     currentCust = None
 
-                elif event.key == pygame.K_q and GameState=="PLAYING":
+                if event.key == pygame.K_q and GameState=="PLAYING":
                     if CafeView == "FRONT":
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 20, 520
                         manager.change_counters_pos(CafeView)
-                    else:
+                    elif CafeView == "MIDDLE":
                         CafeView = "FRONT"
                         player.rect.x, player.rect.y = 1005, 520
                         manager.change_counters_pos(CafeView)
 
+                if event.key == pygame.K_f:
+                    if player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
+                        result = player.addInventoryItem(water, Ingredient)
+                        if result == True:
+                            manager.set_message("Collected water!")
+                        else:
+                            manager.set_message("Cannot collect water: Inventory Full")
+
                 # if player presses e inside registers collision zone, and there is a customer, take order
-                elif event.key == pygame.K_e:
-                    if player.rect.colliderect(register1.interactionZone) and register1.customerWaiting and CafeView == "FRONT":
+                if event.key == pygame.K_e:
+                    if player.get_foot_rect().colliderect(register1.interactionZone) and register1.customerWaiting and CafeView == "FRONT":
                         GameState = "REGISTER"
-                    elif player.rect.colliderect(register2.interactionZone) and register2.customerWaiting and CafeView == "MIDDLE":
+                    elif player.get_foot_rect().colliderect(register2.interactionZone) and register2.customerWaiting and CafeView == "MIDDLE":
                         GameState = "REGISTER"
-                    elif player.rect.colliderect(doorEntry) and GameState == "PLAYING" and CafeView == "MIDDLE":
+                    elif player.get_foot_rect().colliderect(doorEntry) and GameState == "PLAYING" and CafeView == "MIDDLE":
                         CafeView = "BACKROOM"
                         player.rect.x, player.rect.y = 30, 490
-                    elif player.rect.colliderect(doorEntry2) and CafeView == "BACKROOM":
+                    elif player.get_foot_rect().colliderect(doorEntry2) and CafeView == "BACKROOM":
                         CafeView = "MIDDLE"
                         player.rect.x, player.rect.y = 30, 115
+                      
+                    elif player.get_foot_rect().colliderect(sink.interactionZone) and CafeView == "MIDDLE":
+                        result = sink.clear_cup(player)
+                        if result == True:
+                            manager.set_message("Cup emptied!")
+                        else:
+                            manager.set_message("No cup with contents selected to clear!")
+
+                    elif CafeView == "FRONT" and len(manager.active_orders) > 0:
+                        nearby = manager.get_nearby_seated_customer(player, customers)
+                        if nearby and nearby.state == "seated":
+                            customer_order = nearby.orderedItem
+                            if len(player.inventory[player.selectedSlot]) > 0 and type(player.inventory[player.selectedSlot][0]) == Cup:
+                                player_hand = player.inventory[player.selectedSlot][0]
+                                if customer_order.check_match(player_hand) == True:
+                                    base_pay, tip, total = nearby.calculate_tip()
+                                    manager.money += total  
+                                    manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
+                                    nearby.start_drinking("correct")
+                                else:
+                                    nearby.start_drinking("incorrect")
+                                    manager.set_message("Customer rejected the order!", 2500)
+
+                                manager.active_orders.remove(customer_order)
+                                player.inventory[player.selectedSlot].pop(0) 
+
 
                     elif GameState == "MACHINE" and active_machine:
                         if active_machine.state == "ready":
                             result = active_machine.remove_output()
                             if result:
-                                print(f"Collected: {result.name}")
+                                curr_slot = player.inventory[player.selectedSlot]
                                 # also check if the spot has a cup or if the spot is full already
-                                player.inventory[player.selectedSlot] = result
+                                if len(curr_slot) > 0: 
+                                    if type(curr_slot[0]) == Cup: 
+                                        cup = curr_slot[0]
+                                        print("player holding a cup")
+
+                                        if cup.contents:
+                                            print("cup has something in it already")
+                                            if result.an_input == False:
+                                                print("ingredient added to current cup")
+                                                cup.contents.append(result)
+                                                cup.update()
+                                            else:
+                                                if player.addInventoryItem(result, Ingredient) == False:
+                                                    active_machine.state = "ready"  
+                                                    active_machine.contents.append(result)
+                                                    manager.set_message("Output cannot be collected: Must Use A Cup")
+                                        else:
+                                            print("trying to add to empty cup")
+                                            if result.an_input == False:
+                                                pulled_cup = curr_slot.pop(0) #pull the cup out of the inventory
+                                                #pulled_cup = copy.deepcopy(pulled_cup)
+                                                pulled_cup.contents.append(result) #add the machine output to the cup's contents
+                                                pulled_cup.update()
+                                                print("pulled cup:", pulled_cup.name, "with contents:", [o.name for o in pulled_cup.contents], pulled_cup.stackable)
+                                                
+                                                if player.addInventoryItem(pulled_cup, Cup) == False:
+                                                    manager.set_message("Output cannot be collected: Inventory Full")
+                                                    pulled_cup.contents.remove(result) #remove the machine output from the cup's contents since it can't be added to inventory
+                                                    pulled_cup.update()
+                                                    curr_slot.append(pulled_cup) #add the cup back to the inventory
+                                                    active_machine.state = "ready" 
+                                                    active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
+                                            else:
+                                                manager.set_message("Output cannot be collected with a cup.")
+                                                active_machine.state = "ready" 
+                                                active_machine.contents.append(result)
+        
+
+                                    elif isinstance(curr_slot[0], Ingredient):
+                                            print("player holding an ingredient:", curr_slot[0].name)
+                                            if result.an_input == True:
+                                                print(f'{result.name}, {result.an_input}')
+                                                if player.addInventoryItem(result, Ingredient) == False:
+                                                    active_machine.set_state("ready")  
+                                                    active_machine.contents.append(result)
+                                                    manager.set_message("Output cannot be collected: Inventory Full")
+                                            else:
+                                                print(f'{result.name}, {result.an_input}')
+                                                active_machine.state = "ready"
+                                                active_machine.contents.append(result)
+                                                manager.set_message("Output cannot be collected: Must Use A Cup")
+                                    else:
+                                        print("player holding something else")
+
+                                else:
+                                    print("player holding nothing. Result:", result.name, result.an_input)
+                                    if result.an_input == True:
+                                        player.addInventoryItem(result, Ingredient)
+                                        print("added to empty")
+                                    else: 
+                                        print("could not add to empty")
+                                        manager.set_message("Output cannot be collected: Must Use A Cup")
+                                        active_machine.state = "ready"
+                                        active_machine.contents.append(result)
+                                    
+
                             if not active_machine.contents:
                                 active_machine.state = "empty"
+
 
                     elif CafeView == "MIDDLE" and GameState == "PLAYING":
                         for m in machines:
@@ -793,20 +1016,23 @@ def main():
                                 break
 
                     #checking if e was pressed in any backroom box collision zones
-                    elif CafeView == "BACKROOM":
+                    elif CafeView == "BACKROOM" and GameState == "PLAYING":
+                        print("checking backroom interactions")
                         for i in range(len(ingredientBoxes)):
                             #Finds each ingredient box instance and checks for collision with interactionZone
                             if ingredientBoxes[i] != None:
-                                if player.get_foot_rect().colliderect(ingredientBoxes[i].interactionZone):
+                                if player.get_foot_rect().colliderect(ingredientBoxes[i].interaction_zone):
                                     #grabs corresponding box and adds it to first open hot bar slot
-                                    player.addInventoryItem(ingredientBoxes[i], type = type(ingredientBoxes[i]))
-                                    ingredientBox.popBox(ingredientBoxes[i], ingredientBoxes, backroom_collisions)
-                                    numBoxes -= 1
+                                    result = player.addInventoryItem(ingredientBoxes[i], item_type = type(ingredientBoxes[i]))
+                                    if result == True:
+                                        IngredientBox.pop_box(ingredientBoxes[i], ingredientBoxes, backroom_collisions)
+                                        numBoxes -= 1
+                                    else:
+                                        manager.set_message("Cannot pick up box: Inventory Full")
 
-                elif event.key == pygame.K_ESCAPE:
-                    if GameState == "MACHINE":
-                        active_machine = None
-                    GameState = "PLAYING"
+                if event.key == pygame.K_ESCAPE:
+                    if GameState == "MENU_SCREEN":
+                        continue
                     if RecipeView != RECIPE_VIEW_NONE:
                         RecipeView = RECIPE_VIEW_NONE
                         current_screen = "game"
@@ -822,14 +1048,25 @@ def main():
                         GameState = "PLAYING"
                         active_machine = None
                         continue
+                    if GameState == "PAUSED":
+                        GameState = "PLAYING"
+                        continue
+                    if GameState == "PLAYING":
+                        GameState = "PAUSED"
+                        continue
 
-                elif event.key == pygame.K_s and GameState == "REGISTER":
+                if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
                         GameState = "PLAYING"
                         continue
 
-                    orders_list.insert(0, currentCust.orderedItem)
-                    time.sleep(1) # will need to be updated so the whole game doesn't pause
+                    active_count = sum(1 for o in manager.active_orders if o is not None)
+                    if active_count >= manager.max_orders:
+                        manager.set_message(f"Can't take more than {manager.max_orders} orders at once!")
+                        GameState = "PLAYING"
+                        continue
+
+                    manager.active_orders.insert(0, currentCust.orderedItem)
 
                     seat = manager.findFirstOpen(seats)  # find open seat
                     if seat is None:
@@ -850,10 +1087,9 @@ def main():
                         currentCust.set_targetSeat(seat)
                         currentCust.set_state("walking to table")
 
-                        for i in range(NUM_SLOTS):
-                            if player.inventory[i] == None:
-                                player.inventory[i] = Cup(0, 0, 20, 20)
-                                break
+                        # When taking an order, create a cup object, then add it.
+                        new_cup_instance = Cup(["cup", "cup_w_lid"])
+                        player.addInventoryItem(new_cup_instance, Cup)
 
                         # Remove from line.
                         if len(customersWaiting) > 0:
@@ -865,72 +1101,10 @@ def main():
                         # Update current front-of-line customer.
                         if len(customersWaiting) > 0:
                             currentCust = customersWaiting[0]
-                        GameState = "PLAYING"
-                        cupObj = Cup(0,0,20,20)
-                        player.addInventoryItem(cupObj, type = type(cupObj))
-
-            #If player presses mouse button in backroom, check if cursor is over shelf spot with ingredient object selected
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if CafeView == "BACKROOM":
-                    #loops through all backroom objects looking for shelves
-                    for obj in backroom_collisions:
-                        #if shelf
-                        if isinstance(obj, stockingShelf):
-                            #check if player is colliding with shelf interaction zone
-                            if player.get_foot_rect().colliderect(obj.interactionZone):
-                                #loops through shelf spots of shelf
-                                for shelfSpot in obj.spots:
-                                    #players selected inventory slot item
-                                    slot = player.inventory[player.selectedSlot]
-                                    #if player clicks on shelf spot
-                                    if shelfSpot.rect.collidepoint(getMousePos()) and event.button == 1:
-                                        #if slot has items and items are ingredient voxes, store ingredient box
-                                        if len(slot) != 0 and isinstance(slot[0], ingredientBox):
-                                            shelfSpot.storeIngredientBox(player)
-                                        #else if selected slot is an ingredient
-                                        elif shelfSpot.held_ingredient_box != None:
-                                            shelfSpot.held_ingredient_box.grabIngredient(player)
-
-
-            if event.type == SPAWN_EVENT:
-                # if wait line is not current full and total customers not at max, spawn new customer
-                if (len(customers) < MAX_CUSTOMERS and len(customersWaiting) < MAX_CUSTOMERS_WAITING and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
-
-                    # Calculate the index for the new customer
-                    index = len(customersWaiting)
-                    base_x, base_y = LINE_POSITIONS[index]
-
-                    # Center the spawn coordinates
-                    spawn_x = base_x - 60
-                    spawn_y = base_y - 64
-
-                    # Create the customer using the key "customer" from your IMAGE_LIBRARY
-                    '''Each customer we design will have a list of image keys. Eventually we will have s system to make
-                    different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
-                    currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
-                                            linePosition=LINE_POSITIONS[index])
-
-                    if index == 0:
-                        currentCust = currCustomer
-
-                    all_sprites.add(currCustomer)
-                    customer_group.add(currCustomer)
-
-                    customers.append(currCustomer)
-                    customersWaiting.append(currCustomer)
-                    register1.setWaiting()
-
-
-                # if ingredient spots open, spawn random ingredient box
-                if numBoxes < MAX_INGREDIENT_BOXES:
-                    for i in range(MAX_INGREDIENT_BOXES):
-                        if ingredientBoxes[i] == None:
-                            x, y = BOX_POSITIONS[i]
-                            ingredBox = ingredientBox(x, y, ingredientBox.pickIngredient(INGREDIENTS))
-                            ingredientBoxes[i] = ingredBox
-                            backroom_collisions.append(ingredBox)
-                            numBoxes += 1
-                            break
+                        else:
+                            currentCust = None
+                            Register.customerWaiting = False
+                    GameState = "PLAYING"
 
                 # Placeholder shop purchases
                 if ShopView != SHOP_VIEW_NONE:
@@ -942,27 +1116,85 @@ def main():
                         manager.buy_upgrade(2)
                     continue
 
-        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE:
+                # Pause normal gameplay input while a menu is open
+                if RecipeView != RECIPE_VIEW_NONE or ShopView != SHOP_VIEW_NONE:
+                    continue
+
+            if event.type == SPAWN_EVENT and GameState not in ("MENU_SCREEN", "PAUSED"):
+                # if wait line is not current full and total customers not at max, spawn new customer
+                if (len(customers) < MAX_CUSTOMERS and len(customersWaiting) < MAX_CUSTOMERS_WAITING and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
+
+                    # Calculate the index for the new customer
+                    index = len(customersWaiting)
+                    spawn_x = CUSTOMER_ENTRY_X
+                    spawn_y = CUSTOMER_ENTRY_Y
+
+                    # Create the customer using the key "customer" from your IMAGE_LIBRARY
+                    '''Each customer we design will have a list of image keys. Eventually we will have s system to make
+                    different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
+                    currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
+                                            linePosition=LINE_POSITIONS[index])
+                    
+                    currCustomer.set_state("walking to line")
+                    if index == 0:
+                        currentCust = currCustomer
+
+                    if index == 0:
+                        currentCust = currCustomer
+
+                    all_sprites.add(currCustomer)
+                    customer_group.add(currCustomer)
+
+                    customers.append(currCustomer)
+                    customersWaiting.append(currCustomer)
+
+            if event.type == BOX_SPAWN_EVENT and GameState not in ("MENU_SCREEN", "PAUSED"):
+                # if ingredient spots open, spawn random ingredient box
+                if numBoxes < MAX_INGREDIENT_BOXES:
+                    for i in range(MAX_INGREDIENT_BOXES):
+                        if ingredientBoxes[i] == None:
+                            x, y = BOX_POSITIONS[i]
+                            ingredBox = IngredientBox(x, y, IngredientBox.pick_ingredient(INGREDIENTS))
+                            ingredientBoxes[i] = ingredBox
+                            backroom_collisions.append(ingredBox)
+                            numBoxes += 1
+                            break
+
+        if RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE and GameState not in ("MENU_SCREEN", "PAUSED"):
             for c in customers:
                 c.update(seats)
 
-        manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
+        if GameState not in ("MENU_SCREEN", "PAUSED"):
+            manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
 
-        if GameState == "PLAYING":
+        if GameState == "MENU_SCREEN":
+            manager.draw_menu_screen(screen)
+
+        elif GameState == "PAUSED":
+            frozen_keys = [False] * 512  # no inputs while paused
+            if CafeView == "FRONT":
+                manager.front_view_rendering(player, customers, font, frozen_keys, DebugMode, game_seconds)
+            elif CafeView == "MIDDLE":
+                manager.middle_view_rendering(player, font, frozen_keys, DebugMode)
+            else:
+                manager.back_view_rendering(player, font, frozen_keys, DebugMode)
+            manager.draw_pause_menu(screen)
+
+        elif GameState == "PLAYING":
             if RecipeView != RECIPE_VIEW_NONE:
                 manager.draw_recipe_screen(screen)
             elif ShopView != SHOP_VIEW_NONE:
                 manager.draw_shop_screen(screen)
             else:
                 if CafeView == "FRONT":
-                    manager.front_view_rendering(player, customers, font, keys, DebugMode)
+                    manager.front_view_rendering(player, customers, font, keys, DebugMode, game_seconds)
                 elif CafeView == "MIDDLE":
                     manager.middle_view_rendering(player, font, keys, DebugMode)
-                elif CafeView == "BACKROOM":
-                    manager.back_view_rendering(player, font, keys, DebugMode)
+                else:
+                    manager.back_view_rendering(player,font, keys, DebugMode)
 
         elif GameState == "REGISTER":
-            register1.take_order(screen)
+            register1.take_order(screen, currentCust)
 
         elif GameState == "MACHINE" and active_machine:
             active_machine.mini_game_mode(screen, DebugMode, font)
@@ -975,38 +1207,23 @@ def main():
         for m in machines:
             m.update()
 
-        #LAVISHA - if in machine UI, render the machine's mini-game mode (which will display prompts based on state and allow player to interact with it using e and escape)
-        if GameState == "MACHINE" and active_machine:
-            active_machine.mini_game_mode(screen, font)
+        if currentCust != None and currentCust.state == "waiting" and GameState == "PLAYING":
+            register1.setWaiting()
 
-        # Update machine timers every frame regardless of game state
-        for m in machines:
-            m.update()
-
-        '''if RecipeView == RECIPE_VIEW_MENU:
-            screen.fill(UI_BG_COLOR)
-            x = RECIPE_START_X
-            y = RECIPE_START_Y
-            
-            for recipe in RECIPES_UNLOCKED:
-				recipe_img = constants.IMAGE_LIBRARY.get(recipe)
-				if recipe_img:
-					recipe_img = pygame.transform.smoothscale(
-						recipe_img, RECIPE_ICON_SIZE
-					)
-					screen.blit(recipe_img, (x, y))
-
-				x += RECIPE_ICON_SIZE[0] + RECIPE_ICON_PADDING
-            '''
-        player.updateInventoryLengths()
         clock.tick(FPS)
-        # Handles all text +  rendering
-        text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
-        orders_text = font.render(f'Orders: {', '.join(o.name for o in orders_list)}', True, (250, 0, 0))
-        clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
-        screen.blit(text, (10, 10))
-        screen.blit(orders_text, (10, 25))
-        screen.blit(clock_text, (1202, 35))
+
+        # Handles all text + rendering (skip HUD on menu/pause)
+        if GameState not in ("MENU_SCREEN",):
+            for item in manager.active_orders:
+                if item is None:
+                    manager.active_orders.remove(item)
+            orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
+            clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
+            screen.blit(orders_text, (10, 25))
+            screen.blit(clock_text, (1202, 35))
+            if DebugMode == True:
+                text = font.render(f"Customers: {len(customers)} | R to clear Customers | FPS: {clock.get_fps()} | GameState: {GameState}", True, (230, 230, 230))
+                screen.blit(text, (10, 10))
 
         if (GameState == "PLAYING" and RecipeView == RECIPE_VIEW_NONE and ShopView == SHOP_VIEW_NONE):
             manager.draw_money(screen, font)
@@ -1020,64 +1237,5 @@ def main():
     pygame.quit()
     sys.exit()
 
-
-# Finds first open seat in collisions list and returns it. None if all occupied
-
-def findFirstOpen(seats):
-    for c in seats:
-        if isinstance(c, Seat) and c.state == "open":
-            return c
-    return None
-
-
-def change_counters_pos(view):
-    if view == "MIDDLE":
-        c1.rect.x, c1.rect.y = 1014, 615
-        c2.rect.x, c2.rect.y = 849, 615
-        c3.rect.x, c3.rect.y = 685, 615
-        c4.rect.x, c4.rect.y = 522, 615
-        c5.rect.x, c5.rect.y = 357, 615
-    elif view == "FRONT":
-        c1.rect.x, c1.rect.y = 7, 487
-        c2.rect.x, c2.rect.y = 172, 487
-        c3.rect.x, c3.rect.y = 336, 487
-        c4.rect.x, c4.rect.y = 500, 487
-        c5.rect.x, c5.rect.y = 664, 487
-    
-
-#helper function for generating the hot bar
-def drawHotBar(player, font):
-    for i in range(NUM_SLOTS):
-        #makes rectangle object for that inventory slot at corresponding inventory position
-        slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1] ,SLOT_SIZE, SLOT_SIZE)
-
-        #draws the grey slot background at that spot
-        pygame.draw.rect(screen, (40, 40, 40), slot)
-
-        quantNum = font.render(f"{player.inventoryQuants[i]}", True, (255, 255, 255))
-        screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
-
-        #if that inventory slot has an item, draw that icon inside
-        if player.inventoryQuants[i] > 0:
-            #placeholder for item pictures
-            tempItemPic = pygame.Rect(slot.center[0], slot.center[1], 10, 10)
-            pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
-
-        #if that inventory slot is selected, draw thick white border, else: draw thin black border
-        if i == player.selectedSlot:
-            pygame.draw.rect(screen, (255, 255, 255), slot, 3)
-        else:
-            pygame.draw.rect(screen, (0, 0, 0), slot, 2)
-        
-        #if the players mouse is hovering over a slot that isn't empty, display that items name next to the slot
-        if slot.collidepoint(getMousePos()):
-            if player.inventoryQuants[i] > 0:
-                screen.blit(font.render(f'{player.inventory[i][0]}', True, (250, 0, 0)), (slot.x + 60, slot.y + 15))
-
-#helper function to get mouse position
-def getMousePos():
-    return pygame.mouse.get_pos()
-
 if __name__ == "__main__":
     main()
-
