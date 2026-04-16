@@ -23,12 +23,48 @@ class GameManager:
         self.max_orders = 2 # Upgradable via shop later
         self.more_hands_tier = 0 # 0 = none bought, max = 3
 
-        # Placeholder progression systems for Phase 3
-        self.upgrades = [
-            {"name": "More Hands I",   "cost": 50,  "tier": 1, "purchased": False},
-            {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
-            {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
-        ]
+        # Shop tab data — each key is a tab label, each value is a list of purchasable items.
+        # Adding a new tab and items is as simple as adding to this structure and it gets integrated into the shop screen automatically.
+        # tier controls lock order only in the upgrades tab so higher tier items require previous purchases.
+        # Other tabs treat all items as independently purchasable so the tier is ignored.
+        self.shop_tabs = {
+            "Upgrades": [
+                {"name": "More Hands I",   "desc": "+2 max simultaneous orders",  "cost": 50,  "tier": 1, "purchased": False},
+                {"name": "More Hands II",  "desc": "+2 max simultaneous orders",  "cost": 100, "tier": 2, "purchased": False},
+                {"name": "More Hands III", "desc": "+2 max simultaneous orders",  "cost": 150, "tier": 3, "purchased": False},
+                {"name": "Faster Grinder", "desc": "Reduces grind time by 20%",   "cost": 75,  "tier": 1, "purchased": False},
+                {"name": "Quick Brew",     "desc": "Espresso pulls 15% faster",   "cost": 90,  "tier": 1, "purchased": False},
+            ],
+            "Machines": [
+                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False},
+                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False},
+            ],
+            "Cosmetics": [
+                {"name": "Floral Wallpaper", "desc": "Redecorate the cafe walls",       "cost": 40, "tier": 1, "purchased": False},
+                {"name": "Cozy Rugs",        "desc": "Add warm rugs to the floor",      "cost": 30, "tier": 1, "purchased": False},
+                {"name": "Fairy Lights",     "desc": "String lights along the ceiling", "cost": 25, "tier": 1, "purchased": False},
+            ],
+        }
+
+        # the old upgrade list is kept so existing save/load and buy_upgrade() calls don't break.
+        # Points at the Upgrades tab items directly.
+        self.upgrades = self.shop_tabs["Upgrades"]
+
+        # Shop UI state — which tab is open and which page of items is showing.
+        # ITEMS_PER_PAGE controls how many rows fit before pagination kicks in.
+        self.active_tab     = "Upgrades"  # Default tab shown when shop opens
+        self.shop_page      = 0           # 0-indexed current page within the active tab
+        self.ITEMS_PER_PAGE = 4           # Max rows visible at once before arrows/pages appear
+
+        # This list is used to maintain the order of tabs as defined in shop_tabs, since dict keys don't guarantee order.
+        self.tab_order = list(self.shop_tabs.keys())
+
+        # Shop UI and clickable rects — drawn each frame by draw_shop_screen().
+        # Initialized here so event handlers never reference an undefined attribute.
+        self.shop_tab_rects        = {}   # maps tab name → pygame.Rect
+        self.shop_item_rects       = {}   # maps page-local row index → pygame.Rect
+        self.shop_arrow_left_rect  = None # None when no prev page or pygame.Rect
+        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect 
 
     def set_message(self, text, duration_ms=1500):
         """
