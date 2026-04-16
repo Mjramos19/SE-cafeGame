@@ -276,6 +276,22 @@ class GameManager:
         self.shop_arrow_left_rect  = None # None when no prev page or pygame.Rect
         self.shop_arrow_right_rect = None # None when no next page or pygame.Rect 
 
+        # Recipe menu UI state — which tab is active, which page, and which recipe
+        # is currently selected for the detail view.
+        self.recipe_active_tab    = "Unlocked"  # Default tab shown when recipe menu opens
+        self.recipe_page          = 0            # 0-indexed current page within the active tab
+        self.selected_recipe      = None         # Recipe object currently shown in detail view
+        self.recipe_cards_per_row = 3            # Number of cards per row in the grid
+        self.recipe_rows_per_page = 2            # Rows of cards per page
+
+        # Recipe menu click rects — redrawn each frame by draw_recipe_screen().
+        # Initialized here so event handlers never hit an undefined attribute.
+        self.recipe_tab_rects        = {}   # maps tab name → pygame.Rect
+        self.recipe_card_rects       = {}   # maps page-local card index → pygame.Rect
+        self.recipe_card_map         = {}   # maps page-local card index → Recipe object
+        self.recipe_arrow_left_rect  = None
+        self.recipe_arrow_right_rect = None
+
         self.save_name = "Empty Slot"
 
         self.data = {
@@ -523,36 +539,316 @@ class GameManager:
 
     def draw_recipe_screen(self, screen):
         """
-        Draw the recipe menu using the same general layout style as the shop screen.
+        Draw the recipe menu overlay with two tabs (Unlocked / Locked),
+        a card grid of recipes, pagination, and an info bar.
+ 
+        Layout (top to bottom):
+            - Floating "Recipes" title above the box (main-menu gold style)
+            - Box: tabs → info bar → card grid → dot indicator
+            - Pagination arrows centered vertically on the left/right box edges
+ 
+        Clicking an unlocked card opens the detail view (RECIPE_VIEW_DETAIL).
+        Clicking a locked card deducts money and moves it to the unlocked list.
         """
-        overlay = pygame.Surface((700, 420))
+        #dimensions
+        BOX_W, BOX_H = 900, 580
+        box_x = constants.WIDTH  // 2 - BOX_W // 2
+        box_y = constants.HEIGHT // 2 - BOX_H // 2
+ 
+        TAB_H      = 40   # Height of each tab strip
+        INFO_H     = 48   # Height of the info bar below tabs
+        DOT_AREA_H = 32   # Height reserved for the dot indicator
+        ARROW_W    = 30   # Width of the clickable arrow zones on each side
+ 
+        CARD_W     = 180  # Width of each recipe card
+        CARD_H     = 160  # Height of each recipe card (image + name above)
+        CARD_GAP   = 30   # Gap between cards horizontally and vertically
+        IMG_H      = 110  # Height of the placeholder image area inside the card
+ 
+        # Content area between info bar and dot region
+        content_y = box_y + TAB_H + INFO_H + CARD_GAP
+        content_x = box_x + ARROW_W
+        content_w = BOX_W - ARROW_W * 2
+ 
+        #fonts
+        title_font = pygame.font.SysFont(None, 90)
+        tab_font   = pygame.font.SysFont(None, 30)
+        info_font  = pygame.font.SysFont(None, 24)
+        name_font  = pygame.font.SysFont(None, 22)
+        price_font = pygame.font.SysFont(None, 20)
+ 
+        #colors 
+        GOLD         = (220, 180, 120)
+        DIM_GRAY     = (120, 120, 120)
+        TAB_ACTIVE   = (50, 50, 50)
+        TAB_INACTIVE = (20, 20, 20)
+        DIVIDER      = (80, 80, 80)
+ 
+        #floating title 
+        title_surf = title_font.render("Recipes", True, GOLD)
+        title_x    = constants.WIDTH // 2 - title_surf.get_width() // 2
+        title_y    = box_y - title_surf.get_height() - 24
+        screen.blit(title_surf, (title_x, title_y))
+ 
+        pygame.draw.line(screen, GOLD,
+                         (title_x, title_y + title_surf.get_height() + 2),
+                         (title_x + title_surf.get_width(), title_y + title_surf.get_height() + 2), 2)
+ 
+        #dark overlay box
+        overlay = pygame.Surface((BOX_W, BOX_H))
         overlay.set_alpha(235)
         overlay.fill((25, 25, 25))
-
-        box_x = constants.WIDTH // 2 - 350
-        box_y = constants.HEIGHT // 2 - 210
         screen.blit(overlay, (box_x, box_y))
-        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
-
-        title_font = pygame.font.SysFont(None, 42)
-        body_font = pygame.font.SysFont(None, 28)
-        small_font = pygame.font.SysFont(None, 22)
-
-        title = title_font.render("Recipes", True, constants.WHITE)
-        screen.blit(title, (box_x + 20, box_y + 20))
-
-        hint_1 = small_font.render("Press ESC to close the recipe menu", True, constants.WHITE)
-        hint_2 = small_font.render("Unlocked recipes:", True, constants.WHITE)
-        screen.blit(hint_1, (box_x + 20, box_y + 70))
-        screen.blit(hint_2, (box_x + 20, box_y + 105))
-
-        item_y = box_y + 155
-        for i, recipe in enumerate(RECIPES_UNLOCKED):
-            line = body_font.render(f"[{i + 1}] {recipe.name}", True, constants.WHITE)
-            screen.blit(line, (box_x + 30, item_y))
-            item_y += 45
-
+ 
+        #tabs
+        tab_names = ["Unlocked", "Locked"]
+        tab_w     = BOX_W // len(tab_names)
+        self.recipe_tab_rects = {}
+ 
+        for i, tab_name in enumerate(tab_names):
+            tx        = box_x + i * tab_w
+            ty        = box_y
+            is_active = (tab_name == self.recipe_active_tab)
+            fill      = TAB_ACTIVE if is_active else TAB_INACTIVE
+ 
+            pygame.draw.rect(screen, fill, (tx, ty, tab_w, TAB_H))
+            pygame.draw.rect(screen, DIVIDER, (tx, ty, tab_w, TAB_H), 1)
+ 
+            if is_active:
+                pygame.draw.line(screen, (25, 25, 25),
+                                 (tx + 1, ty + TAB_H - 1),
+                                 (tx + tab_w - 2, ty + TAB_H - 1), 2)
+ 
+            label   = tab_font.render(tab_name, True, constants.WHITE if is_active else DIM_GRAY)
+            label_x = tx + tab_w // 2 - label.get_width() // 2
+            label_y = ty + TAB_H  // 2 - label.get_height() // 2
+            screen.blit(label, (label_x, label_y))
+            self.recipe_tab_rects[tab_name] = pygame.Rect(tx, ty, tab_w, TAB_H)
+ 
+        #info bar
+        info_y = box_y + TAB_H
+        pygame.draw.rect(screen, (30, 30, 30), (box_x, info_y, BOX_W, INFO_H))
+        pygame.draw.line(screen, DIVIDER, (box_x, info_y + INFO_H), (box_x + BOX_W, info_y + INFO_H), 1)
+ 
+        # Hint changes depending on which tab is active
+        if self.recipe_active_tab == "Unlocked":
+            click_hint = "Click a recipe to learn how to make it"
+        else:
+            click_hint = "Click a recipe to unlock it"
+ 
+        info_items = [f"Money: ${self.money:.2f}", click_hint, "ESC to close"]
+        info_segment_w = BOX_W // len(info_items)
+        for j, info_text in enumerate(info_items):
+            surf = info_font.render(info_text, True, DIM_GRAY)
+            ix   = box_x + j * info_segment_w + info_segment_w // 2 - surf.get_width() // 2
+            iy   = info_y + INFO_H // 2 - surf.get_height() // 2
+            screen.blit(surf, (ix, iy))
+            if j < len(info_items) - 1:
+                sep_x = box_x + (j + 1) * info_segment_w
+                pygame.draw.line(screen, DIVIDER, (sep_x, info_y + 6), (sep_x, info_y + INFO_H - 6), 1)
+ 
+        # card grid
+        # Build the list of recipes for the active tab
+        if self.recipe_active_tab == "Unlocked":
+            tab_recipes = list(RECIPES_UNLOCKED)
+        else:
+            tab_recipes = [r for r in ALL_RECIPES if r.locked]
+ 
+        cards_per_page = self.recipe_cards_per_row * self.recipe_rows_per_page
+        total_pages    = max(1, -(-len(tab_recipes) // cards_per_page))  # ceiling division
+        page_recipes   = tab_recipes[self.recipe_page * cards_per_page :
+                                     self.recipe_page * cards_per_page + cards_per_page]
+ 
+        self.recipe_card_rects = {}
+        self.recipe_card_map   = {}
+ 
+        for card_i, recipe in enumerate(page_recipes):
+            col = card_i % self.recipe_cards_per_row
+            row = card_i // self.recipe_cards_per_row
+ 
+            # Center the card grid horizontally within the content area
+            grid_w = self.recipe_cards_per_row * CARD_W + (self.recipe_cards_per_row - 1) * CARD_GAP
+            grid_start_x = content_x + (content_w - grid_w) // 2
+ 
+            cx = grid_start_x + col * (CARD_W + CARD_GAP)
+            cy = content_y + row * (CARD_H + CARD_GAP)
+ 
+            card_rect = pygame.Rect(cx, cy, CARD_W, CARD_H)
+ 
+            # Card background
+            pygame.draw.rect(screen, (35, 35, 35), card_rect)
+            pygame.draw.rect(screen, DIVIDER, card_rect, 1)
+ 
+            # Placeholder image area (black box where drink art will go)
+            img_rect = pygame.Rect(cx + 10, cy + 24, CARD_W - 20, IMG_H)
+            pygame.draw.rect(screen, (0, 0, 0), img_rect)
+ 
+            # Recipe name centered above the image
+            name_surf = name_font.render(recipe.name, True, constants.WHITE)
+            name_x    = cx + CARD_W // 2 - name_surf.get_width() // 2
+            screen.blit(name_surf, (name_x, cy + 4))
+ 
+            # Unlock cost shown at the bottom of locked cards
+            if self.recipe_active_tab == "Locked":
+                unlock_cost = recipe.price * 2.5
+                cost_surf   = price_font.render(f"${unlock_cost:.2f} to unlock", True, GOLD)
+                cost_x      = cx + CARD_W // 2 - cost_surf.get_width() // 2
+                screen.blit(cost_surf, (cost_x, cy + CARD_H - 18))
+ 
+            self.recipe_card_rects[card_i] = card_rect
+            self.recipe_card_map[card_i]   = recipe
+ 
+        #pagination arrows
+        content_h  = BOX_H - TAB_H - INFO_H - DOT_AREA_H
+        arrow_cy   = content_y + content_h // 2
+        ARROW_SIZE = 10
+ 
+        self.recipe_arrow_left_rect  = None
+        self.recipe_arrow_right_rect = None
+ 
+        if total_pages > 1:
+            left_color  = constants.WHITE if self.recipe_page > 0 else DIM_GRAY
+            right_color = constants.WHITE if self.recipe_page < total_pages - 1 else DIM_GRAY
+            left_cx     = box_x + ARROW_W // 2
+            right_cx    = box_x + BOX_W - ARROW_W // 2
+ 
+            pygame.draw.polygon(screen, left_color, [
+                (left_cx - ARROW_SIZE, arrow_cy),
+                (left_cx + ARROW_SIZE, arrow_cy - ARROW_SIZE),
+                (left_cx + ARROW_SIZE, arrow_cy + ARROW_SIZE),
+            ])
+            self.recipe_arrow_left_rect = pygame.Rect(box_x, content_y, ARROW_W, content_h)
+ 
+            pygame.draw.polygon(screen, right_color, [
+                (right_cx + ARROW_SIZE, arrow_cy),
+                (right_cx - ARROW_SIZE, arrow_cy - ARROW_SIZE),
+                (right_cx - ARROW_SIZE, arrow_cy + ARROW_SIZE),
+            ])
+            self.recipe_arrow_right_rect = pygame.Rect(box_x + BOX_W - ARROW_W, content_y, ARROW_W, content_h)
+ 
+        #dot indicator
+        if total_pages > 1:
+            DOT_R        = 5
+            DOT_GAP      = 16
+            dots_total_w = (total_pages - 1) * DOT_GAP
+            dot_start_x  = constants.WIDTH // 2 - dots_total_w // 2
+            dot_y        = box_y + BOX_H - DOT_AREA_H // 2
+ 
+            for d in range(total_pages):
+                dx    = dot_start_x + d * DOT_GAP
+                color = constants.WHITE if d == self.recipe_page else DIM_GRAY
+                pygame.draw.circle(screen, color, (dx, dot_y), DOT_R)
+ 
+        # White border drawn last so it sits on top of all content
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, BOX_W, BOX_H), 3)
+ 
         self.draw_message(screen)
+ 
+    def draw_recipe_detail(self, screen):
+        """
+        Draw the recipe detail overlay on top of the recipe menu.
+ 
+        Shows the step-by-step ingredient chain for the selected recipe,
+        explaining which ingredients go into which machine to produce
+        each component needed for the final drink.
+ 
+        Layout:
+            - Smaller dark box centered on screen
+            - Info bar: recipe name on the left, ESC to close on the right
+            - Content: one line per production step (ingredient → machine → output)
+        """
+        if self.selected_recipe is None:
+            return
+ 
+        # ── dimensions ────────────────────────────────────────────────────────
+        BOX_W, BOX_H = 620, 380
+        box_x = constants.WIDTH  // 2 - BOX_W // 2
+        box_y = constants.HEIGHT // 2 - BOX_H // 2
+ 
+        INFO_H    = 44   # Height of the info bar at the top
+        ROW_H     = 44   # Height per step row
+        ROW_GAP   = 10   # Gap between rows
+        ROW_PAD   = 20   # Left padding for row text
+ 
+        # ── fonts ─────────────────────────────────────────────────────────────
+        info_font = pygame.font.SysFont(None, 24)
+        step_font = pygame.font.SysFont(None, 26)
+ 
+        # ── colors ────────────────────────────────────────────────────────────
+        GOLD     = (220, 180, 120)
+        DIM_GRAY = (120, 120, 120)
+        DIVIDER  = (80, 80, 80)
+        ARROW_COLOR = (180, 180, 180)
+ 
+        # ── dark overlay box ──────────────────────────────────────────────────
+        overlay = pygame.Surface((BOX_W, BOX_H))
+        overlay.set_alpha(245)
+        overlay.fill((20, 20, 20))
+        screen.blit(overlay, (box_x, box_y))
+ 
+        # ── info bar ──────────────────────────────────────────────────────────
+        pygame.draw.rect(screen, (30, 30, 30), (box_x, box_y, BOX_W, INFO_H))
+        pygame.draw.line(screen, DIVIDER, (box_x, box_y + INFO_H), (box_x + BOX_W, box_y + INFO_H), 1)
+ 
+        name_surf = info_font.render(self.selected_recipe.name, True, GOLD)
+        esc_surf  = info_font.render("ESC to close", True, DIM_GRAY)
+        screen.blit(name_surf, (box_x + ROW_PAD, box_y + INFO_H // 2 - name_surf.get_height() // 2))
+        screen.blit(esc_surf,  (box_x + BOX_W - esc_surf.get_width() - ROW_PAD,
+                                box_y + INFO_H // 2 - esc_surf.get_height() // 2))
+ 
+        # ── step-by-step ingredient chain ─────────────────────────────────────
+        # Build production steps by mapping each final ingredient back through
+        # the machines that produce it. Each step is a tuple of
+        # (input_name, machine_name, output_name).
+        # Machine input→output relationships mirror the machine definitions in game.py.
+        MACHINE_STEPS = [
+            ("Coffee Beans", "Coffee Grinder", "Ground Coffee"),
+            ("Ground Coffee", "Espresso Machine", "Espresso Shot"),
+            ("Water", "Water Boiler", "Hot Water"),
+        ]
+ 
+        recipe = self.selected_recipe
+        steps  = []
+ 
+        # Find which machines are needed by working backwards from the recipe ingredients
+        needed = {ing.name for ing in recipe.ingredients}
+        for input_name, machine_name, output_name in MACHINE_STEPS:
+            if output_name in needed:
+                steps.append((input_name, machine_name, output_name))
+                # The machine input may itself need to be produced
+                needed.add(input_name)
+ 
+        # Final serve step — shows all ingredients combining into the finished drink
+        final_names = " + ".join(ing.name for ing in recipe.ingredients)
+        steps.append((final_names, f"serve in Cup as {recipe.name}", ""))
+ 
+        content_y = box_y + INFO_H + ROW_GAP
+ 
+        for step_i, (inp, machine, out) in enumerate(steps):
+            ry   = content_y + step_i * (ROW_H + ROW_GAP)
+            rect = pygame.Rect(box_x + ROW_PAD, ry, BOX_W - ROW_PAD * 2, ROW_H)
+ 
+            # Alternating row tint for readability
+            if step_i % 2 == 1:
+                alt = pygame.Surface((BOX_W - ROW_PAD * 2, ROW_H))
+                alt.set_alpha(40)
+                alt.fill((50, 50, 50))
+                screen.blit(alt, (box_x + ROW_PAD, ry))
+ 
+            pygame.draw.rect(screen, DIVIDER, rect, 1)
+ 
+            # Build the step text: input  ->  machine  ->  output
+#            Only show the second arrow if there is an output (final serve step has none)
+            if out:
+                step_text = f"{inp}  ->  {machine}  ->  {out}"
+            else:
+                step_text = f"{inp}  ->  {machine}"
+            step_surf = step_font.render(step_text, True, constants.WHITE)
+            screen.blit(step_surf, (box_x + ROW_PAD + 8,
+                                    ry + ROW_H // 2 - step_surf.get_height() // 2))
+ 
+        # White border drawn last
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, BOX_W, BOX_H), 3)
 
     def draw_shop_screen(self, screen):
         """
@@ -1322,6 +1618,71 @@ def main():
 
                     continue  # Skip other click handling when interacting with the shop
 
+                # Recipe Menu mouse interaction
+                # Handles tab switching, page arrows, card clicks (view detail or
+                # unlock), and detail view dismissal while the recipe overlay is open.
+                # All click rects are redrawn each frame inside draw_recipe_screen().
+                if RecipeView != RECIPE_VIEW_NONE and event.button == 1:
+ 
+                    if RecipeView == RECIPE_VIEW_DETAIL:
+                        # Any click outside the detail box closes the detail view
+                        # and returns to the recipe menu
+                        RecipeView = RECIPE_VIEW_MENU
+                        manager.selected_recipe = None
+ 
+                    elif RecipeView == RECIPE_VIEW_MENU:
+                        # Tab clicks — switch active tab and reset to first page
+                        for tab_name, tab_rect in getattr(manager, "recipe_tab_rects", {}).items():
+                            if tab_rect.collidepoint(event.pos):
+                                manager.recipe_active_tab = tab_name
+                                manager.recipe_page       = 0
+ 
+                        # Left arrow — previous page
+                        if (getattr(manager, "recipe_arrow_left_rect", None) and
+                                manager.recipe_arrow_left_rect.collidepoint(event.pos) and
+                                manager.recipe_page > 0):
+                            manager.recipe_page -= 1
+ 
+                        # Right arrow — next page
+                        if manager.recipe_active_tab == "Unlocked":
+                            tab_recipes = list(RECIPES_UNLOCKED)
+                        else:
+                            tab_recipes = [r for r in ALL_RECIPES if r.locked]
+                        cards_per_page = manager.recipe_cards_per_row * manager.recipe_rows_per_page
+                        total_pages    = max(1, -(-len(tab_recipes) // cards_per_page))
+                        if (getattr(manager, "recipe_arrow_right_rect", None) and
+                                manager.recipe_arrow_right_rect.collidepoint(event.pos) and
+                                manager.recipe_page < total_pages - 1):
+                            manager.recipe_page += 1
+ 
+                        # Card clicks
+                        for card_i, card_rect in getattr(manager, "recipe_card_rects", {}).items():
+                            if card_rect.collidepoint(event.pos):
+                                recipe = manager.recipe_card_map.get(card_i)
+                                if recipe is None:
+                                    break
+ 
+                                if manager.recipe_active_tab == "Unlocked":
+                                    # Open the detail view for this recipe
+                                    manager.selected_recipe = recipe
+                                    RecipeView = RECIPE_VIEW_DETAIL
+ 
+                                else:
+                                    # Attempt to unlock the recipe for price * 2.5
+                                    unlock_cost = recipe.price * 2.5
+                                    if manager.money < unlock_cost:
+                                        manager.set_message(f"Need ${unlock_cost:.2f} to unlock {recipe.name}!")
+                                    else:
+                                        manager.money  -= unlock_cost
+                                        recipe.locked   = False
+                                        RECIPES_UNLOCKED.append(recipe)
+                                        manager.recipe_active_tab = "Unlocked"
+                                        manager.recipe_page       = 0
+                                        manager.set_message(f"Unlocked {recipe.name}!")
+                                break
+ 
+                    continue  # Skip other click handling when interacting with the recipe menu
+
                 elif event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
                     RecipeView = RECIPE_VIEW_MENU
@@ -1584,8 +1945,13 @@ def main():
                     if GameState == "MENU_SCREEN":
                         continue
                     if RecipeView != RECIPE_VIEW_NONE:
-                        RecipeView = RECIPE_VIEW_NONE
-                        current_screen = "game"
+                        if RecipeView == RECIPE_VIEW_DETAIL:
+                            # ESC from detail view returns to the recipe menu, not all the way out
+                            RecipeView = RECIPE_VIEW_MENU
+                            manager.selected_recipe = None
+                        else:
+                            RecipeView = RECIPE_VIEW_NONE
+                            current_screen = "game"
                         continue
                     if ShopView != SHOP_VIEW_NONE:
                         ShopView = SHOP_VIEW_NONE
@@ -1730,6 +2096,9 @@ def main():
         elif GameState == "PLAYING":
             if RecipeView != RECIPE_VIEW_NONE:
                 manager.draw_recipe_screen(screen)
+                # Detail view draws on top of the recipe menu
+                if RecipeView == RECIPE_VIEW_DETAIL:
+                    manager.draw_recipe_detail(screen)
             elif ShopView != SHOP_VIEW_NONE:
                 manager.draw_shop_screen(screen)
             else:
