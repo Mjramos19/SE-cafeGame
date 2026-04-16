@@ -760,7 +760,7 @@ class GameManager:
         if self.selected_recipe is None:
             return
  
-        # ── dimensions ────────────────────────────────────────────────────────
+        #dimensions
         BOX_W, BOX_H = 620, 380
         box_x = constants.WIDTH  // 2 - BOX_W // 2
         box_y = constants.HEIGHT // 2 - BOX_H // 2
@@ -770,23 +770,23 @@ class GameManager:
         ROW_GAP   = 10   # Gap between rows
         ROW_PAD   = 20   # Left padding for row text
  
-        # ── fonts ─────────────────────────────────────────────────────────────
+        # fonts
         info_font = pygame.font.SysFont(None, 24)
         step_font = pygame.font.SysFont(None, 26)
  
-        # ── colors ────────────────────────────────────────────────────────────
+        #colors
         GOLD     = (220, 180, 120)
         DIM_GRAY = (120, 120, 120)
         DIVIDER  = (80, 80, 80)
         ARROW_COLOR = (180, 180, 180)
  
-        # ── dark overlay box ──────────────────────────────────────────────────
+        #dark overlay box
         overlay = pygame.Surface((BOX_W, BOX_H))
         overlay.set_alpha(245)
         overlay.fill((20, 20, 20))
         screen.blit(overlay, (box_x, box_y))
  
-        # ── info bar ──────────────────────────────────────────────────────────
+        #info bar
         pygame.draw.rect(screen, (30, 30, 30), (box_x, box_y, BOX_W, INFO_H))
         pygame.draw.line(screen, DIVIDER, (box_x, box_y + INFO_H), (box_x + BOX_W, box_y + INFO_H), 1)
  
@@ -796,7 +796,7 @@ class GameManager:
         screen.blit(esc_surf,  (box_x + BOX_W - esc_surf.get_width() - ROW_PAD,
                                 box_y + INFO_H // 2 - esc_surf.get_height() // 2))
  
-        # ── step-by-step ingredient chain ─────────────────────────────────────
+        # step-by-step ingredient chain
         # Build production steps by mapping each final ingredient back through
         # the machines that produce it. Each step is a tuple of
         # (input_name, machine_name, output_name).
@@ -838,7 +838,7 @@ class GameManager:
             pygame.draw.rect(screen, DIVIDER, rect, 1)
  
             # Build the step text: input  ->  machine  ->  output
-#            Only show the second arrow if there is an output (final serve step has none)
+            # Only show the second arrow if there is an output (final serve step has none)
             if out:
                 step_text = f"{inp}  ->  {machine}  ->  {out}"
             else:
