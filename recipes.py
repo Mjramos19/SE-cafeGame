@@ -70,7 +70,7 @@ class Recipe:
 
     def str(self):
         """Returns all attributes of the recipe in a sentence."""
-        if self.locked == True:
+        if self.locked is True:
             state = 'currently'
         else:
             state = 'currently not'

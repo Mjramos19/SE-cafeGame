@@ -5,16 +5,17 @@ This module defines the classes for managing the backroom storage system,
 including shelving units, individual shelf spots, and ingredient containers.
 """
 
-from classes import *
 import pygame
+from classes import *
+from items import *
 
 class StockingShelf(GameObject):
     """
     A large shelving unit that manages multiple individual storage spots.
     
     Attributes:
-        interactionZone (pygame.Rect): The area where a player must stand to interact.
-        spots (list): A collection of shelfSpot objects contained within this shelf.
+        interaction_zone (pygame.Rect): The area where a player must stand to interact.
+        spots (list): A collection of shelf_spot objects contained within this shelf.
         icon (pygame.Surface): The visual sprite for the shelf unit.
     """
     def __init__(self, x, y, w, h):
@@ -24,15 +25,15 @@ class StockingShelf(GameObject):
         super().__init__(x, y, w, h, (255,0,0))
         self.interaction_zone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
         self.spots = [
-            ShelfSpot(self.rect.x + 60, self.rect.y + 55, 90, 100),
-            ShelfSpot(self.rect.x + 340, self.rect. y + 55, 90, 100),
-            ShelfSpot(self.rect.x + 60, self.rect.y + 170, 90, 100),
-            ShelfSpot(self.rect.x + 340, self.rect.y + 170, 90, 100)
+            shelf_spot(self.rect.x + 60, self.rect.y + 55, 90, 100),
+            shelf_spot(self.rect.x + 340, self.rect. y + 55, 90, 100),
+            shelf_spot(self.rect.x + 60, self.rect.y + 170, 90, 100),
+            shelf_spot(self.rect.x + 340, self.rect.y + 170, 90, 100)
             ]
         self.icon = IMAGE_LIBRARY["fireAhhShelf"]
     
     #unfinished function
-    def placeShelfSpot(self, num):
+    def placeshelf_spot(self, num):
         """Updates given shelf spot"""
         for i in range(len(self.spots)):
             if i == num:
@@ -46,7 +47,7 @@ class StockingShelf(GameObject):
         for spot in self.spots:
             spot.render(screen, font)
 
-class ShelfSpot(GameObject):
+class shelf_spot(GameObject):
     """
     An individual slot on a shelf that can hold a single ingredient box.
     
@@ -67,7 +68,7 @@ class ShelfSpot(GameObject):
         Args:
             player (Player): The player object attempting to store an item.
         """
-        slot = player.inventory[player.selectedSlot]
+        slot = player.inventory[player.selected_slot]
         if len(slot) == 0 or (not (isinstance(slot[0], IngredientBox))):
                 return
         
@@ -107,7 +108,7 @@ class IngredientBox(GameObject):
     Attributes:
         ingredient (Ingredient): The type of ingredient stored inside.
         quantity (int): Remaining units before the box is depleted.
-        interactionZone (pygame.Rect): Clickable area when the box is on the floor.
+        interaction_zone (pygame.Rect): Clickable area when the box is on the floor.
     """
     def __init__(self, x, y, ingredient):
         """
@@ -129,19 +130,19 @@ class IngredientBox(GameObject):
         self.x = self.rect.x
         self.y = self.rect.y
 
-    def pop_box(box, ingredientBoxes, backroomCollisions):
+    def pop_box(box, ingredient_boxes, backroomCollisions):
         """
         Static helper to remove a box from the global game tracking lists.
         
         Args:
             box (ingredientBox): The box instance to remove.
-            ingredientBoxes (list): The list of all boxes in the room.
+            ingredient_boxes (list): The list of all boxes in the room.
             backroomCollisions (list): The list of active collision rects.
         """
         backRoomIndex = -1
-        for i in range(len(ingredientBoxes)):
-            if box == ingredientBoxes[i]:
-                ingredientBoxes[i] = None
+        for i in range(len(ingredient_boxes)):
+            if box == ingredient_boxes[i]:
+                ingredient_boxes[i] = None
                 break
         
         for i in range(len(backroomCollisions)):
@@ -172,7 +173,7 @@ class IngredientBox(GameObject):
         Args:
             player (Player): The player retrieving the ingredient.
         """
-        player.addInventoryItem(self.ingredient, type(self.ingredient))
+        player.add_item_to_inv(self.ingredient, type(self.ingredient))
         self.quantity -= 1
         if self.quantity == 0:
             self.spot.remove_ingredient_box()
@@ -184,7 +185,7 @@ class IngredientBox(GameObject):
         Args:
             player (Player): The player storing the ingredient
         """
-        slot = player.inventory[player.selectedSlot]
+        slot = player.inventory[player.selected_slot]
 
         if len(slot) == 0 or (not (isinstance(slot[0], Ingredient))) or self.quantity == 10:
             return
@@ -234,8 +235,8 @@ class Refrigerator(StockingShelf):
         super(StockingShelf, self).__init__(x, y, w, h, (255, 0, 0))
         self.interaction_zone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
         self.spots = [
-            ShelfSpot(self.rect.x + 7, self.rect.y + 75, 100, 200),
-            ShelfSpot(self.rect.x + 121, self.rect.y + 75, 100, 200)
+            shelf_spot(self.rect.x + 7, self.rect.y + 75, 100, 200),
+            shelf_spot(self.rect.x + 121, self.rect.y + 75, 100, 200)
         ]
         self.icon = IMAGE_LIBRARY["fridge"]
 

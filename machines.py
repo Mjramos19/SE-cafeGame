@@ -128,7 +128,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             screen.blit(self.ingredient.image, (self.ingredient.x, self.ingredient.y))
             self.ingredient_rect = self.ingredient.image.get_rect(topleft=(self.ingredient.x, self.ingredient.y))
 
-        if debug == True:
+        if debug is True:
             pygame.draw.rect(screen, (255, 255, 255), self.mg_interaction_zone, 3)
             pygame.draw.rect(screen, (255, 255, 255), self.start_button)
             pygame.draw.rect(screen, (255, 255, 0), self.minigame_rect, 1)
@@ -145,7 +145,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.state = "error"
         else:
             self.state = "full"
-            player.popInventoryItem(self.ingredient, type(self.ingredient))
+            player.pop_inv_item(self.ingredient, type(self.ingredient))
             self.ingredient = None
 
     def run_machine(self, num=0):

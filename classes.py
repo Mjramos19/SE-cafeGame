@@ -1,4 +1,5 @@
 from constants import *
+from items import *
 #hi
 
 class GameObject:
@@ -21,9 +22,9 @@ class Player(GameObject, pygame.sprite.Sprite):
         rect (pygame.Rect): The collision and position rectangle.
         foot_w (int): The width of the specialized foot collision box.
         foot_h (int): The height of the specialized foot collision box.
-        selectedSlot (int): The index of the currently active inventory slot.
+        selected_slot (int): The index of the currently active inventory slot.
         inventory (list): A 2D list containing item objects for each slot.
-        inventoryQuants (list): A list tracking the quantity of items in each slot.
+        inventory_quants (list): A list tracking the quantity of items in each slot.
     """
     def __init__(self, x, y, image_key):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
         """
@@ -48,9 +49,9 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.foot_w = (18 * 4)
         self.foot_h = (8 * 4)
 
-        self.selectedSlot = 0
+        self.selected_slot = 0
         self.inventory = [[], [], [], []]
-        self.inventoryQuants = [0, 0, 0, 0]
+        self.inventory_quants = [0, 0, 0, 0]
 
 
     def get_foot_rect(self):
@@ -97,12 +98,12 @@ class Player(GameObject, pygame.sprite.Sprite):
 
 
 #helper function to update hotbar quantities every frame
-    def updateInventoryLengths(self):
-        """Updates the inventoryQuants list with current lengths of inventory slots."""
-        self.inventoryQuants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
+    def update_inv_lengths(self):
+        """Updates the inventory_quants list with current lengths of inventory slots."""
+        self.inventory_quants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
 
     #function add a given object to players inventory
-    def addInventoryItem(self, item, item_type):
+    def add_item_to_inv(self, item, item_type):
         """
         Adds a given object to the player's inventory, handling stacking logic.
         
@@ -525,7 +526,7 @@ class Register(Counter):
     A specialized Counter that handles order-taking and customer queue logic.
     
     Attributes:
-        interactionZone (pygame.Rect): The area where the player can trigger interaction.
+        interaction_zone (pygame.Rect): The area where the player can trigger interaction.
         icon (pygame.Surface): The visual indicator for a waiting customer.
     """
     # this variable is shared amongst both register objects
@@ -535,7 +536,7 @@ class Register(Counter):
         self.placeable = False
 
         # interaction box for register
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
+        self.interaction_zone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
 
         self.icon = IMAGE_LIBRARY["register_icon"]
         self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
@@ -614,13 +615,13 @@ class Sink(Counter):
     A specialized Counter that handles clearing the player's inventory cup.
     
     Attributes:
-        interactionZone (pygame.Rect): Area where player can interact with the sink.
+        interaction_zone (pygame.Rect): Area where player can interact with the sink.
     """
     def __init__(self, x, y):
         super().__init__(x, y)
         self.placeable = False
 
-        self.interactionZone = pygame.Rect(self.rect.x, self.rect.y + 100, self.rect.w, self.rect.h)
+        self.interaction_zone = pygame.Rect(self.rect.x, self.rect.y + 100, self.rect.w, self.rect.h)
 
     def clear_cup(self, player):
         """
@@ -629,7 +630,7 @@ class Sink(Counter):
         Args:
             player (Player): The player instance performing the action.
         """
-        curr_slot = player.inventory[player.selectedSlot]
+        curr_slot = player.inventory[player.selected_slot]
         if curr_slot and isinstance(curr_slot[0], Cup) and curr_slot[0].contents:
             cup_to_clear = curr_slot.pop()
 
@@ -637,21 +638,21 @@ class Sink(Counter):
             cup_to_clear.contents.clear()
             cup_to_clear.update()
             print(f'{cup_to_clear}')
-            added = player.addInventoryItem(cup_to_clear, Cup)
+            added = player.add_item_to_inv(cup_to_clear, Cup)
             if not added:
-                player.inventory[player.selectedSlot].append(cup_to_clear)
+                player.inventory[player.selected_slot].append(cup_to_clear)
             return True
         return False   
     
     def is_player_nearby(self, player):
         """Checks if the player is within range of the sink."""
-        return player.get_foot_rect().colliderect(self.interactionZone)
+        return player.get_foot_rect().colliderect(self.interaction_zone)
 
     def render(self, screen, debugmode):
         """Renders the sink unit visuals."""
         if debugmode == True:
             pygame.draw.rect(screen, WHITE, self.rect) 
-            pygame.draw.rect(screen, (0, 0, 255), self.interactionZone, 2)
+            pygame.draw.rect(screen, (0, 0, 255), self.interaction_zone, 2)
 
 class Cup(GameObject):
     """

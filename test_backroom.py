@@ -17,24 +17,24 @@ class FakeIngred:
 #fake player class for tests
 class FakePlayer:
     def __init__(self):
-        self.selectedSlot = 0
+        self.selected_slot = 0
         #only one inventory slot for simple testing
         self.inventory = [[]]
         self.added_items = []
         self.removed_items = []
     
     #keeps track of added items and their type as a tuple
-    def addInventoryItem(self, item, item_type):
+    def add_item_to_inv(self, item, item_type):
         self.added_items.append((item, item_type))
     
     #Keeps track of removed items and their type as a tuple
     def popInventoryItem(self, item, item_type):
         self.removed_items.append((item, item_type))
-        if item in self.inventory[self.selectedSlot]:
-            self.inventory[self.selectedSlot].remove(item)
+        if item in self.inventory[self.selected_slot]:
+            self.inventory[self.selected_slot].remove(item)
 
-def test_shelfspot_behavior():
-    spot = backroom.ShelfSpot(10, 20, 100, 50)
+def test_shelf_spot_behavior():
+    spot = backroom.shelf_spot(10, 20, 100, 50)
 
     #checking nitial state of shelf spots
     assert spot.open == True
@@ -67,7 +67,7 @@ def test_ingredientbox_behavior():
     assert box.rect.center == (200, 300)
 
     #set a spot
-    spot = backroom.ShelfSpot(10, 20, 100, 50)
+    spot = backroom.shelf_spot(10, 20, 100, 50)
     box.set_spot(spot)
     assert box.spot == spot
 
@@ -86,7 +86,7 @@ def test_pick_ingredient_set():
 
 def test_store_ingredient_box_set():
     player = FakePlayer()
-    spot = backroom.ShelfSpot(10, 20, 100, 50)
+    spot = backroom.shelf_spot(10, 20, 100, 50)
 
     ingredient = FakeIngred("Coffee Beans")
     box = backroom.IngredientBox(0, 0, ingredient)
@@ -127,7 +127,7 @@ def test_store_ingredient_box_set():
 
 def test_grab_ingredient_set():
     player = FakePlayer()
-    spot = backroom.ShelfSpot(10, 20, 100, 50)
+    spot = backroom.shelf_spot(10, 20, 100, 50)
     ingredient = FakeIngred("Coffee Beans")
     box = backroom.IngredientBox(0, 0, ingredient)
 

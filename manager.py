@@ -459,7 +459,7 @@ class GameManager:
         for c in backroom_collisions:
             c.render(screen, font)
             if isinstance(c, stockingShelf):
-                pygame.draw.rect(screen, (255, 255, 255), c.interactionZone, 2)
+                pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
 
         doorEntry2.render(screen)
         player.render(screen, DebugMode)
