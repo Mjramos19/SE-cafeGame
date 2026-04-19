@@ -36,8 +36,13 @@ class GameManager:
                 {"name": "Quick Brew",     "desc": "Espresso pulls 15% faster",   "cost": 90,  "tier": 1, "purchased": False},
             ],
             "Machines": [
-                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False},
-                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False},
+                # Slide 0 — free starter machines (place them on the back counter at no cost)
+                {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                # Slide 1 — purchasable machines (require money)
+                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
+                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
             ],
             "Cosmetics": [
                 {"name": "Floral Wallpaper", "desc": "Redecorate the cafe walls",       "cost": 40, "tier": 1, "purchased": False},
@@ -64,7 +69,13 @@ class GameManager:
         self.shop_tab_rects        = {}   # maps tab name → pygame.Rect
         self.shop_item_rects       = {}   # maps page-local row index → pygame.Rect
         self.shop_arrow_left_rect  = None # None when no prev page or pygame.Rect
-        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect 
+        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect
+
+        # Machine placement state — set when the player clicks a free machine to place it.
+        # placement_machine: the Machine object being dragged to its spot (or None).
+        # placement_item: the shop dict entry for that machine, so we can mark it placed.
+        self.placement_machine = None
+        self.placement_item    = None
 
     def set_message(self, text, duration_ms=1500):
         """
