@@ -63,6 +63,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
         self.ingredient = None
         self.ingredient_rect = None
+        self.placed = False  # True once the player has placed this machine on the counter
 
     def get_sprite(self):
         """Returns the appropriate sprite from IMAGE_LIBRARY based on current state."""
@@ -184,6 +185,16 @@ class Machine(GameObject, pygame.sprite.Sprite):
         else:
             if len(self.contents) > 0:
                 return self.contents.pop()
+
+    def move_to(self, x, y):
+        """Reposition the machine on the counter, updating all dependent rects."""
+        self.x, self.y = x, y
+        self.counter_space_rect.topleft = (x, y)
+        self.rect.centerx = self.counter_space_rect.centerx
+        self.rect.centery = self.counter_space_rect.centery
+        self.rect.y -= 50
+        self.interaction_zone.y = y + self.h
+        self.interaction_zone.centerx = self.rect.centerx
 
     def render(self, screen, debug=False):
         """Draws the machine in the standard cafe view."""
