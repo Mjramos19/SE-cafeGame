@@ -166,7 +166,7 @@ water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
 
-machines = [grinder, espresso_mach, water_boiler]
+machines = []  # starts empty; free machines are added when the player places them from the shop
 
 SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
@@ -245,8 +245,13 @@ class GameManager:
                 {"name": "Extra Speed",   "desc": "Increases movement speed by 50%", "cost": 125, "tier": 1, "purchased": False},
             ],
             "Machines": [
-                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False},
-                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False},
+                # Slide 0 — free starter machines (place on back counter at no cost)
+                {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                # Slide 1 — purchasable machines (require money)
+                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
+                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
             ],
             "Cosmetics": [
                 {"name": "Floral Wallpaper", "desc": "Redecorate the cafe walls",       "cost": 40, "tier": 1, "purchased": False},
@@ -274,7 +279,13 @@ class GameManager:
         self.shop_item_rects       = {}   # maps page-local row index → pygame.Rect
         self.shop_item_orig_idx    = {}   # maps page-local row index → original index in the tab's item list (used after sort)
         self.shop_arrow_left_rect  = None # None when no prev page or pygame.Rect
-        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect 
+        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect
+
+        # Machine placement state — set when the player picks a free machine to place.
+        # placement_machine: the Machine object being positioned (or None).
+        # placement_item:    the shop dict entry for that machine, so we can mark it placed.
+        self.placement_machine = None
+        self.placement_item    = None
 
         # Recipe menu UI state — which tab is active, which page, and which recipe
         # is currently selected for the detail view.
@@ -967,37 +978,54 @@ class GameManager:
                 pygame.draw.line(screen, DIVIDER, (sep_x, info_y + 6), (sep_x, info_y + INFO_H - 6), 1)
 
         # paginated item list
-        tab_items = self.shop_tabs[self.active_tab]
+        all_tab_items = self.shop_tabs[self.active_tab]
 
-        # Sort items so locked ones always sink to the bottom of the list.
-        # We compute lock state for sorting purposes before slicing the page.
-        def is_locked(item, index):
-            """Return True if this item should be locked (Upgrades tab tier-gating only)."""
-            if self.active_tab == "Upgrades" and item["tier"] > 1:
-                return not tab_items[index - 1]["purchased"]
-            return False
+        # Machines tab uses a two-slide layout: slide 0 = free starters, slide 1 = purchasable.
+        # The existing shop_page value is reused as the slide index (0 or 1).
+        if self.active_tab == "Machines":
+            is_free_slide = (self.shop_page == 0)
+            page_items     = [it for it in all_tab_items if it.get("free", False) == is_free_slide]
+            page_index_map = [i for i, it in enumerate(all_tab_items) if it.get("free", False) == is_free_slide]
+            total_pages    = 2
 
-        def sort_key(pair):
-            """Sort order: purchasable (0) → locked (1) → purchased (2)."""
-            _, item = pair
-            idx = pair[0]
-            if item["purchased"]:
-                return 2
-            if is_locked(item, idx):
-                return 1
-            return 0
+            # Slide label strip above the rows
+            slide_label  = "Free Starters" if is_free_slide else "Purchasable"
+            slide_surf   = tab_font.render(slide_label, True, GOLD)
+            slide_label_y = content_y - 2
+            screen.blit(slide_surf, (content_x + content_w // 2 - slide_surf.get_width() // 2, slide_label_y))
+            content_y += slide_surf.get_height() + 6
 
-        sorted_items = sorted(enumerate(tab_items), key=sort_key)
-        # Strip back to just the items in sorted order for pagination
-        sorted_tab_items = [item for _, item in sorted_items]
-        # Keep a mapping from sorted position → original index for buy logic
-        sorted_index_map = [orig_i for orig_i, _ in sorted_items]
+            def is_locked(item, index):
+                return False  # no tier-locking in Machines tab
+        else:
+            tab_items = all_tab_items
 
-        total_pages    = max(1, -(-len(sorted_tab_items) // self.ITEMS_PER_PAGE))  # ceiling division
-        page_items     = sorted_tab_items[self.shop_page * self.ITEMS_PER_PAGE :
-                                          self.shop_page * self.ITEMS_PER_PAGE + self.ITEMS_PER_PAGE]
-        page_index_map = sorted_index_map[self.shop_page * self.ITEMS_PER_PAGE :
-                                          self.shop_page * self.ITEMS_PER_PAGE + self.ITEMS_PER_PAGE]
+            # Sort items so locked ones always sink to the bottom of the list.
+            def is_locked(item, index):
+                """Return True if this item should be locked (Upgrades tab tier-gating only)."""
+                if self.active_tab == "Upgrades" and item["tier"] > 1:
+                    return not tab_items[index - 1]["purchased"]
+                return False
+
+            def sort_key(pair):
+                """Sort order: purchasable (0) → locked (1) → purchased (2)."""
+                _, item = pair
+                idx = pair[0]
+                if item["purchased"]:
+                    return 2
+                if is_locked(item, idx):
+                    return 1
+                return 0
+
+            sorted_items     = sorted(enumerate(tab_items), key=sort_key)
+            sorted_tab_items = [item for _, item in sorted_items]
+            sorted_index_map = [orig_i for orig_i, _ in sorted_items]
+
+            total_pages    = max(1, -(-len(sorted_tab_items) // self.ITEMS_PER_PAGE))
+            page_items     = sorted_tab_items[self.shop_page * self.ITEMS_PER_PAGE :
+                                              self.shop_page * self.ITEMS_PER_PAGE + self.ITEMS_PER_PAGE]
+            page_index_map = sorted_index_map[self.shop_page * self.ITEMS_PER_PAGE :
+                                              self.shop_page * self.ITEMS_PER_PAGE + self.ITEMS_PER_PAGE]
 
         self.shop_item_rects    = {}  # rebuilt each frame; maps page-local row → Rect
         self.shop_item_orig_idx = {}  # maps page-local row → original tab_items index
@@ -1030,7 +1058,15 @@ class GameManager:
             screen.blit(desc_surf, (desc_x, ry + ROW_H // 2 - desc_surf.get_height() // 2))
 
             # Status badge (right-aligned)
-            if item["purchased"]:
+            if item.get("free", False):
+                # Free machines show PLACE / PLACED instead of a price
+                if item.get("placed", False):
+                    status_text  = "PLACED"
+                    status_color = constants.GREEN
+                else:
+                    status_text  = "PLACE"
+                    status_color = GOLD
+            elif item["purchased"]:
                 status_text  = "OWNED"
                 status_color = constants.GREEN
             elif locked:
@@ -1288,6 +1324,41 @@ class GameManager:
             if m.is_player_nearby(player):
                 label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
                 screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
+
+        # Placement mode overlay — drawn on top of everything when the player is
+        # positioning a new free machine on the back counter.
+        if self.placement_machine is not None:
+            COUNTER_Y       = 234
+            MACHINE_W       = 150
+            MACHINE_H       = 90
+            BACK_COUNTER_XS = [193, 358, 522, 686, 850]
+            occupied_xs     = {m.x for m in machines if m.placed}
+
+            mx, _ = pygame.mouse.get_pos()
+            # Snap ghost to the back counter whose centre is closest to the mouse
+            hovered_x = min(BACK_COUNTER_XS, key=lambda cx: abs(cx + MACHINE_W // 2 - mx))
+
+            # Neon green border on the hovered free counter; red on occupied; dim green on the rest
+            for cx in BACK_COUNTER_XS:
+                cr = pygame.Rect(cx, COUNTER_Y, MACHINE_W, MACHINE_H)
+                if cx in occupied_xs:
+                    pygame.draw.rect(screen, (220, 50, 50), cr, 4)   # red — taken
+                elif cx == hovered_x:
+                    pygame.draw.rect(screen, (57, 255, 20), cr, 4)   # neon green — valid target
+                else:
+                    pygame.draw.rect(screen, (0, 160, 0), cr, 2)
+
+            # Ghost sprite snapped to the hovered counter
+            ghost_sprite = constants.IMAGE_LIBRARY[self.placement_machine.mini_game_img_keys[0]].copy()
+            ghost_sprite.set_alpha(160)
+            ghost_rect = ghost_sprite.get_rect()
+            ghost_rect.centerx = hovered_x + MACHINE_W // 2
+            ghost_rect.centery = COUNTER_Y + MACHINE_H // 2 - 50
+            screen.blit(ghost_sprite, ghost_rect)
+
+            hint_font = pygame.font.SysFont(None, 30)
+            hint = hint_font.render(f"Click to place {self.placement_machine.name}  |  ESC to cancel", True, (255, 240, 160))
+            screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 18))
 
         self.drawHotBar(player, font)
 
@@ -1600,21 +1671,41 @@ def main():
                             manager.shop_page > 0):
                         manager.shop_page -= 1
 
-                    # Right arrow — go to next page if one exists
-                    tab_items   = manager.shop_tabs[manager.active_tab]
-                    total_pages = max(1, -(-len(tab_items) // manager.ITEMS_PER_PAGE))
+                    # Right arrow — go to next page/slide if one exists
+                    _tab_items_count = len(manager.shop_tabs[manager.active_tab])
+                    if manager.active_tab == "Machines":
+                        total_pages = 2
+                    else:
+                        total_pages = max(1, -(-_tab_items_count // manager.ITEMS_PER_PAGE))
                     if (getattr(manager, "shop_arrow_right_rect", None) and
                             manager.shop_arrow_right_rect.collidepoint(event.pos) and
                             manager.shop_page < total_pages - 1):
                         manager.shop_page += 1
 
-                    # Item row clicks — attempt purchase of the clicked item.
-                    # Uses shop_item_orig_idx because items are sorted (locked to bottom),
-                    # so the page-local row index no longer matches the tab list index directly.
+                    # Item row clicks — purchase or trigger placement for free machines.
+                    _free_machine_lookup = {
+                        "Coffee Grinder":  grinder,
+                        "Espresso Machine": espresso_mach,
+                        "Water Boiler":    water_boiler,
+                    }
                     for row_i, item_rect in getattr(manager, "shop_item_rects", {}).items():
                         if item_rect.collidepoint(event.pos):
                             orig_index = manager.shop_item_orig_idx.get(row_i, row_i)
-                            manager.buy_shop_item(manager.active_tab, orig_index, player)
+                            tab_item   = manager.shop_tabs[manager.active_tab][orig_index]
+                            if manager.active_tab == "Machines" and tab_item.get("free") and not tab_item.get("placed"):
+                                # Enter placement mode: close shop, show ghost in MIDDLE view
+                                machine_obj = _free_machine_lookup.get(tab_item["name"])
+                                if machine_obj:
+                                    manager.placement_machine = machine_obj
+                                    manager.placement_item    = tab_item
+                                    ShopView = SHOP_VIEW_NONE
+                                    current_screen = "game"
+                                    CafeView = "MIDDLE"
+                                    manager.change_counters_pos("MIDDLE")
+                            elif manager.active_tab == "Machines" and tab_item.get("free") and tab_item.get("placed"):
+                                manager.set_message("Already placed on the counter!")
+                            else:
+                                manager.buy_shop_item(manager.active_tab, orig_index, player)
 
                     continue  # Skip other click handling when interacting with the shop
 
@@ -1678,10 +1769,42 @@ def main():
                                         RECIPES_UNLOCKED.append(recipe)
                                         manager.recipe_active_tab = "Unlocked"
                                         manager.recipe_page       = 0
-                                        manager.set_message(f"Unlocked {recipe.name}!")
+                                        manager.set_message(f"{placed_name} placed!", duration_ms=2000)
                                 break
  
                     continue  # Skip other click handling when interacting with the recipe menu
+
+                # Machine placement — left-click in the MIDDLE view places the ghost machine
+                # on the back counter when the player has picked a free machine from the shop.
+                elif event.button == 1 and manager.placement_machine is not None and CafeView == "MIDDLE":
+                    COUNTER_Y       = 234
+                    MACHINE_W       = 150
+                    MACHINE_H       = 90
+                    BACK_COUNTER_XS = [193, 358, 522, 686, 850]
+                    mx, my = event.pos
+                    # Place only when the click lands inside one individual back counter
+                    clicked_x = None
+                    for cx in BACK_COUNTER_XS:
+                        if cx <= mx <= cx + MACHINE_W and COUNTER_Y - 60 <= my <= COUNTER_Y + MACHINE_H + 20:
+                            clicked_x = cx
+                            break
+                    occupied_xs = {m.x for m in machines if m.placed}
+                    if clicked_x is not None and clicked_x not in occupied_xs:
+                        placed_name = manager.placement_machine.name
+                        manager.placement_machine.move_to(clicked_x, COUNTER_Y)
+                        if manager.placement_machine not in machines:
+                            machines.append(manager.placement_machine)
+                        manager.placement_machine.placed = True
+                        if manager.placement_item is not None:
+                            manager.placement_item["placed"] = True
+                        manager.placement_machine = None
+                        manager.placement_item    = None
+                        # Reopen the shop on the Machines tab so the player can
+                        # see the item marked as placed without clicking Shop again.
+                        manager.active_tab   = "Machines"
+                        manager.shop_page    = 0
+                        ShopView             = SHOP_VIEW_MENU
+                        current_screen       = "shop"
 
                 elif event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
@@ -1943,6 +2066,10 @@ def main():
 
                 if event.key == pygame.K_ESCAPE:
                     if GameState == "MENU_SCREEN":
+                        continue
+                    if manager.placement_machine is not None:
+                        manager.placement_machine = None
+                        manager.placement_item    = None
                         continue
                     if RecipeView != RECIPE_VIEW_NONE:
                         if RecipeView == RECIPE_VIEW_DETAIL:
