@@ -171,7 +171,7 @@ grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground
 espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"],
                          ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
-                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (455, 220, 70, 90))
+                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
 
@@ -2043,6 +2043,7 @@ def main():
                                                 active_machine.state = "ready"
                                                 active_machine.contents.append(result)
                                                 manager.set_message("Output cannot be collected: Must Use A Cup")
+                                                active_machine.error_effect.play()
                                     else:
                                         print("player holding something else")
 
@@ -2233,7 +2234,7 @@ def main():
             manager.end_of_day_sequence(screen, font)
 
         elif GameState == "PAUSED":
-            frozen_keys = {k: False for k in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_ESCAPE]}  # no inputs while paused
+            frozen_keys = {k: False for k in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_ESCAPE, pygame.K_a, pygame.K_d, pygame.K_s, pygame.K_w]}  # no inputs while paused
             if CafeView == "FRONT":
                 manager.front_view_rendering(player, customers, font, frozen_keys, DebugMode)
             elif CafeView == "MIDDLE":
@@ -2285,7 +2286,7 @@ def main():
             m.update()
 
         i = 0
-        if currentCust != None and currentCust.state == "waiting" and GameState == "PLAYING":
+        if currentCust != None and currentCust.state == "waiting": # and GameState == "PLAYING":
             register1.set_waiting()
             if customer_was_waiting is False:
                 register1.bell.play()

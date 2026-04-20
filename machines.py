@@ -119,7 +119,6 @@ class Machine(GameObject, pygame.sprite.Sprite):
             if elapsed >= 1500:
                 self.state = "empty"
         elif self.state == "running":
-            self.brewing_effect.play()
             elapsed = pygame.time.get_ticks() - self.timer_start
             remaining = max(0, self.runtime - elapsed // 1000)
             prompt = font.render(f"Running... {remaining}s remaining", True, (255, 200, 0))
@@ -175,6 +174,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         """Captures start ticks and transitions machine to the running state."""
         self.timer_start = pygame.time.get_ticks()
         self.state = "running"
+        self.brewing_effect.play()
         print("machine running")
 
     def update(self):
