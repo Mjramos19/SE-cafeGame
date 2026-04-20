@@ -36,9 +36,9 @@ constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.image.load("Cafe_Game_Art/CGIn
 constants.IMAGE_LIBRARY["em_empty"] = pygame.image.load("Cafe_Game_Art/EMempty.png").convert_alpha()
 constants.IMAGE_LIBRARY["em_inprogress"] = pygame.image.load("Cafe_Game_Art/EMinprogress.png").convert_alpha()
 constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Cafe_Game_Art/EMready.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WBempty.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WBinprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WBready.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WB0Empty.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WB0InProgress.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WB0Ready.png").convert_alpha()
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
@@ -73,10 +73,10 @@ constants.IMAGE_LIBRARY["cg_ready"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cg_inprogress"], (150, 200))
 constants.IMAGE_LIBRARY["em_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_empty"], (150, 200))
 constants.IMAGE_LIBRARY["em_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_inprogress"], (150, 200))
-constants.IMAGE_LIBRARY["em_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_ready"], (150, 200))
-constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_empty"], (130, 200))
-constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (130, 200))
-constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (130, 200))
+constants.IMAGE_LIBRARY["em_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_ready"], (150, 180))
+constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_empty"], (150, 190))
+constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (150, 190))
+constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (150, 190))
 constants.IMAGE_LIBRARY["water"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["water"], ((348, 330)))
 constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["coffee_beans"], ((348, 330)))
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ground_coffee"], ((348, 330)))
@@ -162,7 +162,7 @@ sink = Sink(1015, 234)
 
 grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"], (510, 480, 150, 70))
 espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"], (490, 255, 65, 50))
-water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (455, 220, 70, 90))
+water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (500, 200, 50, 70))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
 
