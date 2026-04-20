@@ -8,7 +8,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
     It includes a 'mini_game_mode' for player interaction and internal timers to 
     process ingredients into outputs.
     """
-    def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, mini_game_img_keys, start_button_info, w=150, h=90):
+    def __init__(self, x, y, name, machine_input, outputs: list, num_outputs, runtime, mini_game_img_keys, sound_keys, start_button_info, w=150, h=90):
         """
         Initializes the machine with its processing rules and visual assets.
         
@@ -30,7 +30,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.state = 'empty'
         self.mini_game_img_keys = mini_game_img_keys
         
-        """
+        
         self.sound_keys = sound_keys
 
         #  filled/brewing/ready/collect correlate to keys 0/1/2/3
@@ -38,7 +38,8 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.brewing_effect = pygame.mixer.Sound(self.sound_keys[1])
         self.ready_effect = pygame.mixer.Sound(self.sound_keys[2])
         self.collect_effect = pygame.mixer.Sound(self.sound_keys[3])
-        """
+        self.error_effect = pygame.mixer.Sound("Audio Files/error.wav")
+        
 
         try:
             self.sprite = self.get_sprite()
@@ -114,9 +115,11 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
         if self.state == "error":
             elapsed = pygame.time.get_ticks() - self.error_start
+            self.error_effect.play()
             if elapsed >= 1500:
                 self.state = "empty"
         elif self.state == "running":
+            self.brewing_effect.play()
             elapsed = pygame.time.get_ticks() - self.timer_start
             remaining = max(0, self.runtime - elapsed // 1000)
             prompt = font.render(f"Running... {remaining}s remaining", True, (255, 200, 0))
@@ -156,6 +159,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             self.state = "error"
         else:
             self.state = "full"
+            self.filled_effect.play()
             player.pop_inv_item(self.ingredient, type(self.ingredient))
             self.ingredient = None
 
@@ -182,6 +186,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
             elapsed = pygame.time.get_ticks() - self.timer_start
             if elapsed >= self.runtime * 1000:
                 self.state = "ready"
+                self.ready_effect.play()
                 self.contents = [self.selected_output] * self.num_outputs
 
     def select_output(self, index=0):

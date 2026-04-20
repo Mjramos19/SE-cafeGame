@@ -166,9 +166,12 @@ backroom_shelves = []
 
 sink = Sink(1015, 234)
 
-grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"], (510, 480, 150, 70))
-espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"], (490, 255, 65, 50))
-water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (455, 220, 70, 90))
+grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"],
+                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (510, 480, 150, 70))
+espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"],
+                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
+water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
+                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (455, 220, 70, 90))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
 
@@ -1513,7 +1516,7 @@ def main():
     all_sprites.add(player)
 
     """for testing the minigame mode I'm defaulting the player with some ingredients"""
-    player.inventory[0] = [Espresso]
+    #player.inventory[0] = []
     is_dragging = False
 
     for recipe in ALL_RECIPES:
@@ -1990,15 +1993,18 @@ def main():
                                                 if len(cup.contents) < cup.max_capacity:
                                                     print("ingredient added to current cup")
                                                     cup.contents.append(result)
+                                                    active_machine.collect_effect.play()
                                                     cup.update()
                                                 else:
                                                     manager.set_message("Output cannot be collected: Cup is Full Capacity")
                                                     active_machine.state = "ready" 
                                                     active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
+                                                    active_machine.error_effect.play()
                                             else:
                                                 if player.add_item_to_inv(result, Ingredient) is False:
                                                     active_machine.state = "ready"  
                                                     active_machine.contents.append(result)
+                                                    active_machine.error_effect.play()
                                                     manager.set_message("Output cannot be collected: Must Use A Cup")
                                         else:
                                             print("trying to add to empty cup")
@@ -2016,10 +2022,12 @@ def main():
                                                     curr_slot.append(pulled_cup) #add the cup back to the inventory
                                                     active_machine.state = "ready" 
                                                     active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
+                                                    active_machine.error_effect.play()
                                             else:
                                                 manager.set_message("Output cannot be collected with a cup.")
                                                 active_machine.state = "ready" 
                                                 active_machine.contents.append(result)
+                                                active_machine.error_effect.play()
         
 
                                     elif isinstance(curr_slot[0], Ingredient):
