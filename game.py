@@ -1575,7 +1575,7 @@ def main():
                         manager.name_input_active = False 
                     else:
                         if len(manager.name_input_text) < 15:
-                            manager.name_input_text += pygame.key.name(event.key)
+                            manager.name_input_text += event.unicode
 
                 continue
 
