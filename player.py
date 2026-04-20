@@ -75,13 +75,13 @@ class Player(GameObject, pygame.sprite.Sprite):
         old_x, old_y = self.rect.x, self.rect.y
 
         # Inputs for movement
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
             self.rect.x -= self.speed
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.rect.x += self.speed
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.rect.y -= self.speed
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             self.rect.y += self.speed
 
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))

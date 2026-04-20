@@ -29,6 +29,16 @@ class Machine(GameObject, pygame.sprite.Sprite):
 
         self.state = 'empty'
         self.mini_game_img_keys = mini_game_img_keys
+        
+        """
+        self.sound_keys = sound_keys
+
+        #  filled/brewing/ready/collect correlate to keys 0/1/2/3
+        self.filled_effect = pygame.mixer.Sound(self.sound_keys[0])
+        self.brewing_effect = pygame.mixer.Sound(self.sound_keys[1])
+        self.ready_effect = pygame.mixer.Sound(self.sound_keys[2])
+        self.collect_effect = pygame.mixer.Sound(self.sound_keys[3])
+        """
 
         try:
             self.sprite = self.get_sprite()

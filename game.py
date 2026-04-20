@@ -86,6 +86,11 @@ constants.IMAGE_LIBRARY["sick_rug"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["best_box_ever"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["best_box_ever"], (100, 100))
 constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["fireAhhShelf"], (500, 300))
 
+# Sounds
+correct_order = pygame.mixer.Sound("Audio Files/correct_order.wav")
+incorrect_order = pygame.mixer.Sound("Audio Files/wrong_order.wav")
+
+
 
 
 # Defines all ingredients
@@ -140,6 +145,7 @@ doorEntry, doorEntry2 = DoorEntry(15, 345, 155, 50), DoorEntry(15, 718, 155, 50)
 # build two registers - one for customers, the other dependent on the first and will display icon, can take order from both and will update the other
 register1 = Register(829, 487, 110)
 register2 = Register(193, 615, 10)
+customer_was_waiting = False
 
 #counterCup = Cup(["cup", "cup_w_lid"])
 
@@ -1466,7 +1472,7 @@ class GameManager:
 
 
 def main():
-    global Customer, currentCust
+    global Customer, currentCust, customer_was_waiting
     pygame.display.set_caption("Cafe")
     font = pygame.font.SysFont(None, 22)
 
@@ -1507,8 +1513,7 @@ def main():
     all_sprites.add(player)
 
     """for testing the minigame mode I'm defaulting the player with some ingredients"""
-    player.inventory[0] = [water, water]
-    player.inventory[1] = [bag_coffee_beans, bag_coffee_beans]
+    player.inventory[0] = [Espresso]
     is_dragging = False
 
     for recipe in ALL_RECIPES:
@@ -1530,7 +1535,7 @@ def main():
         minutes = int((game_seconds % 3600) // 60)
 
         # Set the customer spawn timer to start at 8:00 AM and stop at 6:00 PM
-        if int(game_seconds) == SEVEN_AM:
+        if int(game_seconds) == DAY_START:
             pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
         if int(game_seconds) == DAY_END:
             pygame.time.set_timer(SPAWN_EVENT, 0)
@@ -1639,7 +1644,7 @@ def main():
                         
                         
                     current_save_file = save
-                    print(f"Current save file set to: {current_save_file}, data: {loaded_data}, GameState: {GameState}")
+                    #print(f"Current save file set to: {current_save_file}, data: {loaded_data}, GameState: {GameState}")
 
                     if loaded_data is None or loaded_data.get("day_num", 1) == 1:
                         manager.name_input_active = True
@@ -1949,10 +1954,18 @@ def main():
                                     manager.money += total
                                     manager.money_earned_today += total  
                                     manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
+                                    correct_order.play()
+                                    print("correct order sound")
                                     nearby.start_drinking("correct")
                                 else:
                                     nearby.start_drinking("incorrect")
                                     manager.set_message("Customer rejected the order!", 2500)
+                                    try:
+                                        incorrect_order.play()
+                                        print("sound played")
+                                    except:
+                                        print("incorrect order sound didn't play")
+                                    
                                     manager.customers_unhappy_today += 1
 
                                 manager.active_orders.remove(customer_order)
@@ -2101,6 +2114,7 @@ def main():
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
                         GameState = "PLAYING"
+                        customer_was_waiting = False
                         continue
 
                     active_count = sum(1 for o in manager.active_orders if o is not None)
@@ -2262,9 +2276,16 @@ def main():
         for m in machines:
             m.update()
 
+        i = 0
         if currentCust != None and currentCust.state == "waiting" and GameState == "PLAYING":
             register1.set_waiting()
-
+            if customer_was_waiting is False:
+                register1.bell.play()
+                print("bell playing")
+                customer_was_waiting = True
+        else:
+            customer_was_waiting = False
+        
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
