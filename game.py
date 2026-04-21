@@ -487,7 +487,7 @@ class GameManager:
                     return customer
         return None
 
-    def cleanup_gone_customers(self, customers, customersWaiting, all_sprites, customer_group, manager):
+    def cleanup_gone_customers(self, customers, customersWaiting, all_sprites, customer_group, manager, player):
         """Remove customers that have fully left the cafe. Also remove their resolved order cards once they are gone."""
         global currentCust
 
@@ -506,13 +506,17 @@ class GameManager:
             if customer in customer_group:
                 customer_group.remove(customer)
 
-            # Remove the customer's resolved order card once they are fully gone.
-            if customer.ordered_item is not None:
-                for i in range(len(manager.active_orders)):
-                    if manager.active_orders[i] is customer.ordered_item:
-                        manager.active_orders[i] = None
-                        break
-                customer.ordered_item = None
+            # Remove the customer's resolved order once they are fully gone.
+            for i in range(len(manager.active_orders)):
+                entry = manager.active_orders[i]
+                if entry is not None and entry[0] is customer:
+                    manager.active_orders[i] = None
+                    break
+
+            # Remove the customer's assigned cup from the player's inventory.
+            if customer.assigned_cup is not None:
+                player.pop_inv_item(customer.assigned_cup, Cup)
+                customer.assigned_cup = None
 
         # Recalculate the current waiting customer.
         if len(customersWaiting) > 0:
@@ -1915,11 +1919,12 @@ def main():
                         DebugMode = False
 
                 if event.key == pygame.K_r:  # R clears the customers for testing
-                    customers.clear()
-                    customersWaiting.clear()
-                    manager.clear_round_state()
-                    Register.customer_waiting = False
-                    currentCust = None
+                    if DebugMode:
+                        customers.clear()
+                        customersWaiting.clear()
+                        manager.clear_round_state()
+                        Register.customer_waiting = False
+                        currentCust = None
 
                 if event.key == pygame.K_p and GameState == "PLAYING":
                     GameState = "PAUSED"
@@ -1987,9 +1992,13 @@ def main():
                                     
                                     manager.customers_unhappy_today += 1
 
-                                manager.active_orders.remove(customer_order)
-                                player.inventory[player.selected_slot].pop(0) 
-
+                                for _i in range(len(manager.active_orders)):
+                                    entry = manager.active_orders[_i]
+                                    if entry is not None and entry[0] is nearby:  # identity match on the customer
+                                        manager.active_orders[_i] = None
+                                        break
+                                player.pop_inv_item(player_hand, Cup)
+                                nearby.assigned_cup = None
 
                     elif GameState == "MACHINE" and active_machine:
                         if active_machine.state == "ready":
@@ -2148,7 +2157,7 @@ def main():
                         GameState = "PLAYING"
                         continue
 
-                    manager.active_orders.insert(0, currentCust.ordered_item)
+                    manager.active_orders.insert(0, (currentCust, currentCust.ordered_item))
 
                     seat = manager.findFirstOpen(seats)  # find open seat
                     if seat is None:
@@ -2172,6 +2181,7 @@ def main():
                         # When taking an order, create a cup object, then add it.
                         new_cup_instance = Cup(["cup", "cup_w_lid"])
                         player.add_item_to_inv(new_cup_instance, Cup)
+                        currentCust.assigned_cup = new_cup_instance
 
                         # Remove from line.
                         if len(customersWaiting) > 0:
@@ -2237,7 +2247,7 @@ def main():
                 c.update(seats)
 
         if GameState not in ("MENU_SCREEN", "PAUSED"):
-            manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager)
+            manager.cleanup_gone_customers(customers, customersWaiting, all_sprites, customer_group, manager, player)
 
         if GameState == "MENU_SCREEN":
             manager.draw_menu_screen(screen)
@@ -2314,11 +2324,9 @@ def main():
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
-        if GameState in ("PLAYING", "PAUSED"):
-            for item in manager.active_orders:
-                if item is None:
-                    manager.active_orders.remove(item)
-            orders_text = font.render(f'Orders: {', '.join(o.name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
+        if GameState not in ("MENU_SCREEN","PAUSED", "LOAD_MENU"):
+            manager.active_orders = [o for o in manager.active_orders if o is not None]
+            orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
             screen.blit(orders_text, (10, 25))
             screen.blit(clock_text, (1202, 35))
