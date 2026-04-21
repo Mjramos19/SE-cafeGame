@@ -14,7 +14,7 @@ class Player(GameObject, pygame.sprite.Sprite):
         inventory (list): A 2D list containing item objects for each slot.
         inventory_quants (list): A list tracking the quantity of items in each slot.
     """
-    def __init__(self, x: int, y: int, image_key: str):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
+    def __init__(self, x: int, y: int):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
         """
         Initializes the player with a sprite and an empty 4-slot inventory.
         
@@ -24,14 +24,21 @@ class Player(GameObject, pygame.sprite.Sprite):
             image_key (str): Key to retrieve the player sprite from IMAGE_LIBRARY.
         """
         pygame.sprite.Sprite.__init__(self)
-        try:
-            self.sprite = IMAGE_LIBRARY[image_key]
-        except:
-            self.sprite = pygame.Surface((30 * 4, 67 * 4))
-            self.sprite.fill((255, 0, 0))
 
-        super().__init__(x, y, self.sprite.get_width(), self.sprite.get_height(), (0, 0, 0))
-        self.image = self.sprite
+        self.direction = "down"  # Default direction
+        self.is_moving = False
+        self.current_frame = 0
+        
+        # Dictionary mapping directions to animation sequences
+        self.animations = {
+            "up": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_left1"], IMAGE_LIBRARY["player_right1"]],
+            "down": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_left1"], IMAGE_LIBRARY["player_right1"]],
+            "left": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_left1"], IMAGE_LIBRARY["player_right1"]],
+            "right": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_right1"], IMAGE_LIBRARY["player_left1"]]}
+        
+        self.image = self.animations[self.direction][0]  
+        
+        super().__init__(x, y, self.image.get_width(), self.image.get_height(), (0, 0, 0))
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.foot_w = (18 * 4)
@@ -74,14 +81,24 @@ class Player(GameObject, pygame.sprite.Sprite):
         # Stores old position in case plyer hits something
         old_x, old_y = self.rect.x, self.rect.y
 
+        self.is_moving = False
+
         # Inputs for movement
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.direction = "left"
+            self.is_moving = True
             self.rect.x -= self.speed
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.direction = "right"
+            self.is_moving = True
             self.rect.x += self.speed
         if keys[pygame.K_w] or keys[pygame.K_UP]:
+            self.direction = "up"
+            self.is_moving = True
             self.rect.y -= self.speed
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            self.direction = "down"
+            self.is_moving = True
             self.rect.y += self.speed
 
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
@@ -93,6 +110,7 @@ class Player(GameObject, pygame.sprite.Sprite):
             if self.get_foot_rect().colliderect(c):
                 self.rect.x, self.rect.y = old_x, old_y
                 self.x, self.y = old_x, old_y
+                self.is_moving = False
                 break
 
     def update_inv_lengths(self):
@@ -170,6 +188,22 @@ class Player(GameObject, pygame.sprite.Sprite):
                         return self.inventory[i].pop(j)
                         
 
+    def animate(self):
+            """Switches the self.image based on direction and movement."""
+            # Adjust 0.15 to make the animation faster or slower
+            animation_speed = 0.2
+            
+            anim_list = self.animations.get(self.direction)
+
+            if self.is_moving:
+                self.current_frame += animation_speed
+                
+                index = int(self.current_frame) % len(anim_list)
+                self.image = anim_list[index]
+            else:
+                # When standing still, show the idle frame (index 0)
+                self.image = anim_list[0]
+                self.current_frame = 0
 
     def render(self, screen, debugmode):
         """
@@ -179,7 +213,7 @@ class Player(GameObject, pygame.sprite.Sprite):
             screen (pygame.Surface): The display surface to draw on.
             debugmode (bool): Whether to draw the foot collision rectangle.
         """
-        screen.blit(self.sprite, self.rect)
+        screen.blit(self.image, self.rect)
 
         if debugmode is True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)

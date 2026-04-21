@@ -17,7 +17,6 @@ pygame.init()
 screen = pygame.display.set_mode((1366, 768))
 pygame.mixer.init()
 
-constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_register"] = pygame.image.load("Cafe_Game_Art/ladybug_register.png").convert_alpha()
@@ -55,9 +54,21 @@ constants.IMAGE_LIBRARY["sick_rug"] = pygame.image.load("Cafe_Game_Art/sickestRu
 constants.IMAGE_LIBRARY["best_box_ever"] = pygame.image.load("Cafe_Game_Art/bestBoxEver.png").convert_alpha()
 constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.image.load("Cafe_Game_Art/fireAhShelf.png").convert_alpha()
 
+# Animations
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/Animation-1.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_left1"] = pygame.image.load("Cafe_Game_Art/Animation-2.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_left2"] = pygame.image.load("Cafe_Game_Art/Animation-3.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_right1"] = pygame.image.load("Cafe_Game_Art/Animation-4.png").convert_alpha()       
+constants.IMAGE_LIBRARY["player_right2"] = pygame.image.load("Cafe_Game_Art/Animation-5.png").convert_alpha()
+
 
 # Pre-scale all images in the library them once
-constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (140, 260))
+constants.IMAGE_LIBRARY["player_left1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_left1"], (140, 260))
+constants.IMAGE_LIBRARY["player_left2"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_left2"], (140, 260))
+constants.IMAGE_LIBRARY["player_right1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_right1"], (140, 260))
+constants.IMAGE_LIBRARY["player_right2"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_right2"], (140, 260))
+
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_register"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_register"], (300, 400))
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
@@ -86,10 +97,12 @@ constants.IMAGE_LIBRARY["sick_rug"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["best_box_ever"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["best_box_ever"], (100, 100))
 constants.IMAGE_LIBRARY["fireAhhShelf"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["fireAhhShelf"], (500, 300))
 
+
+
+
 # Sounds
 correct_order = pygame.mixer.Sound("Audio Files/correct_order.wav")
 incorrect_order = pygame.mixer.Sound("Audio Files/wrong_order.wav")
-
 
 
 
@@ -1239,6 +1252,7 @@ class GameManager:
         for c in customers:
             temp_cols.append(c.get_foot_rect())
         player.handle_movement(keys, temp_cols)
+        player.animate()
 
         # handles all layering with renders
         screen.blit(constants.IMAGE_LIBRARY["bg1"], (0, 0))
@@ -1297,6 +1311,7 @@ class GameManager:
 
     def middle_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, middle_collisions)
+        player.animate()
         screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
 
         for m in machines:
@@ -1373,6 +1388,7 @@ class GameManager:
 
     def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
+        player.animate()
         screen.fill((0, 0, 0))
         for c in backroom_collisions:
             c.render(screen, font)
@@ -1512,7 +1528,7 @@ def main():
     customer_group = pygame.sprite.Group()
 
     # Player
-    player = Player(40, 600, "player_idle_front")
+    player = Player(40, 600)
     all_sprites.add(player)
 
     """for testing the minigame mode I'm defaulting the player with some ingredients"""
@@ -1554,7 +1570,7 @@ def main():
             manager.end_of_day_sequence(screen, font)
 
 
-        manager.money = 99999
+        
         manager.update_message()
 
         for event in pygame.event.get():
@@ -1777,7 +1793,7 @@ def main():
                                         RECIPES_UNLOCKED.append(recipe)
                                         manager.recipe_active_tab = "Unlocked"
                                         manager.recipe_page       = 0
-                                        manager.set_message(f"{placed_name} placed!", duration_ms=2000)
+                                        #manager.set_message(f"{placed_name} placed!", duration_ms=2000)
                                 break
  
                     continue  # Skip other click handling when interacting with the recipe menu
