@@ -43,7 +43,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.line_position = line_position
         self.foot_w, self.foot_h = (18 * 4), (8 * 4)
 
-        self.wait_bar_length = 10000
+        self.wait_bar_length = 12000
 
         # Drinking / leaving behavior
         self.drink_start_time = None
@@ -194,7 +194,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         if self.wait_bar_length == 0:
             self.state = "leaving"
         else:
-            self.wait_bar_length -= 1
+            self.wait_bar_length -= 0.5
 
     def _handle_walking_to_line(self):
         """Walks the customer from off-screen to their line position."""

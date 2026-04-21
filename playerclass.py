@@ -14,7 +14,7 @@ class Player(GameObject, pygame.sprite.Sprite):
         inventory (list): A 2D list containing item objects for each slot.
         inventory_quants (list): A list tracking the quantity of items in each slot.
     """
-    def __init__(self, x: int, y: int, image_key: str):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
+    def __init__(self, x: int, y: int):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
         """
         Initializes the player with a sprite and an empty 4-slot inventory.
         
@@ -24,14 +24,21 @@ class Player(GameObject, pygame.sprite.Sprite):
             image_key (str): Key to retrieve the player sprite from IMAGE_LIBRARY.
         """
         pygame.sprite.Sprite.__init__(self)
-        try:
-            self.sprite = IMAGE_LIBRARY[image_key]
-        except:
-            self.sprite = pygame.Surface((30 * 4, 67 * 4))
-            self.sprite.fill((255, 0, 0))
 
-        super().__init__(x, y, self.sprite.get_width(), self.sprite.get_height(), (0, 0, 0))
-        self.image = self.sprite
+        self.direction = "down"  # Default direction
+        self.is_moving = False
+        self.current_frame = 0
+        
+        # Dictionary mapping directions to animation sequences
+        self.animations = {
+            "up": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_left1"], IMAGE_LIBRARY["player_right1"]],
+            "down": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_left1"], IMAGE_LIBRARY["player_right1"]],
+            "left": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_left1"], IMAGE_LIBRARY["player_right1"]],
+            "right": [IMAGE_LIBRARY["player_idle_front"], IMAGE_LIBRARY["player_right1"], IMAGE_LIBRARY["player_left1"]]}
+        
+        self.image = self.animations[self.direction][0]  
+        
+        super().__init__(x, y, self.image.get_width(), self.image.get_height(), (0, 0, 0))
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.foot_w = (18 * 4)
@@ -40,6 +47,13 @@ class Player(GameObject, pygame.sprite.Sprite):
         self.selected_slot = 0
         self.inventory = [[], [], [], []]
         self.inventory_quants = [0, 0, 0, 0]
+
+        # Movement speed — starts at the global constant, upgradeable via shop.
+        self.speed = PLAYER_SPEED
+
+        # Max items that can be stacked in a single inventory slot.
+        # Upgradeable via the Deeper Pockets shop upgrade.
+        self.max_stack_size = 10
 
 
     def get_foot_rect(self):
@@ -67,15 +81,25 @@ class Player(GameObject, pygame.sprite.Sprite):
         # Stores old position in case plyer hits something
         old_x, old_y = self.rect.x, self.rect.y
 
+        self.is_moving = False
+
         # Inputs for movement
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= PLAYER_SPEED
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += PLAYER_SPEED
-        if keys[pygame.K_UP]:
-            self.rect.y -= PLAYER_SPEED
-        if keys[pygame.K_DOWN]:
-            self.rect.y += PLAYER_SPEED
+        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            self.direction = "left"
+            self.is_moving = True
+            self.rect.x -= self.speed
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            self.direction = "right"
+            self.is_moving = True
+            self.rect.x += self.speed
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
+            self.direction = "up"
+            self.is_moving = True
+            self.rect.y -= self.speed
+        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            self.direction = "down"
+            self.is_moving = True
+            self.rect.y += self.speed
 
         self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
         self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
@@ -86,24 +110,34 @@ class Player(GameObject, pygame.sprite.Sprite):
             if self.get_foot_rect().colliderect(c):
                 self.rect.x, self.rect.y = old_x, old_y
                 self.x, self.y = old_x, old_y
+                self.is_moving = False
                 break
 
-#helper function to update hotbar quantities every frame
     def update_inv_lengths(self):
-        """Updates the inventory_quants list with current lengths of inventory slots."""
-        self.inventory_quants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
+        """Updates the inventory_quants list with current lengths of inventory slots.
+        
+        Uses dynamic slot count so new slots added by the More Pockets upgrade
+        are tracked automatically without needing to update this method.
+        """
+        self.inventory_quants = [len(slot) for slot in self.inventory]
 
     #function add a given object to players inventory
     def add_item_to_inv(self, item, item_type):
         """
         Adds a given object to the player's inventory, handling stacking logic.
+
+        Stacking respects self.max_stack_size, which can be increased via the
+        Deeper Pockets shop upgrade. Slot count is dynamic — self.inventory may
+        have more than the base 4 slots if More Pockets has been purchased.
         
         Args:
             item (GameObject): The object to be added.
             item_type (type): The class type of the item for comparison.
         """
+        num_slots = len(self.inventory)  # use dynamic slot count, not the fixed NUM_SLOTS constant
+
         if item.stackable:
-            for i in range(NUM_SLOTS):
+            for i in range(num_slots):
                 slot = self.inventory[i]
                 if len(slot) != 0:
                     # Check if it's the same type
@@ -111,18 +145,22 @@ class Player(GameObject, pygame.sprite.Sprite):
                         # Only stack cups if they are both empty
                         if isinstance(item, Cup):
                             if (slot[0] is None and item.contents) or (slot[0].contents and item.contents is None):
-                                continue 
-                        
+                                continue
+
                         # Ingredient name check for stackable ingredients
                         if isinstance(item, Ingredient) and slot[0].name != item.name:
                             continue
-                        
+
+                        # Respect the per-slot stack size cap
+                        if len(slot) >= self.max_stack_size:
+                            continue
+
                         print(slot)
                         slot.append(item)
                         return True
 
         # Find empty slot logic
-        for i in range(NUM_SLOTS):
+        for i in range(num_slots):
             if len(self.inventory[i]) == 0:
                 self.inventory[i].append(item)
                 return True
@@ -150,6 +188,22 @@ class Player(GameObject, pygame.sprite.Sprite):
                         return self.inventory[i].pop(j)
                         
 
+    def animate(self):
+            """Switches the self.image based on direction and movement."""
+            # Adjust 0.15 to make the animation faster or slower
+            animation_speed = 0.2
+            
+            anim_list = self.animations.get(self.direction)
+
+            if self.is_moving:
+                self.current_frame += animation_speed
+                
+                index = int(self.current_frame) % len(anim_list)
+                self.image = anim_list[index]
+            else:
+                # When standing still, show the idle frame (index 0)
+                self.image = anim_list[0]
+                self.current_frame = 0
 
     def render(self, screen, debugmode):
         """
@@ -159,7 +213,7 @@ class Player(GameObject, pygame.sprite.Sprite):
             screen (pygame.Surface): The display surface to draw on.
             debugmode (bool): Whether to draw the foot collision rectangle.
         """
-        screen.blit(self.sprite, self.rect)
+        screen.blit(self.image, self.rect)
 
         if debugmode is True:
             pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)

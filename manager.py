@@ -26,12 +26,59 @@ class GameManager:
         self.current_music_group = None
         self.current_song_index = 0
 
-        # Placeholder progression systems for Phase 3
-        self.upgrades = [
-            {"name": "More Hands I",   "cost": 50,  "tier": 1, "purchased": False},
-            {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
-            {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
-        ]
+        # Shop tab data — each key is a tab label, each value is a list of purchasable items.
+        # Adding a new tab and items is as simple as adding to this structure and it gets integrated into the shop screen automatically.
+        # tier controls lock order only in the upgrades tab so higher tier items require previous purchases.
+        # Other tabs treat all items as independently purchasable so the tier is ignored.
+        self.shop_tabs = {
+            "Upgrades": [
+                {"name": "More Hands I",   "desc": "+2 max simultaneous orders",  "cost": 50,  "tier": 1, "purchased": False},
+                {"name": "More Hands II",  "desc": "+2 max simultaneous orders",  "cost": 100, "tier": 2, "purchased": False},
+                {"name": "More Hands III", "desc": "+2 max simultaneous orders",  "cost": 150, "tier": 3, "purchased": False},
+                {"name": "Faster Grinder", "desc": "Reduces grind time by 20%",   "cost": 75,  "tier": 1, "purchased": False},
+                {"name": "Quick Brew",     "desc": "Espresso pulls 15% faster",   "cost": 90,  "tier": 1, "purchased": False},
+            ],
+            "Machines": [
+                # Slide 0 — free starter machines (place them on the back counter at no cost)
+                {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                # Slide 1 — purchasable machines (require money)
+                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
+                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
+            ],
+            "Cosmetics": [
+                {"name": "Floral Wallpaper", "desc": "Redecorate the cafe walls",       "cost": 40, "tier": 1, "purchased": False},
+                {"name": "Cozy Rugs",        "desc": "Add warm rugs to the floor",      "cost": 30, "tier": 1, "purchased": False},
+                {"name": "Fairy Lights",     "desc": "String lights along the ceiling", "cost": 25, "tier": 1, "purchased": False},
+            ],
+        }
+
+        # the old upgrade list is kept so existing save/load and buy_upgrade() calls don't break.
+        # Points at the Upgrades tab items directly.
+        self.upgrades = self.shop_tabs["Upgrades"]
+
+        # Shop UI state — which tab is open and which page of items is showing.
+        # ITEMS_PER_PAGE controls how many rows fit before pagination kicks in.
+        self.active_tab     = "Upgrades"  # Default tab shown when shop opens
+        self.shop_page      = 0           # 0-indexed current page within the active tab
+        self.ITEMS_PER_PAGE = 4           # Max rows visible at once before arrows/pages appear
+
+        # This list is used to maintain the order of tabs as defined in shop_tabs, since dict keys don't guarantee order.
+        self.tab_order = list(self.shop_tabs.keys())
+
+        # Shop UI and clickable rects — drawn each frame by draw_shop_screen().
+        # Initialized here so event handlers never reference an undefined attribute.
+        self.shop_tab_rects        = {}   # maps tab name → pygame.Rect
+        self.shop_item_rects       = {}   # maps page-local row index → pygame.Rect
+        self.shop_arrow_left_rect  = None # None when no prev page or pygame.Rect
+        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect
+
+        # Machine placement state — set when the player clicks a free machine to place it.
+        # placement_machine: the Machine object being dragged to its spot (or None).
+        # placement_item: the shop dict entry for that machine, so we can mark it placed.
+        self.placement_machine = None
+        self.placement_item    = None
 
     def set_message(self, text, duration_ms=1500):
         """
@@ -209,21 +256,53 @@ class GameManager:
                                 screen.blit(text, (slot.x + 60, slot.y + 15))
     
     def draw_music_menu(self, screen, font):
+        """Draw the music menu overlay"""
         if not self.music_menu_open:
             return
 
-        # Background box
-        pygame.draw.rect(screen, (30, 30, 30), music_menu_rect)
-        pygame.draw.rect(screen, (255, 255, 255), music_menu_rect, 2)
+        #background box
+        pygame.draw.rect(screen, (255, 255, 255), music_menu_rect)
+        pygame.draw.rect(screen, (0, 0, 0), music_menu_rect, 2)
 
-        options = ["Track 1", "Track 2", "Track 3"]
+        options = ["Chill", "Heat", "Thuggin"]
 
-        for i, rect in enumerate(music_option_rectangles):
-            pygame.draw.rect(screen, (60, 60, 60), rect)
-            pygame.draw.rect(screen, (255, 255, 255), rect, 1)
-
+        for i in range(len(music_option_rectangles)):
+            r = music_option_rectangles[i]
+            if r.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(screen, (60, 60, 60), r)
+                pygame.draw.rect(screen, (0, 0, 0), r, 2)
+            else:
+                pygame.draw.rect(screen, (60, 60, 60), r)
+                pygame.draw.rect(screen, (0, 0, 0), r, 1)
+            
             text = font.render(options[i], True, (255, 255, 255))
-            screen.blit(text, (rect.x + 5, rect.y + 5))
+            screen.blit(text, (r.x + 5, r.y + 5))
+    
+    def draw_music_and_camera_buttons(self, screen, font):
+        """Draw buttons for camera view and music"""
+        #camera button
+        if camera_button_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, (255, 255, 255), camera_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), camera_button_rect, 2)
+        else:
+            pygame.draw.rect(screen, (255, 255, 255), camera_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), camera_button_rect, 1)
+        icon = constants.IMAGE_LIBRARY["camera_icon"]
+        icon_rect = icon.get_rect(center = camera_button_rect.center)
+        screen.blit(icon, icon_rect)
+
+        #music button
+        if music_button_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, (255, 255, 255), music_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), music_button_rect, 2)
+        else:
+            pygame.draw.rect(screen, (255, 255, 255), music_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), music_button_rect, 1)
+        icon = constants.IMAGE_LIBRARY["music_icon"]
+        icon_rect = icon.get_rect(center = music_button_rect.center)
+        screen.blit(icon, icon_rect)
+
+        self.draw_music_menu(screen, font)
 
     def draw_recipe_screen(self, screen):
         """
@@ -487,12 +566,14 @@ class GameManager:
 
     def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
-        screen.fill((0, 0, 0))
+        screen.blit(constants.IMAGE_LIBRARY["best_backroom_ever"], (0, 0))
+        player.animate()
         for c in backroom_collisions:
-            c.render(screen, font)
-            if DebugMode and isinstance(c, StockingShelf):
-                pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
-
+            if c != back_wall_rect:
+                c.render(screen, font, DebugMode)
+                if isinstance(c, StockingShelf) and DebugMode:
+                    pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
+        
         doorEntry2.render(screen)
         player.render(screen, DebugMode)
         self.drawHotBar(player, font)

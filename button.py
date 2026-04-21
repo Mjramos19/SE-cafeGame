@@ -30,8 +30,11 @@ class Button:
         self.text_color = BLACK
         self.action = action
 
+        self.button_sound = pygame.mixer.Sound("Audio Files/button_click.mp3")
+
     def is_clicked(self, mouse_pos):
         """Checks if a given mouse position is within the button's boundaries."""
+        self.button_sound.play()
         return self.rect.collidepoint(mouse_pos)
 
     def draw(self, screen):

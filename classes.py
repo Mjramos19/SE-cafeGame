@@ -12,168 +12,6 @@ class GameObject:
     def render(self, screen):
         return pygame.draw.rect(screen, self.color, self.rect)  # make render apply to all after making individual renders
 
-
-class Player(GameObject, pygame.sprite.Sprite):
-    """
-    The main controllable entity in the cafe.
-    
-    Attributes:
-        sprite (pygame.Surface): The current visual image of the player.
-        rect (pygame.Rect): The collision and position rectangle.
-        foot_w (int): The width of the specialized foot collision box.
-        foot_h (int): The height of the specialized foot collision box.
-        selected_slot (int): The index of the currently active inventory slot.
-        inventory (list): A 2D list containing item objects for each slot.
-        inventory_quants (list): A list tracking the quantity of items in each slot.
-    """
-    def __init__(self, x, y, image_key):  # Pass the key for IMAGE_LIBRARY, will need to change to KEYS for animation
-        """
-        Initializes the player with a sprite and an empty 4-slot inventory.
-        
-        Args:
-            x (int): Starting horizontal position.
-            y (int): Starting vertical position.
-            image_key (str): Key to retrieve the player sprite from IMAGE_LIBRARY.
-        """
-        pygame.sprite.Sprite.__init__(self)
-        try:
-            self.sprite = IMAGE_LIBRARY[image_key]
-        except:
-            self.sprite = pygame.Surface((30 * 4, 67 * 4))
-            self.sprite.fill((255, 0, 0))
-
-        super().__init__(x, y, self.sprite.get_width(), self.sprite.get_height(), (0, 0, 0))
-        self.image = self.sprite
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-        self.foot_w = (18 * 4)
-        self.foot_h = (8 * 4)
-
-        self.selected_slot = 0
-        self.inventory = [[], [], [], []]
-        self.inventory_quants = [0, 0, 0, 0]
-
-
-    def get_foot_rect(self):
-        """
-        Returns a rectangle that only covers the feet area of the player sprite.
-        
-        Returns:
-            pygame.Rect: A rectangle located at the bottom-center of the player.
-        """
-        # Returns a rect located at the bottom-center of the player sprite.
-        # Calculates the offset so the feet are centered horizontally and sit at the very bottom of the sprite vertically.
-        foot_x = self.x + (self.w // 2) - (self.foot_w // 2)
-        foot_y = self.y + self.h - self.foot_h
-        return pygame.Rect(foot_x, foot_y, self.foot_w, self.foot_h)
-
-
-    def handle_movement(self, keys, collisions):
-        """
-        Updates the player position if keys are pressed and handles collisions.
-        
-        Args:
-            keys (pygame.key.ScancodeWrapper): The state of all keyboard buttons.
-            collisions (list): A list of Rect objects to check against for collisions.
-        """
-        # Stores old position in case plyer hits something
-        old_x, old_y = self.rect.x, self.rect.y
-
-        # Inputs for movement
-        if keys[pygame.K_LEFT]:  self.rect.x -= PLAYER_SPEED
-        if keys[pygame.K_RIGHT]: self.rect.x += PLAYER_SPEED
-        if keys[pygame.K_UP]:    self.rect.y -= PLAYER_SPEED
-        if keys[pygame.K_DOWN]:  self.rect.y += PLAYER_SPEED
-
-        self.rect.x = max(0, min(WIDTH - self.rect.w, self.rect.x))
-        self.rect.y = max(0, min(HEIGHT - self.rect.h, self.rect.y))
-        self.x, self.y = self.rect.x, self.rect.y
-
-        # Collision Check: If new position overlaps obstacle, move back
-        for c in collisions:
-            if self.get_foot_rect().colliderect(c):
-                self.rect.x, self.rect.y = old_x, old_y
-                self.x, self.y = old_x, old_y
-                break
-
-
-#helper function to update hotbar quantities every frame
-    def update_inv_lengths(self):
-        """Updates the inventory_quants list with current lengths of inventory slots."""
-        self.inventory_quants = [len(self.inventory[0]), len(self.inventory[1]), len(self.inventory[2]), len(self.inventory[3])]
-
-    #function add a given object to players inventory
-    def add_item_to_inv(self, item, item_type):
-        """
-        Adds a given object to the player's inventory, handling stacking logic.
-        
-        Args:
-            item (GameObject): The object to be added.
-            item_type (type): The class type of the item for comparison.
-        """
-        if item.stackable:
-            for i in range(NUM_SLOTS):
-                slot = self.inventory[i]
-                if len(slot) != 0:
-                    # Check if it's the same type
-                    if isinstance(slot[0], item_type) and isinstance(item, item_type):
-                        # Only stack cups if they are both empty
-                        if isinstance(item, Cup):
-                            if (slot[0] == None and item.contents) or (slot[0].contents and item.contents == None):
-                                continue 
-                        
-                        # Ingredient name check for stackable ingredients
-                        if isinstance(item, Ingredient) and slot[0].name != item.name:
-                            continue
-                        
-                        print(slot)
-                        slot.append(item)
-                        return True
-
-        # Find empty slot logic
-        for i in range(NUM_SLOTS):
-            if len(self.inventory[i]) == 0:
-                self.inventory[i].append(item)
-                return True
-        return False
-
-    #function to remove a given object from players inventory
-    def popInventoryItem(self, item, type):
-        """
-        Removes a given object from the player's inventory and returns it.
-        
-        Args:
-            item (GameObject): The specific instance to remove.
-            type (type): The class type of the item.
-        """
-        #loop through hot bar
-        for i in range(NUM_SLOTS):
-            #check if there is an item or stack in that slot and if its type matches item to remove
-            if len(self.inventory[i]) > 0 and isinstance(self.inventory[i][0], type):
-                #Then loop through that slot list
-                for j in range(len(self.inventory[i])):
-                    #find that item in slot list
-                    if self.inventory[i][j] == item:
-                        #remove and return that item
-                        print(f'popped {item.name} from inventory space list' + str(self.inventory[i]))
-                        return self.inventory[i].pop(j)
-                        
-
-
-    def render(self, screen, debugmode):
-        """
-        Renders the player sprite and optional debug collision box.
-        
-        Args:
-            screen (pygame.Surface): The display surface to draw on.
-            debugmode (bool): Whether to draw the foot collision rectangle.
-        """
-        screen.blit(self.sprite, self.rect)
-
-        if debugmode == True:
-            pygame.draw.rect(screen, (255, 255, 0), self.get_foot_rect(), 2)
-
-
 class Customer(GameObject, pygame.sprite.Sprite):
     """
     An NPC that orders recipes, waits in line, and sits at tables.
@@ -181,11 +19,11 @@ class Customer(GameObject, pygame.sprite.Sprite):
     Attributes:
         sprite (pygame.Surface): The current visual image of the customer.
         recipesUnlocked (list): The list of available recipes the customer can pick from.
-        orderedItem (Recipe): The specific recipe the customer has ordered.
+        ordered_item (Recipe): The specific recipe the customer has ordered.
         state (str): The current behavior state (waiting, finding seat, etc.).
         waitBar_length (int): The current satisfaction/timer value.
     """
-    def __init__(self, x, y, image_keys, recipesUnlockedList, linePosition):
+    def __init__(self, x, y, image_keys, recipesUnlockedList, line_position):
         """
         Initializes a customer with a random order and a designated line position.
         
@@ -194,7 +32,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
             y (int): Starting vertical position.
             image_keys (list): Keys for retrieved sprites from IMAGE_LIBRARY.
             recipesUnlockedList (list): List of Recipe objects available for ordering.
-            linePosition (tuple): The (x, y) coordinate for the customer's spot in line.
+            line_position (tuple): The (x, y) coordinate for the customer's spot in line.
         """
         pygame.sprite.Sprite.__init__(self)
 
@@ -210,11 +48,11 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.recipesUnlocked = recipesUnlockedList
-        self.orderedItem = self.pickItem()
+        self.ordered_item = self.pickItem()
         self.state = "waiting"
         self.targetSeat = None
         self.targetPosition = None
-        self.linePosition = linePosition
+        self.line_position = line_position
         self.foot_w, self.foot_h = (18 * 4), (8 * 4)
         self.waitBar_length = 10000
 
@@ -294,7 +132,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
     def moveUpInLine(self):
         """Move smoothly to the customer's next assigned line position."""
-        target_x, target_y = self.linePosition[0], self.linePosition[1]
+        target_x, target_y = self.line_position[0], self.line_position[1]
 
         reached = self.move_toward_point(target_x, target_y)
         if reached:
@@ -338,7 +176,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         """Sets the customer's behavioral state."""
         self.state = state
 
-    def set_targetSeat(self, seat):
+    def set_target_seat(self, seat):
         """Assigns a target seat and sets a waypoint in front of it."""
         self.targetSeat = seat
         # First walk up to a point in front of the chair area, then go to the exact seat
@@ -365,7 +203,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         Returns:
             tuple: (base_pay, tip, total)
         """
-        base_pay = self.orderedItem.get_price()
+        base_pay = self.ordered_item.get_price()
         tip_percent = self.waitBar_length / 10000
         tip = round(base_pay * tip_percent, 2)
         total = round(base_pay + tip, 2)
@@ -389,7 +227,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
 
         # State 0: Walk in from off-screen to line position
         if self.state == "walking to line":
-            target_x, target_y = self.linePosition[0], self.linePosition[1]
+            target_x, target_y = self.line_position[0], self.line_position[1]
             reached = self.move_toward_point(target_x, target_y)
             if reached:
                 self.state = "waiting"
@@ -411,7 +249,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
             self.findSeat()
 
         # State 3: Moving forward in the line
-        if self.state == "moving up in line" and self.linePosition is not None:
+        if self.state == "moving up in line" and self.line_position is not None:
             self.moveUpInLine()
         
         #if customers wait bar is empty, set their state to leaving. Else, decrement by 1
@@ -492,7 +330,7 @@ class Seat(GameObject):
         """Returns the vertical position of the seat."""
         return self.rect.y
 
-    def reserveSeat(self, customer):
+    def reserve_seat(self, customer):
         """Sets seat state to reserved for a specific customer."""
         self.state = "reserved"
         self.seatedCustomer = customer
@@ -507,7 +345,6 @@ class Seat(GameObject):
         self.state = "open"
         self.seatedCustomer = None
 
-
 class Counter(GameObject):
     """
     Defines the visual and placeable part of a counter unit.
@@ -519,96 +356,6 @@ class Counter(GameObject):
         super().__init__(x, y, w, h, color)
         self.x, self.y = x, y
         self.placeable = True
-
-
-class Register(Counter):
-    """
-    A specialized Counter that handles order-taking and customer queue logic.
-    
-    Attributes:
-        interaction_zone (pygame.Rect): The area where the player can trigger interaction.
-        icon (pygame.Surface): The visual indicator for a waiting customer.
-    """
-    # this variable is shared amongst both register objects
-    customerWaiting = False
-    def __init__(self, x, y, iz_y, w=150, h=90): #will need to update and put a parameter for the current customer image key to be passed through.
-        super().__init__(x, y, w, h, REGISTER_COLOR)
-        self.placeable = False
-
-        # interaction box for register
-        self.interaction_zone = pygame.Rect(self.rect.x, self.rect.y + iz_y, self.rect.w, self.rect.h)
-
-        self.icon = IMAGE_LIBRARY["register_icon"]
-        self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
-
-        # order screen variables
-        self.order_screen = IMAGE_LIBRARY["order_screen"]
-        self.customer_image = IMAGE_LIBRARY["ladybug_register"] #place holder until parameter is updated.
-        self.customer_rect = pygame.Rect(500,75,200,418)
-
-
-    def setWaiting(self):
-        """Sets the shared customerWaiting flag to True."""
-        Register.customerWaiting = True
-
-    def take_order(self, screen, currentCust=None):
-        """
-        Draws the register order-taking screen and UI elements.
-        
-        Args:
-            screen (pygame.Surface): The display surface.
-            currentCust (Customer): The customer being served.
-        """
-
-        # to do: learn to crop customer to rectangle
-        screen.blit(self.order_screen, (0,0))
-        screen.blit(self.customer_image, self.customer_rect)
-
-        # Fonts for register UI text
-        title_font = pygame.font.SysFont(None, 36)
-        body_font = pygame.font.SysFont(None, 28)
-
-        # Main Title
-        title_text = title_font.render("Register - Accepting an order gives you an empty cup", True, WHITE)
-        screen.blit(title_text, (80, 70))
-
-        # Show current customer order if available
-        order_name = "???"
-        if currentCust is not None and currentCust.orderedItem is not None:
-            order_name = currentCust.orderedItem.get_name()
-        
-        # Speech buubble position - to the left of the customer
-        bubble_x, bubble_y = 60, 100
-        bubble_w, bubble_h = 420, 120
-
-        # Draw bubble background
-        pygame.draw.rect(screen, WHITE, (bubble_x, bubble_y, bubble_w, bubble_h), border_radius=20)
-
-        # Draw tail pointing toward customer
-        tail_points = [(bubble_x + bubble_w - 60, bubble_y + bubble_h),
-                    (bubble_x + bubble_w + 20, bubble_y + bubble_h + 60),
-                    (bubble_x + bubble_w - 120, bubble_y + bubble_h)]
-        pygame.draw.polygon(screen, WHITE, tail_points)
-
-        # Order text inside the bubble
-        order_text = title_font.render(f"I want an {order_name}!", True, BLACK)
-        screen.blit(order_text, (bubble_x + 20, bubble_y + 20))
-
-        hint_text = body_font.render("...please :)", True, (80, 80, 80))
-        screen.blit(hint_text, (bubble_x + 20, bubble_y + 65))
-        # Control hints
-        hint_accept = body_font.render("[S] Accept Order", True, WHITE)
-        hint_close = body_font.render("[ESC] Leave Register", True, WHITE)
-
-        screen.blit(hint_accept, (80, 300))
-        screen.blit(hint_close, (80, 340))
-
-
-    def render(self, screen):
-        """Renders the register icon in the game world."""
-        if Register.customerWaiting == True:
-            screen.blit(self.icon, self.icon_rect)
-
 
 class Sink(Counter):
     """

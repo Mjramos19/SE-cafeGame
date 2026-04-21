@@ -20,6 +20,7 @@ class Register(Counter):
 
         self.icon = IMAGE_LIBRARY["register_icon"]
         self.icon_rect = self.icon.get_rect(topleft=(x+55, y-85))
+        self.bell = pygame.mixer.Sound("Audio Files/RegisterBell.mp3")
 
         # order screen variables
         self.order_screen = IMAGE_LIBRARY["order_screen"]
@@ -29,6 +30,7 @@ class Register(Counter):
     def set_waiting(self):
         """Sets the shared customer_waiting flag to True."""
         Register.customer_waiting = True
+        return True
 
     def take_order(self, screen, current_cust=None):
         """
@@ -85,6 +87,7 @@ class Register(Counter):
         """Renders the register icon in the game world."""
         if Register.customer_waiting is True:
             screen.blit(self.icon, self.icon_rect)
+
 
 
 class Sink(Counter):

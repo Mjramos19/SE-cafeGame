@@ -66,9 +66,9 @@ constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.image.load("Cafe_Game_Art/CGIn
 constants.IMAGE_LIBRARY["em_empty"] = pygame.image.load("Cafe_Game_Art/EMempty.png").convert_alpha()
 constants.IMAGE_LIBRARY["em_inprogress"] = pygame.image.load("Cafe_Game_Art/EMinprogress.png").convert_alpha()
 constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Cafe_Game_Art/EMready.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WBempty.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WBinprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WBready.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WB0Empty.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WB0InProgress.png").convert_alpha()
+constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WB0Ready.png").convert_alpha()
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
@@ -95,10 +95,23 @@ constants.IMAGE_LIBRARY["Water_icon"] = pygame.image.load("Cafe_Game_Art/WaterIc
 constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.image.load("Cafe_Game_Art/CoffeeBeanIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["camera_icon"] = pygame.image.load("Cafe_Game_Art/CameraButton.png").convert_alpha()
 constants.IMAGE_LIBRARY["music_icon"] = pygame.image.load("Cafe_Game_Art/MusicIcon.png").convert_alpha()
-constants.IMAGE_LIBRARY["place_holder_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["placeholder_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+
+# Animations
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/Animation-1.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_left1"] = pygame.image.load("Cafe_Game_Art/Animation-2.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_left2"] = pygame.image.load("Cafe_Game_Art/Animation-3.png").convert_alpha()
+constants.IMAGE_LIBRARY["player_right1"] = pygame.image.load("Cafe_Game_Art/Animation-4.png").convert_alpha()       
+constants.IMAGE_LIBRARY["player_right2"] = pygame.image.load("Cafe_Game_Art/Animation-5.png").convert_alpha()
+
 
 # Pre-scale all images in the library them once
-constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
+constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (140, 260))
+constants.IMAGE_LIBRARY["player_left1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_left1"], (140, 260))
+constants.IMAGE_LIBRARY["player_left2"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_left2"], (140, 260))
+constants.IMAGE_LIBRARY["player_right1"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_right1"], (140, 260))
+constants.IMAGE_LIBRARY["player_right2"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_right2"], (140, 260))
+
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_idle"], (120, 268))
 constants.IMAGE_LIBRARY["ladybug_register"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_register"], (300, 400))
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ladybug_sitting"], (101, 180))
@@ -114,10 +127,10 @@ constants.IMAGE_LIBRARY["cg_ready"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["cg_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cg_inprogress"], (150, 200))
 constants.IMAGE_LIBRARY["em_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_empty"], (150, 200))
 constants.IMAGE_LIBRARY["em_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_inprogress"], (150, 200))
-constants.IMAGE_LIBRARY["em_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_ready"], (150, 200))
-constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_empty"], (130, 200))
-constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (130, 200))
-constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (130, 200))
+constants.IMAGE_LIBRARY["em_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["em_ready"], (150, 180))
+constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_empty"], (150, 190))
+constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (150, 190))
+constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (150, 190))
 constants.IMAGE_LIBRARY["water"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["water"], ((348, 330)))
 constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["coffee_beans"], ((348, 330)))
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ground_coffee"], ((348, 330)))
@@ -137,7 +150,14 @@ constants.IMAGE_LIBRARY["Water_icon"] = pygame.transform.smoothscale(constants.I
 constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Coffee Beans_icon"], (40, 40))
 constants.IMAGE_LIBRARY["camera_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["camera_icon"], (30, 30))
 constants.IMAGE_LIBRARY["music_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["music_icon"], (30, 30))
-constants.IMAGE_LIBRARY["place_holder_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["place_holder_icon"], (30, 30))
+constants.IMAGE_LIBRARY["placeholder_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["placeholder_icon"], (30, 30))
+
+
+# Sounds
+correct_order = pygame.mixer.Sound("Audio Files/correct_order.wav")
+incorrect_order = pygame.mixer.Sound("Audio Files/wrong_order.wav")
+
+
 
 # Defines all ingredients
 bag_coffee_beans = Ingredient("Coffee Beans", ["coffee_beans"], True, 18.35, 56)
@@ -197,6 +217,7 @@ doorEntry, doorEntry2 = DoorEntry(20, 345, 150, 50), DoorEntry(15, 718, 150, 50)
 # build two registers - one for customers, the other dependent on the first and will display icon, can take order from both and will update the other
 register1 = Register(829, 487, 110)
 register2 = Register(193, 615, 10)
+customer_was_waiting = False
 
 #counterCup = Cup(["cup", "cup_w_lid"])
 
@@ -207,7 +228,7 @@ current_screen = "game"
 # all collision lists for handling perspectives
 front_collisions = [menu_rect, counter3_rect, wall_rect2]
 middle_collisions = [menu_rect, counter1_rect, counter2_rect, wall_rect]
-backroom_collisions = [StockingShelf(50, 90, 500, 300), Refrigerator(700, 90, 225, 300), back_wall_rect]
+backroom_collisions = [StockingShelf(50, 90, 500, 300), Refrigerator(700, 90, 225, 300), back_wall_rect, menu_rect]
 
 # all interactable spots each scene (counters, register, sink, chairs, doors)
 front_counters = [c1, c2, c3, c4, c5, register1, s1, s2, s3, s4, s5, s6]
@@ -216,13 +237,16 @@ middle_counters = [c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, register2]
 
 sink = Sink(1015, 234)
 
-grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"], (510, 480, 150, 70))
-espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"], (490, 255, 65, 50))
-water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], (455, 220, 70, 90))
+grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"],
+                         ["Audio Files/coffeebeanspouring.mp3", "Audio Files/coffeebeansgrinding.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (510, 480, 150, 70))
+espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"],
+                         ["Audio Files/espressoInMachine.mp3", "Audio Files/espressobrewing.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
+water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
+                         ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
 
-machines = [grinder, espresso_mach, water_boiler]
+machines = []  # starts empty; free machines are added when the player places them from the shop
 
 SHOP_VIEW_NONE = None
 SHOP_VIEW_MENU = "MENU"
@@ -300,12 +324,80 @@ class GameManager:
         self.name_input_text = ""
         self.name_input_active = False
 
-        # Placeholder progression systems for Phase 3
-        self.upgrades = [
-            {"name": "More Hands I",   "cost": 50,  "tier": 1, "purchased": False},
-            {"name": "More Hands II",  "cost": 100, "tier": 2, "purchased": False},
-            {"name": "More Hands III", "cost": 150, "tier": 3, "purchased": False},
-        ]
+        # Shop tab data — each key is a tab label, each value is a list of purchasable items.
+        # Adding a new tab and items is as simple as adding to this structure and it gets integrated into the shop screen automatically.
+        # tier controls lock order only in the upgrades tab so higher tier items require previous purchases.
+        # Other tabs treat all items as independently purchasable so the tier is ignored.
+        self.shop_tabs = {
+            "Upgrades": [
+                {"name": "More Hands I",   "desc": "+2 max orders",  "cost": 50,  "tier": 1, "purchased": False},
+                {"name": "More Hands II",  "desc": "+2 max orders",  "cost": 100, "tier": 2, "purchased": False},
+                {"name": "More Hands III", "desc": "+2 max orders",  "cost": 150, "tier": 3, "purchased": False},
+                {"name": "Deeper Pockets I",   "desc": "+5 to max item stack size", "cost": 50,  "tier": 1, "purchased": False},
+                {"name": "Deeper Pockets II",  "desc": "+5 to max item stack size", "cost": 100, "tier": 2, "purchased": False},
+                {"name": "Deeper Pockets III", "desc": "+5 to max item stack size", "cost": 200, "tier": 3, "purchased": False},
+                {"name": "Faster Grinder", "desc": "Reduces grind time by 35%",   "cost": 75,  "tier": 1, "purchased": False},
+                {"name": "Quick Brew",     "desc": "Espresso pulls 50% faster",   "cost": 90,  "tier": 1, "purchased": False},
+                {"name": "Extra Speed",   "desc": "Increases movement speed by 50%", "cost": 125, "tier": 1, "purchased": False},
+            ],
+            "Machines": [
+                # Slide 0 — free starter machines (place on back counter at no cost)
+                {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                # Slide 1 — purchasable machines (require money)
+                {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
+                {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
+            ],
+            "Cosmetics": [
+                {"name": "Floral Wallpaper", "desc": "Redecorate the cafe walls",       "cost": 40, "tier": 1, "purchased": False},
+                {"name": "Cozy Rugs",        "desc": "Add warm rugs to the floor",      "cost": 30, "tier": 1, "purchased": False},
+                {"name": "Fairy Lights",     "desc": "String lights along the ceiling", "cost": 25, "tier": 1, "purchased": False},
+            ],
+        }
+
+        # the old upgrade list is kept so existing save/load and buy_upgrade() calls don't break.
+        # Points at the Upgrades tab items directly.
+        self.upgrades = self.shop_tabs["Upgrades"]
+
+        # Shop UI state — which tab is open and which page of items is showing.
+        # ITEMS_PER_PAGE controls how many rows fit before pagination kicks in.
+        self.active_tab     = "Upgrades"  # Default tab shown when shop opens
+        self.shop_page      = 0           # 0-indexed current page within the active tab
+        self.ITEMS_PER_PAGE = 6           # Max rows visible at once before arrows/pages appear
+
+        # This list is used to maintain the order of tabs as defined in shop_tabs, since dict keys don't guarantee order.
+        self.tab_order = list(self.shop_tabs.keys())
+
+        # Shop UI and clickable rects — drawn each frame by draw_shop_screen().
+        # Initialized here so event handlers never reference an undefined attribute.
+        self.shop_tab_rects        = {}   # maps tab name → pygame.Rect
+        self.shop_item_rects       = {}   # maps page-local row index → pygame.Rect
+        self.shop_item_orig_idx    = {}   # maps page-local row index → original index in the tab's item list (used after sort)
+        self.shop_arrow_left_rect  = None # None when no prev page or pygame.Rect
+        self.shop_arrow_right_rect = None # None when no next page or pygame.Rect
+
+        # Machine placement state — set when the player picks a free machine to place.
+        # placement_machine: the Machine object being positioned (or None).
+        # placement_item:    the shop dict entry for that machine, so we can mark it placed.
+        self.placement_machine = None
+        self.placement_item    = None
+
+        # Recipe menu UI state — which tab is active, which page, and which recipe
+        # is currently selected for the detail view.
+        self.recipe_active_tab    = "Unlocked"  # Default tab shown when recipe menu opens
+        self.recipe_page          = 0            # 0-indexed current page within the active tab
+        self.selected_recipe      = None         # Recipe object currently shown in detail view
+        self.recipe_cards_per_row = 3            # Number of cards per row in the grid
+        self.recipe_rows_per_page = 2            # Rows of cards per page
+
+        # Recipe menu click rects — redrawn each frame by draw_recipe_screen().
+        # Initialized here so event handlers never hit an undefined attribute.
+        self.recipe_tab_rects        = {}   # maps tab name → pygame.Rect
+        self.recipe_card_rects       = {}   # maps page-local card index → pygame.Rect
+        self.recipe_card_map         = {}   # maps page-local card index → Recipe object
+        self.recipe_arrow_left_rect  = None
+        self.recipe_arrow_right_rect = None
 
         self.save_name = "Empty Slot"
 
@@ -348,36 +440,97 @@ class GameManager:
 
     def buy_upgrade(self, upgrade_index):
         """
-        Attempt to buy a placeholder upgrade.
+        Attempt to buy an upgrade using the old list index.
+
+        Kept so it works with the older stuff — talks to buy_shop_item()
+        using the Upgrades tab as the target.
+         upgrade_index (int): The index of the upgrade in the Upgrades tab list.
+        """
+        self.buy_shop_item("Upgrades", upgrade_index)
+
+    def buy_shop_item(self, tab_name, item_index, player=None):
+        """
+        Attempt to purchase an item from the given shop tab.
+
+        Handles tier-gating for the Upgrades tab (higher tiers require the
+        previous tier to be purchased first). All other tabs treat items as
+        independently purchasable with no lock order.
 
         Parameters:
-            upgrade_index (int): The index of the upgrade in the list.
+            tab_name   (str): The tab the item lives in (e.g. "Upgrades").
+            item_index (int): The absolute index of the item within that tab's list.
+            player     (Player): The player instance, required for upgrades that directly modify
+                                player attributes/stats. Optional for upgrades that only modify GameManager state or are purely cosmetic.
         """
-        if not (0 <= upgrade_index < len(self.upgrades)):
+        tab_items = self.shop_tabs.get(tab_name)
+        if tab_items is None or not (0 <= item_index < len(tab_items)):
             return
 
-        upgrade = self.upgrades[upgrade_index]
+        item = tab_items[item_index]
 
-        if upgrade["purchased"]:
+        if item["purchased"]:
             self.set_message("Already purchased!")
             return
 
-        # Must buy previous tier first
-        if upgrade["tier"] > 1:
-            prev = self.upgrades[upgrade_index - 1]
+        # Tier-based locking only applies to the Upgrades tab
+        if tab_name == "Upgrades" and item["tier"] > 1:
+            prev = tab_items[item_index - 1]
             if not prev["purchased"]:
                 self.set_message(f"Unlock {prev['name']} first!")
                 return
 
-        if self.money < upgrade["cost"]:
-            self.set_message(f"Need ${upgrade['cost']:.2f} - not enough money!")
+        if self.money < item["cost"]:
+            self.set_message(f"Need ${item['cost']:.2f} — not enough money!")
             return
 
-        self.money -= upgrade["cost"]
-        upgrade["purchased"] = True
-        self.more_hands_tier += 1
-        self.max_orders += 2
-        self.set_message(f"Purchased {upgrade['name']}! Max orders: {self.max_orders}")
+        # Deduct cost and mark purchased
+        self.money -= item["cost"]
+        item["purchased"] = True
+
+        # Apply upgrade purchased effects if in the Upgrades tab, otherwise just show a generic purchase message for now
+        # In the future, other tabs can have their own unique effects implemented here
+        # So lavisha, adding your placeable machines logic here would be a good call. 
+        # You can add machines to the shop by adding them to the shop_tabs structure and then implement the placeable logic in this function.
+        # By adding the new machine object to the ALL_MACHINES list and then allowing the player to place it somewhere in the cafe.
+        # Actually it may be a good idea to implement the logic elsewhere and then just call it from here when the item is purchased, 
+        # to keep this function from getting too cluttered. So you could have a seperate function like place_machine() that gets called when a machine item is purchased, 
+        # and that function would handle the actual process of letting the player place the machine in the cafe and adding it to the ALL_MACHINES list once placed.
+        if tab_name == "Upgrades":
+            name = item["name"]
+            # More Hands tiers increase the simultaneous order cap
+            if "More Hands" in name:
+                # Each tier adds 2 to the max orders
+                self.more_hands_tier += 1
+                self.max_orders += 2
+                self.set_message(f"Purchased {item['name']}! Max orders: {self.max_orders}")
+            elif name == "Faster Grinder":
+                # Reduce grinder runtime by 35%, minimum 1 second
+                grinder.runtime = max(1, round(grinder.runtime * 0.65))
+                self.set_message(f"Purchased {item['name']}! Grinder now takes {grinder.runtime}s.")
+            elif name == "Quick Brew":
+                # Reduce espresso machine brew time by 50%, minimum 1 second
+                espresso_mach.runtime = max(1, round(espresso_mach.runtime * 0.5))
+                self.set_message(f"Purchased {item['name']}! Espresso machine now takes {espresso_mach.runtime}s.")
+            elif name == "Extra Speed":
+                # Increase player movement speed by 15%
+                if player:
+                    player.speed = round(player.speed * 1.5)
+                    self.set_message(f"Purchased {item['name']}! Player speed increased.")
+                else:
+                    self.set_message(f"Purchased {name}!")
+            elif "Deeper Pockets" in name:
+                # Each tier adds 5 to the max stack size per inventory slot
+                if player:
+                    player.max_stack_size += 5
+                    self.set_message(f"Purchased {name}! Max stack size: {player.max_stack_size}")
+                else:
+                    self.set_message(f"Purchased {name}!")
+            else:
+                # Fallback effect for upgrades without an effect implemented yet
+                self.set_message(f"Purchased {item['name']}!")
+        else:
+            # Placeholder effect for Machines / Cosmetics tabs
+            self.set_message(f"Purchased {item['name']}!")
 
     def handle_time(self, hrs, mins):
         """Takes in the game's hours and minutes and converts them to follow standard clock rules while on a 5 minutes interval."""
@@ -443,16 +596,26 @@ class GameManager:
             Register.customer_waiting = False
 
     def drawHotBar(self, player, font):
-        player.update_inv_lengths()
-        for i in range(NUM_SLOTS):
-            # makes rectangle object for that inventory slot at corresponding inventory position
-            slot = pygame.Rect(INVENTORY_POSITIONS[i][0], INVENTORY_POSITIONS[i][1], SLOT_SIZE, SLOT_SIZE)
+        """
+        Draw the player's inventory hotbar on the left side of the screen.
 
-            # draws the grey slot background at that spot
+        Uses the fixed INVENTORY_POSITIONS list from constants to position each slot.
+        """
+        player.update_inv_lengths()
+
+        for i in range(NUM_SLOTS):
+            # Position each slot using the fixed coordinates from constants
+            slot_x = INVENTORY_POSITIONS[i][0]
+            slot_y = INVENTORY_POSITIONS[i][1]
+
+            slot = pygame.Rect(slot_x, slot_y, SLOT_SIZE, SLOT_SIZE)
+
+            # Draw the grey slot background
             pygame.draw.rect(screen, (40, 40, 40), slot)
 
-            quantNum = font.render(f"{player.inventory_quants[i]}", True, (255, 255, 255))
-            screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
+            quant = player.inventory_quants[i] if i < len(player.inventory_quants) else 0
+            quantNum = font.render(f"{quant}", True, (255, 255, 255))
+            screen.blit(quantNum, (slot_x + 5, slot_y + 5))
 
             # if that inventory slot has an item, draw that icon inside
             if player.inventory_quants[i] > 0:
@@ -466,17 +629,13 @@ class GameManager:
                 icon_rect.center = slot.center
                 screen.blit(small_icon, icon_rect)
 
-            # if that inventory slot is selected, draw thick white border, else: draw thin black border
+            # Selected slot gets a thick white border; others get a thin black border
             if i == player.selected_slot:
                 pygame.draw.rect(screen, (255, 255, 255), slot, 3)
             else:
                 pygame.draw.rect(screen, (0, 0, 0), slot, 2)
 
-            # if the players mouse is hovering over a slot that isn't empty, display that items name next to the slot
-            if slot.collidepoint(pygame.mouse.get_pos()):
-                if player.inventory_quants[i] > 0:
-                    screen.blit(font.render(f'{player.inventory[i][0].name}', True, (250, 0, 0)), (slot.x + 60, slot.y + 15))
-                    
+            # Hovering over a non-empty slot shows the item name beside it
             m_x, m_y = pygame.mouse.get_pos()
             if slot.collidepoint((m_x, m_y)):
                 if player.inventory_quants[i] > 0:
@@ -494,88 +653,583 @@ class GameManager:
 
     def draw_recipe_screen(self, screen):
         """
-        Draw the recipe menu using the same general layout style as the shop screen.
+        Draw the recipe menu overlay with two tabs (Unlocked / Locked),
+        a card grid of recipes, pagination, and an info bar.
+ 
+        Layout (top to bottom):
+            - Floating "Recipes" title above the box (main-menu gold style)
+            - Box: tabs → info bar → card grid → dot indicator
+            - Pagination arrows centered vertically on the left/right box edges
+ 
+        Clicking an unlocked card opens the detail view (RECIPE_VIEW_DETAIL).
+        Clicking a locked card deducts money and moves it to the unlocked list.
         """
-        overlay = pygame.Surface((700, 420))
+        #dimensions
+        BOX_W, BOX_H = 900, 580
+        box_x = constants.WIDTH  // 2 - BOX_W // 2
+        box_y = constants.HEIGHT // 2 - BOX_H // 2
+ 
+        TAB_H      = 40   # Height of each tab strip
+        INFO_H     = 48   # Height of the info bar below tabs
+        DOT_AREA_H = 32   # Height reserved for the dot indicator
+        ARROW_W    = 30   # Width of the clickable arrow zones on each side
+ 
+        CARD_W     = 180  # Width of each recipe card
+        CARD_H     = 160  # Height of each recipe card (image + name above)
+        CARD_GAP   = 30   # Gap between cards horizontally and vertically
+        IMG_H      = 110  # Height of the placeholder image area inside the card
+ 
+        # Content area between info bar and dot region
+        content_y = box_y + TAB_H + INFO_H + CARD_GAP
+        content_x = box_x + ARROW_W
+        content_w = BOX_W - ARROW_W * 2
+ 
+        #fonts
+        title_font = pygame.font.SysFont(None, 90)
+        tab_font   = pygame.font.SysFont(None, 30)
+        info_font  = pygame.font.SysFont(None, 24)
+        name_font  = pygame.font.SysFont(None, 22)
+        price_font = pygame.font.SysFont(None, 20)
+ 
+        #colors 
+        GOLD         = (220, 180, 120)
+        DIM_GRAY     = (120, 120, 120)
+        TAB_ACTIVE   = (50, 50, 50)
+        TAB_INACTIVE = (20, 20, 20)
+        DIVIDER      = (80, 80, 80)
+ 
+        #floating title 
+        title_surf = title_font.render("Recipes", True, GOLD)
+        title_x    = constants.WIDTH // 2 - title_surf.get_width() // 2
+        title_y    = box_y - title_surf.get_height() - 24
+        screen.blit(title_surf, (title_x, title_y))
+ 
+        pygame.draw.line(screen, GOLD,
+                         (title_x, title_y + title_surf.get_height() + 2),
+                         (title_x + title_surf.get_width(), title_y + title_surf.get_height() + 2), 2)
+ 
+        #dark overlay box
+        overlay = pygame.Surface((BOX_W, BOX_H))
         overlay.set_alpha(235)
         overlay.fill((25, 25, 25))
-
-        box_x = constants.WIDTH // 2 - 350
-        box_y = constants.HEIGHT // 2 - 210
         screen.blit(overlay, (box_x, box_y))
-        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 420), 3)
-
-        title_font = pygame.font.SysFont(None, 42)
-        body_font = pygame.font.SysFont(None, 28)
-        small_font = pygame.font.SysFont(None, 22)
-
-        title = title_font.render("Recipes", True, constants.WHITE)
-        screen.blit(title, (box_x + 20, box_y + 20))
-
-        hint_1 = small_font.render("Press ESC to close the recipe menu", True, constants.WHITE)
-        hint_2 = small_font.render("Unlocked recipes:", True, constants.WHITE)
-        screen.blit(hint_1, (box_x + 20, box_y + 70))
-        screen.blit(hint_2, (box_x + 20, box_y + 105))
-
-        item_y = box_y + 155
-        for i, recipe in enumerate(RECIPES_UNLOCKED):
-            line = body_font.render(f"[{i + 1}] {recipe.name}", True, constants.WHITE)
-            screen.blit(line, (box_x + 30, item_y))
-            item_y += 45
-
+ 
+        #tabs
+        tab_names = ["Unlocked", "Locked"]
+        tab_w     = BOX_W // len(tab_names)
+        self.recipe_tab_rects = {}
+ 
+        for i, tab_name in enumerate(tab_names):
+            tx        = box_x + i * tab_w
+            ty        = box_y
+            is_active = (tab_name == self.recipe_active_tab)
+            fill      = TAB_ACTIVE if is_active else TAB_INACTIVE
+ 
+            pygame.draw.rect(screen, fill, (tx, ty, tab_w, TAB_H))
+            pygame.draw.rect(screen, DIVIDER, (tx, ty, tab_w, TAB_H), 1)
+ 
+            if is_active:
+                pygame.draw.line(screen, (25, 25, 25),
+                                 (tx + 1, ty + TAB_H - 1),
+                                 (tx + tab_w - 2, ty + TAB_H - 1), 2)
+ 
+            label   = tab_font.render(tab_name, True, constants.WHITE if is_active else DIM_GRAY)
+            label_x = tx + tab_w // 2 - label.get_width() // 2
+            label_y = ty + TAB_H  // 2 - label.get_height() // 2
+            screen.blit(label, (label_x, label_y))
+            self.recipe_tab_rects[tab_name] = pygame.Rect(tx, ty, tab_w, TAB_H)
+ 
+        #info bar
+        info_y = box_y + TAB_H
+        pygame.draw.rect(screen, (30, 30, 30), (box_x, info_y, BOX_W, INFO_H))
+        pygame.draw.line(screen, DIVIDER, (box_x, info_y + INFO_H), (box_x + BOX_W, info_y + INFO_H), 1)
+ 
+        # Hint changes depending on which tab is active
+        if self.recipe_active_tab == "Unlocked":
+            click_hint = "Click a recipe to learn how to make it"
+        else:
+            click_hint = "Click a recipe to unlock it"
+ 
+        info_items = [f"Money: ${self.money:.2f}", click_hint, "ESC to close"]
+        info_segment_w = BOX_W // len(info_items)
+        for j, info_text in enumerate(info_items):
+            surf = info_font.render(info_text, True, DIM_GRAY)
+            ix   = box_x + j * info_segment_w + info_segment_w // 2 - surf.get_width() // 2
+            iy   = info_y + INFO_H // 2 - surf.get_height() // 2
+            screen.blit(surf, (ix, iy))
+            if j < len(info_items) - 1:
+                sep_x = box_x + (j + 1) * info_segment_w
+                pygame.draw.line(screen, DIVIDER, (sep_x, info_y + 6), (sep_x, info_y + INFO_H - 6), 1)
+ 
+        # card grid
+        # Build the list of recipes for the active tab
+        if self.recipe_active_tab == "Unlocked":
+            tab_recipes = list(RECIPES_UNLOCKED)
+        else:
+            tab_recipes = [r for r in ALL_RECIPES if r.locked]
+ 
+        cards_per_page = self.recipe_cards_per_row * self.recipe_rows_per_page
+        total_pages    = max(1, -(-len(tab_recipes) // cards_per_page))  # ceiling division
+        page_recipes   = tab_recipes[self.recipe_page * cards_per_page :
+                                     self.recipe_page * cards_per_page + cards_per_page]
+ 
+        self.recipe_card_rects = {}
+        self.recipe_card_map   = {}
+ 
+        for card_i, recipe in enumerate(page_recipes):
+            col = card_i % self.recipe_cards_per_row
+            row = card_i // self.recipe_cards_per_row
+ 
+            # Center the card grid horizontally within the content area
+            grid_w = self.recipe_cards_per_row * CARD_W + (self.recipe_cards_per_row - 1) * CARD_GAP
+            grid_start_x = content_x + (content_w - grid_w) // 2
+ 
+            cx = grid_start_x + col * (CARD_W + CARD_GAP)
+            cy = content_y + row * (CARD_H + CARD_GAP)
+ 
+            card_rect = pygame.Rect(cx, cy, CARD_W, CARD_H)
+ 
+            # Card background
+            pygame.draw.rect(screen, (35, 35, 35), card_rect)
+            pygame.draw.rect(screen, DIVIDER, card_rect, 1)
+ 
+            # Placeholder image area (black box where drink art will go)
+            img_rect = pygame.Rect(cx + 10, cy + 24, CARD_W - 20, IMG_H)
+            pygame.draw.rect(screen, (0, 0, 0), img_rect)
+ 
+            # Recipe name centered above the image
+            name_surf = name_font.render(recipe.name, True, constants.WHITE)
+            name_x    = cx + CARD_W // 2 - name_surf.get_width() // 2
+            screen.blit(name_surf, (name_x, cy + 4))
+ 
+            # Unlock cost shown at the bottom of locked cards
+            if self.recipe_active_tab == "Locked":
+                unlock_cost = recipe.price * 2.5
+                cost_surf   = price_font.render(f"${unlock_cost:.2f} to unlock", True, GOLD)
+                cost_x      = cx + CARD_W // 2 - cost_surf.get_width() // 2
+                screen.blit(cost_surf, (cost_x, cy + CARD_H - 18))
+ 
+            self.recipe_card_rects[card_i] = card_rect
+            self.recipe_card_map[card_i]   = recipe
+ 
+        #pagination arrows
+        content_h  = BOX_H - TAB_H - INFO_H - DOT_AREA_H
+        arrow_cy   = content_y + content_h // 2
+        ARROW_SIZE = 10
+ 
+        self.recipe_arrow_left_rect  = None
+        self.recipe_arrow_right_rect = None
+ 
+        if total_pages > 1:
+            left_color  = constants.WHITE if self.recipe_page > 0 else DIM_GRAY
+            right_color = constants.WHITE if self.recipe_page < total_pages - 1 else DIM_GRAY
+            left_cx     = box_x + ARROW_W // 2
+            right_cx    = box_x + BOX_W - ARROW_W // 2
+ 
+            pygame.draw.polygon(screen, left_color, [
+                (left_cx - ARROW_SIZE, arrow_cy),
+                (left_cx + ARROW_SIZE, arrow_cy - ARROW_SIZE),
+                (left_cx + ARROW_SIZE, arrow_cy + ARROW_SIZE),
+            ])
+            self.recipe_arrow_left_rect = pygame.Rect(box_x, content_y, ARROW_W, content_h)
+ 
+            pygame.draw.polygon(screen, right_color, [
+                (right_cx + ARROW_SIZE, arrow_cy),
+                (right_cx - ARROW_SIZE, arrow_cy - ARROW_SIZE),
+                (right_cx - ARROW_SIZE, arrow_cy + ARROW_SIZE),
+            ])
+            self.recipe_arrow_right_rect = pygame.Rect(box_x + BOX_W - ARROW_W, content_y, ARROW_W, content_h)
+ 
+        #dot indicator
+        if total_pages > 1:
+            DOT_R        = 5
+            DOT_GAP      = 16
+            dots_total_w = (total_pages - 1) * DOT_GAP
+            dot_start_x  = constants.WIDTH // 2 - dots_total_w // 2
+            dot_y        = box_y + BOX_H - DOT_AREA_H // 2
+ 
+            for d in range(total_pages):
+                dx    = dot_start_x + d * DOT_GAP
+                color = constants.WHITE if d == self.recipe_page else DIM_GRAY
+                pygame.draw.circle(screen, color, (dx, dot_y), DOT_R)
+ 
+        # White border drawn last so it sits on top of all content
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, BOX_W, BOX_H), 3)
+ 
         self.draw_message(screen)
+ 
+    def draw_recipe_detail(self, screen):
+        """
+        Draw the recipe detail overlay on top of the recipe menu.
+ 
+        Shows the step-by-step ingredient chain for the selected recipe,
+        explaining which ingredients go into which machine to produce
+        each component needed for the final drink.
+ 
+        Layout:
+            - Smaller dark box centered on screen
+            - Info bar: recipe name on the left, ESC to close on the right
+            - Content: one line per production step (ingredient → machine → output)
+        """
+        if self.selected_recipe is None:
+            return
+ 
+        #dimensions
+        BOX_W, BOX_H = 620, 380
+        box_x = constants.WIDTH  // 2 - BOX_W // 2
+        box_y = constants.HEIGHT // 2 - BOX_H // 2
+ 
+        INFO_H    = 44   # Height of the info bar at the top
+        ROW_H     = 44   # Height per step row
+        ROW_GAP   = 10   # Gap between rows
+        ROW_PAD   = 20   # Left padding for row text
+ 
+        # fonts
+        info_font = pygame.font.SysFont(None, 24)
+        step_font = pygame.font.SysFont(None, 26)
+ 
+        #colors
+        GOLD     = (220, 180, 120)
+        DIM_GRAY = (120, 120, 120)
+        DIVIDER  = (80, 80, 80)
+        ARROW_COLOR = (180, 180, 180)
+ 
+        #dark overlay box
+        overlay = pygame.Surface((BOX_W, BOX_H))
+        overlay.set_alpha(245)
+        overlay.fill((20, 20, 20))
+        screen.blit(overlay, (box_x, box_y))
+ 
+        #info bar
+        pygame.draw.rect(screen, (30, 30, 30), (box_x, box_y, BOX_W, INFO_H))
+        pygame.draw.line(screen, DIVIDER, (box_x, box_y + INFO_H), (box_x + BOX_W, box_y + INFO_H), 1)
+ 
+        name_surf = info_font.render(self.selected_recipe.name, True, GOLD)
+        esc_surf  = info_font.render("ESC to close", True, DIM_GRAY)
+        screen.blit(name_surf, (box_x + ROW_PAD, box_y + INFO_H // 2 - name_surf.get_height() // 2))
+        screen.blit(esc_surf,  (box_x + BOX_W - esc_surf.get_width() - ROW_PAD,
+                                box_y + INFO_H // 2 - esc_surf.get_height() // 2))
+ 
+        # step-by-step ingredient chain
+        # Build production steps by mapping each final ingredient back through
+        # the machines that produce it. Each step is a tuple of
+        # (input_name, machine_name, output_name).
+        # Machine input→output relationships mirror the machine definitions in game.py.
+        MACHINE_STEPS = [
+            ("Coffee Beans", "Coffee Grinder", "Ground Coffee"),
+            ("Ground Coffee", "Espresso Machine", "Espresso Shot"),
+            ("Water", "Water Boiler", "Hot Water"),
+        ]
+ 
+        recipe = self.selected_recipe
+        steps  = []
+ 
+        # Find which machines are needed by working backwards from the recipe ingredients
+        needed = {ing.name for ing in recipe.ingredients}
+        for input_name, machine_name, output_name in MACHINE_STEPS:
+            if output_name in needed:
+                steps.append((input_name, machine_name, output_name))
+                # The machine input may itself need to be produced
+                needed.add(input_name)
+ 
+        # Final serve step — shows all ingredients combining into the finished drink
+        final_names = " + ".join(ing.name for ing in recipe.ingredients)
+        steps.append((final_names, f"serve in Cup as {recipe.name}", ""))
+ 
+        content_y = box_y + INFO_H + ROW_GAP
+ 
+        for step_i, (inp, machine, out) in enumerate(steps):
+            ry   = content_y + step_i * (ROW_H + ROW_GAP)
+            rect = pygame.Rect(box_x + ROW_PAD, ry, BOX_W - ROW_PAD * 2, ROW_H)
+ 
+            # Alternating row tint for readability
+            if step_i % 2 == 1:
+                alt = pygame.Surface((BOX_W - ROW_PAD * 2, ROW_H))
+                alt.set_alpha(40)
+                alt.fill((50, 50, 50))
+                screen.blit(alt, (box_x + ROW_PAD, ry))
+ 
+            pygame.draw.rect(screen, DIVIDER, rect, 1)
+ 
+            # Build the step text: input  ->  machine  ->  output
+            # Only show the second arrow if there is an output (final serve step has none)
+            if out:
+                step_text = f"{inp}  ->  {machine}  ->  {out}"
+            else:
+                step_text = f"{inp}  ->  {machine}"
+            step_surf = step_font.render(step_text, True, constants.WHITE)
+            screen.blit(step_surf, (box_x + ROW_PAD + 8,
+                                    ry + ROW_H // 2 - step_surf.get_height() // 2))
+ 
+        # White border drawn last
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, BOX_W, BOX_H), 3)
 
     def draw_shop_screen(self, screen):
         """
-        Draw the placeholder shop and upgrades overlay.
+        Draw the full shop overlay with the tabs, paginated item list,
+        an info bar, and pagination dot indicator.
+
+        Layout (top to bottom):
+            - Floating "Shop" title above the box (main-menu gold style)
+            - Menu: tabs, info bar, items, dot indicator
+            - Pagination arrows centered vertically on the left/right edges of the box
         """
-        overlay = pygame.Surface((700, 460))
+        # Dimensions
+        BOX_W, BOX_H = 900, 580
+        box_x = constants.WIDTH  // 2 - BOX_W // 2
+        box_y = constants.HEIGHT // 2 - BOX_H // 2
+
+        TAB_H       = 40  # Height of each tab strip
+        INFO_H      = 48  # Height of the info bar below tabs
+        DOT_AREA_H  = 32  # Height reserved for the dot indicator at the bottom
+        ARROW_W     = 30  # Width of the clickable arrow regions on the sides
+        ROW_H       = 62  # Vertical space per item row
+        ROW_PADDING = 18  # Left padding for text inside a row
+        ROW_GAP     = 12  # Gap between rows (outside the rect)
+        ROW_STRIDE  = ROW_H + ROW_GAP  # Total vertical step from one row to the next
+
+        # Content area sits between the info bar and the dot region
+        content_y = box_y + TAB_H + INFO_H + ROW_GAP
+        content_h = BOX_H - TAB_H - INFO_H - DOT_AREA_H
+        content_x = box_x + ARROW_W      # leave room for left arrow
+        content_w = BOX_W - ARROW_W * 2  # leave room for right arrow
+
+        # Fonts
+        title_font  = pygame.font.SysFont(None, 90)
+        tab_font    = pygame.font.SysFont(None, 30)
+        info_font   = pygame.font.SysFont(None, 24)
+        name_font   = pygame.font.SysFont(None, 28)
+        desc_font   = pygame.font.SysFont(None, 22)
+        status_font = pygame.font.SysFont(None, 26)
+
+        # Colors
+        GOLD         = (220, 180, 120)  # main-menu title color
+        DIM_GRAY     = (120, 120, 120)
+        ROW_ALT      = (35, 35, 35)    # alternating row tint
+        TAB_ACTIVE   = (50, 50, 50)    # active tab fill
+        TAB_INACTIVE = (20, 20, 20)    # inactive tab fill
+        DIVIDER      = (80, 80, 80)    # thin separator lines
+
+        # Floating Title Above The Box
+        title_surf = title_font.render("Shop", True, GOLD)
+        title_x    = constants.WIDTH // 2 - title_surf.get_width() // 2
+        title_y    = box_y - title_surf.get_height() - 24  # 8 px gap above box
+        screen.blit(title_surf, (title_x, title_y))
+
+        # Thin decorative line under the floating title
+        pygame.draw.line(screen, GOLD,
+                         (title_x, title_y + title_surf.get_height() + 2),
+                         (title_x + title_surf.get_width(), title_y + title_surf.get_height() + 2), 2)
+
+        # dark overlay box
+        overlay = pygame.Surface((BOX_W, BOX_H))
         overlay.set_alpha(235)
         overlay.fill((25, 25, 25))
-
-        box_x = constants.WIDTH // 2 - 350
-        box_y = constants.HEIGHT // 2 - 230
         screen.blit(overlay, (box_x, box_y))
-        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, 700, 460), 3)
 
-        title_font = pygame.font.SysFont(None, 42)
-        body_font  = pygame.font.SysFont(None, 28)
-        small_font = pygame.font.SysFont(None, 22)
+        # tabs
+        # Tabs are evenly distributed across the full box width so adding a new
+        # tab to self.tab_order automatically adjusts all positions.
+        num_tabs = len(self.tab_order)
+        tab_w    = BOX_W // num_tabs
 
-        title = title_font.render("Shop / Upgrades", True, constants.WHITE)
-        screen.blit(title, (box_x + 20, box_y + 20))
+        self.shop_tab_rects = {}  # rebuilt each frame for click detection in main()
 
-        money_text = body_font.render(f"Money: ${self.money:.2f}", True, constants.WHITE)
-        screen.blit(money_text, (box_x + 20, box_y + 65))
+        for i, tab_name in enumerate(self.tab_order):
+            tx        = box_x + i * tab_w
+            ty        = box_y
+            is_active = (tab_name == self.active_tab)
+            fill      = TAB_ACTIVE if is_active else TAB_INACTIVE
 
-        orders_text = small_font.render(f"Current max orders: {self.max_orders}", True, constants.WHITE)
-        screen.blit(orders_text, (box_x + 20, box_y + 95))
+            pygame.draw.rect(screen, fill, (tx, ty, tab_w, TAB_H))
+            pygame.draw.rect(screen, DIVIDER, (tx, ty, tab_w, TAB_H), 1)
 
-        hint = small_font.render("Press ESC to close  |  Press 1, 2, 3 to buy", True, constants.WHITE)
-        screen.blit(hint, (box_x + 20, box_y + 125))
+            # Active tab: erase the bottom border so it visually "opens" into content
+            if is_active:
+                pygame.draw.line(screen, (25, 25, 25),
+                                 (tx + 1, ty + TAB_H - 1),
+                                 (tx + tab_w - 2, ty + TAB_H - 1), 2)
 
-        item_y = box_y + 170
-        for i, upgrade in enumerate(self.upgrades):
-            # Locked if previous tier not bought yet
-            locked = upgrade["tier"] > 1 and not self.upgrades[i - 1]["purchased"]
+            label   = tab_font.render(tab_name, True, constants.WHITE if is_active else DIM_GRAY)
+            label_x = tx + tab_w // 2 - label.get_width() // 2
+            label_y = ty + TAB_H  // 2 - label.get_height() // 2
+            screen.blit(label, (label_x, label_y))
 
-            if upgrade["purchased"]:
-                status = "OWNED"
-                color = constants.GREEN
+            self.shop_tab_rects[tab_name] = pygame.Rect(tx, ty, tab_w, TAB_H)
+
+        # info bar 
+        info_y = box_y + TAB_H
+        pygame.draw.rect(screen, (30, 30, 30), (box_x, info_y, BOX_W, INFO_H))
+        pygame.draw.line(screen, DIVIDER, (box_x, info_y + INFO_H), (box_x + BOX_W, info_y + INFO_H), 1)
+
+        # Info items spread across the bar with vertical separators between them
+        info_items = [
+            f"Money: ${self.money:.2f}",
+            f"Max Orders: {self.max_orders}",
+            "Click an item to buy",
+            "ESC to close",
+        ]
+        info_segment_w = BOX_W // len(info_items)
+        for j, info_text in enumerate(info_items):
+            surf = info_font.render(info_text, True, DIM_GRAY)
+            ix   = box_x + j * info_segment_w + info_segment_w // 2 - surf.get_width() // 2
+            iy   = info_y + INFO_H // 2 - surf.get_height() // 2
+            screen.blit(surf, (ix, iy))
+            # Vertical separator between segments (skip after the last one)
+            if j < len(info_items) - 1:
+                sep_x = box_x + (j + 1) * info_segment_w
+                pygame.draw.line(screen, DIVIDER, (sep_x, info_y + 6), (sep_x, info_y + INFO_H - 6), 1)
+
+        # paginated item list
+        all_tab_items = self.shop_tabs[self.active_tab]
+
+        # Machines tab uses a two-slide layout: slide 0 = free starters, slide 1 = purchasable.
+        # The existing shop_page value is reused as the slide index (0 or 1).
+        if self.active_tab == "Machines":
+            is_free_slide = (self.shop_page == 0)
+            page_items     = [it for it in all_tab_items if it.get("free", False) == is_free_slide]
+            page_index_map = [i for i, it in enumerate(all_tab_items) if it.get("free", False) == is_free_slide]
+            total_pages    = 2
+
+            # Slide label strip above the rows
+            slide_label  = "Free Starters" if is_free_slide else "Purchasable"
+            slide_surf   = tab_font.render(slide_label, True, GOLD)
+            slide_label_y = content_y - 2
+            screen.blit(slide_surf, (content_x + content_w // 2 - slide_surf.get_width() // 2, slide_label_y))
+            content_y += slide_surf.get_height() + 6
+
+            def is_locked(item, index):
+                return False  # no tier-locking in Machines tab
+        else:
+            tab_items = all_tab_items
+
+            # Sort items so locked ones always sink to the bottom of the list.
+            def is_locked(item, index):
+                """Return True if this item should be locked (Upgrades tab tier-gating only)."""
+                if self.active_tab == "Upgrades" and item["tier"] > 1:
+                    return not tab_items[index - 1]["purchased"]
+                return False
+
+            def sort_key(pair):
+                """Sort order: purchasable (0) → locked (1) → purchased (2)."""
+                _, item = pair
+                idx = pair[0]
+                if item["purchased"]:
+                    return 2
+                if is_locked(item, idx):
+                    return 1
+                return 0
+
+            sorted_items     = sorted(enumerate(tab_items), key=sort_key)
+            sorted_tab_items = [item for _, item in sorted_items]
+            sorted_index_map = [orig_i for orig_i, _ in sorted_items]
+
+            total_pages    = max(1, -(-len(sorted_tab_items) // self.ITEMS_PER_PAGE))
+            page_items     = sorted_tab_items[self.shop_page * self.ITEMS_PER_PAGE :
+                                              self.shop_page * self.ITEMS_PER_PAGE + self.ITEMS_PER_PAGE]
+            page_index_map = sorted_index_map[self.shop_page * self.ITEMS_PER_PAGE :
+                                              self.shop_page * self.ITEMS_PER_PAGE + self.ITEMS_PER_PAGE]
+
+        self.shop_item_rects    = {}  # rebuilt each frame; maps page-local row → Rect
+        self.shop_item_orig_idx = {}  # maps page-local row → original tab_items index
+
+        for row_i, item in enumerate(page_items):
+            ry   = content_y + row_i * ROW_STRIDE
+            rect = pygame.Rect(content_x, ry, content_w, ROW_H)
+
+            # Alternating row background for readability
+            if row_i % 2 == 1:
+                alt_surf = pygame.Surface((content_w, ROW_H))
+                alt_surf.set_alpha(60)
+                alt_surf.fill(ROW_ALT)
+                screen.blit(alt_surf, (content_x, ry))
+
+            pygame.draw.rect(screen, DIVIDER, rect, 1)
+
+            # Re-evaluate lock state using the item's original index
+            orig_index = page_index_map[row_i]
+            locked = is_locked(item, orig_index)
+
+            # Name column (left)
+            name_color = DIM_GRAY if locked else constants.WHITE
+            name_surf  = name_font.render(item["name"], True, name_color)
+            screen.blit(name_surf, (content_x + ROW_PADDING, ry + ROW_H // 2 - name_surf.get_height() // 2))
+
+            # Description column (center, smaller and dimmer)
+            desc_surf = desc_font.render(item["desc"], True, DIM_GRAY)
+            desc_x    = content_x + content_w // 3
+            screen.blit(desc_surf, (desc_x, ry + ROW_H // 2 - desc_surf.get_height() // 2))
+
+            # Status badge (right-aligned)
+            if item.get("free", False):
+                # Free machines show PLACE / PLACED instead of a price
+                if item.get("placed", False):
+                    status_text  = "PLACED"
+                    status_color = constants.GREEN
+                else:
+                    status_text  = "PLACE"
+                    status_color = GOLD
+            elif item["purchased"]:
+                status_text  = "OWNED"
+                status_color = constants.GREEN
             elif locked:
-                status = "LOCKED"
-                color = (120, 120, 120)
+                status_text  = "LOCKED"
+                status_color = DIM_GRAY
             else:
-                status = f"${upgrade['cost']:.2f}"
-                color = constants.WHITE
+                status_text  = f"${item['cost']:.2f}"
+                status_color = constants.WHITE
 
-            line = body_font.render(
-                f"[{i + 1}] {upgrade['name']} (+2 max orders) - {status}",
-                True, color
-            )
-            screen.blit(line, (box_x + 30, item_y))
-            item_y += 55
+            status_surf = status_font.render(status_text, True, status_color)
+            status_x    = content_x + content_w - status_surf.get_width() - ROW_PADDING
+            screen.blit(status_surf, (status_x, ry + ROW_H // 2 - status_surf.get_height() // 2))
 
+            self.shop_item_rects[row_i]    = rect
+            self.shop_item_orig_idx[row_i] = orig_index
+
+        # pagination arrows (drawn as triangles, centered on box sides)
+        arrow_cy   = content_y + content_h // 2  # vertical center of content area
+        ARROW_SIZE = 10 # half-height of the triangle
+
+        self.shop_arrow_left_rect  = None
+        self.shop_arrow_right_rect = None
+
+        if total_pages > 1:
+            left_color  = constants.WHITE if self.shop_page > 0 else DIM_GRAY
+            right_color = constants.WHITE if self.shop_page < total_pages - 1 else DIM_GRAY
+            left_cx     = box_x + ARROW_W // 2           # center x of left arrow zone
+            right_cx    = box_x + BOX_W - ARROW_W // 2   # center x of right arrow zone
+
+            # Left triangle — tip points left
+            pygame.draw.polygon(screen, left_color, [
+                (left_cx - ARROW_SIZE, arrow_cy),               # tip
+                (left_cx + ARROW_SIZE, arrow_cy - ARROW_SIZE),  # top-right
+                (left_cx + ARROW_SIZE, arrow_cy + ARROW_SIZE),  # bottom-right
+            ])
+            self.shop_arrow_left_rect = pygame.Rect(box_x, content_y, ARROW_W, content_h)
+
+            # Right triangle — tip points right
+            pygame.draw.polygon(screen, right_color, [
+                (right_cx + ARROW_SIZE, arrow_cy),               # tip
+                (right_cx - ARROW_SIZE, arrow_cy - ARROW_SIZE),  # top-left
+                (right_cx - ARROW_SIZE, arrow_cy + ARROW_SIZE),  # bottom-left
+            ])
+            self.shop_arrow_right_rect = pygame.Rect(box_x + BOX_W - ARROW_W, content_y, ARROW_W, content_h)
+
+        # dot page indicator (bottom center)
+        # Each dot represents one page; filled dot = current page.
+        if total_pages > 1:
+            DOT_R        = 5   # dot radius
+            DOT_GAP      = 16  # center-to-center spacing between dots
+            dots_total_w = (total_pages - 1) * DOT_GAP
+            dot_start_x  = constants.WIDTH // 2 - dots_total_w // 2
+            dot_y        = box_y + BOX_H - DOT_AREA_H // 2
+
+            for d in range(total_pages):
+                dx    = dot_start_x + d * DOT_GAP
+                color = constants.WHITE if d == self.shop_page else DIM_GRAY
+                pygame.draw.circle(screen, color, (dx, dot_y), DOT_R)
+        
+        pygame.draw.rect(screen, constants.WHITE, (box_x, box_y, BOX_W, BOX_H), 3)
         self.draw_message(screen)
 
     def draw_money(self, screen, font):
@@ -669,7 +1323,7 @@ class GameManager:
         pygame.draw.rect(screen, (255, 255, 255), music_menu_rect)
         pygame.draw.rect(screen, (0, 0, 0), music_menu_rect, 2)
 
-        options = ["Chill", "Michaels Favorites", "Thuggin"]
+        options = ["Chill", "Heat", "Thuggin"]
 
         for i in range(len(music_option_rectangles)):
             r = music_option_rectangles[i]
@@ -730,6 +1384,7 @@ class GameManager:
             temp_cols.append(c.get_foot_rect())
 
         player.handle_movement(keys, temp_cols)
+        player.animate()
 
         # handles all layering with renders
         for w in windows:
@@ -793,6 +1448,7 @@ class GameManager:
 
     def middle_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, middle_collisions)
+        player.animate()
         screen.blit(constants.IMAGE_LIBRARY["bg2"], (0, 0))
 
         for m in machines:
@@ -830,24 +1486,54 @@ class GameManager:
                 label = font.render(f"[E] {m.name}  ({m.state})", True, (255, 255, 255))
                 screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
 
+        # Placement mode overlay — drawn on top of everything when the player is
+        # positioning a new free machine on the back counter.
+        if self.placement_machine is not None:
+            COUNTER_Y       = 234
+            MACHINE_W       = 150
+            MACHINE_H       = 90
+            BACK_COUNTER_XS = [193, 358, 522, 686, 850]
+            occupied_xs     = {m.x for m in machines if m.placed}
+
+            mx, _ = pygame.mouse.get_pos()
+            # Snap ghost to the back counter whose centre is closest to the mouse
+            hovered_x = min(BACK_COUNTER_XS, key=lambda cx: abs(cx + MACHINE_W // 2 - mx))
+
+            # Neon green border on the hovered free counter; red on occupied; dim green on the rest
+            for cx in BACK_COUNTER_XS:
+                cr = pygame.Rect(cx, COUNTER_Y, MACHINE_W, MACHINE_H)
+                if cx in occupied_xs:
+                    pygame.draw.rect(screen, (220, 50, 50), cr, 4)   # red — taken
+                elif cx == hovered_x:
+                    pygame.draw.rect(screen, (57, 255, 20), cr, 4)   # neon green — valid target
+                else:
+                    pygame.draw.rect(screen, (0, 160, 0), cr, 2)
+
+            # Ghost sprite snapped to the hovered counter
+            ghost_sprite = constants.IMAGE_LIBRARY[self.placement_machine.mini_game_img_keys[0]].copy()
+            ghost_sprite.set_alpha(160)
+            ghost_rect = ghost_sprite.get_rect()
+            ghost_rect.centerx = hovered_x + MACHINE_W // 2
+            ghost_rect.centery = COUNTER_Y + MACHINE_H // 2 - 50
+            screen.blit(ghost_sprite, ghost_rect)
+
+            hint_font = pygame.font.SysFont(None, 30)
+            hint = hint_font.render(f"Click to place {self.placement_machine.name}  |  ESC to cancel", True, (255, 240, 160))
+            screen.blit(hint, (constants.WIDTH // 2 - hint.get_width() // 2, 18))
+
         self.drawHotBar(player, font)
         self.draw_music_and_camera_buttons(screen, font)
 
     def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
         screen.blit(constants.IMAGE_LIBRARY["best_backroom_ever"], (0, 0))
+        player.animate()
         for c in backroom_collisions:
-
-            if c != back_wall_rect:
+            if c != back_wall_rect and c!= menu_rect:
                 c.render(screen, font, DebugMode)
                 if isinstance(c, StockingShelf) and DebugMode:
                     pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
-        
-        
-        recipe_button.draw(screen)
-        shop_button.draw(screen)
-
-        
+ 
         doorEntry2.render(screen)
         player.render(screen, DebugMode)
         self.drawHotBar(player, font)
@@ -941,6 +1627,7 @@ class GameManager:
         quit_button.draw(screen)
     
     def play_music_group(self, group_name):
+        """Helper function for making music selections"""
         if group_name not in MUSIC_GROUPS:
             return
         
@@ -953,6 +1640,7 @@ class GameManager:
             pygame.mixer.music.play()
     
     def player_next_song(self):
+        """Helper function for playing the next song in playlist"""
         if self.current_music_group is None:
             return
         
@@ -969,7 +1657,7 @@ class GameManager:
         pygame.mixer.music.play()
         
 def main():
-    global Customer, currentCust
+    global Customer, currentCust, customer_was_waiting
     pygame.display.set_caption("Cafe")
     font = pygame.font.SysFont(None, 22)
 
@@ -1008,7 +1696,7 @@ def main():
     customer_group = pygame.sprite.Group()
 
     # Player
-    player = Player(40, 600, "player_idle_front")
+    player = Player(40, 600)
     all_sprites.add(player)
 
     is_dragging = False
@@ -1016,7 +1704,6 @@ def main():
     for recipe in ALL_RECIPES:
         if recipe.locked is False:
             RECIPES_UNLOCKED.append(recipe)
-
 
     running = True
     while running:
@@ -1034,7 +1721,7 @@ def main():
         minutes = int((game_seconds % 3600) // 60)
 
         # Set the customer spawn timer to start at 8:00 AM and stop at 6:00 PM
-        if int(game_seconds) == SEVEN_AM:
+        if int(game_seconds) == DAY_START:
             pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
         if int(game_seconds) == DAY_END:
             pygame.time.set_timer(SPAWN_EVENT, 0)
@@ -1050,7 +1737,7 @@ def main():
             manager.end_of_day_sequence(screen, font)
 
 
-
+        
         manager.update_message()
 
         for event in pygame.event.get():
@@ -1073,7 +1760,7 @@ def main():
                         manager.name_input_active = False 
                     else:
                         if len(manager.name_input_text) < 15:
-                            manager.name_input_text += pygame.key.name(event.key)
+                            manager.name_input_text += event.unicode
 
                 continue
 
@@ -1145,7 +1832,7 @@ def main():
                         
                         
                     current_save_file = save
-                    print(f"Current save file set to: {current_save_file}, data: {loaded_data}, GameState: {GameState}")
+                    #print(f"Current save file set to: {current_save_file}, data: {loaded_data}, GameState: {GameState}")
 
                     if loaded_data is None or loaded_data.get("day_num", 1) == 1:
                         manager.name_input_active = True
@@ -1159,6 +1846,158 @@ def main():
                     elif pause_quit_button.is_clicked(event.pos):
                         GameState = "MENU_SCREEN"
                     continue
+
+
+                # Shop mouse interaction. Handles tab switching, page arrows,
+                # and item row purchases while the shop overlay is open. 
+                # All click rects are redrawn each frame inside draw_shop_screen().
+                if ShopView != SHOP_VIEW_NONE and event.button == 1:
+                    # Tab clicks — switch the active tab and reset to first page
+                    for tab_name, tab_rect in getattr(manager, "shop_tab_rects", {}).items():
+                        if tab_rect.collidepoint(event.pos):
+                            manager.active_tab = tab_name
+                            manager.shop_page  = 0
+
+                    # Left arrow — go to previous page if one exists
+                    if (getattr(manager, "shop_arrow_left_rect", None) and
+                            manager.shop_arrow_left_rect.collidepoint(event.pos) and
+                            manager.shop_page > 0):
+                        manager.shop_page -= 1
+
+                    # Right arrow — go to next page/slide if one exists
+                    _tab_items_count = len(manager.shop_tabs[manager.active_tab])
+                    if manager.active_tab == "Machines":
+                        total_pages = 2
+                    else:
+                        total_pages = max(1, -(-_tab_items_count // manager.ITEMS_PER_PAGE))
+                    if (getattr(manager, "shop_arrow_right_rect", None) and
+                            manager.shop_arrow_right_rect.collidepoint(event.pos) and
+                            manager.shop_page < total_pages - 1):
+                        manager.shop_page += 1
+
+                    # Item row clicks — purchase or trigger placement for free machines.
+                    _free_machine_lookup = {
+                        "Coffee Grinder":  grinder,
+                        "Espresso Machine": espresso_mach,
+                        "Water Boiler":    water_boiler,
+                    }
+                    for row_i, item_rect in getattr(manager, "shop_item_rects", {}).items():
+                        if item_rect.collidepoint(event.pos):
+                            orig_index = manager.shop_item_orig_idx.get(row_i, row_i)
+                            tab_item   = manager.shop_tabs[manager.active_tab][orig_index]
+                            if manager.active_tab == "Machines" and tab_item.get("free") and not tab_item.get("placed"):
+                                # Enter placement mode: close shop, show ghost in MIDDLE view
+                                machine_obj = _free_machine_lookup.get(tab_item["name"])
+                                if machine_obj:
+                                    manager.placement_machine = machine_obj
+                                    manager.placement_item    = tab_item
+                                    ShopView = SHOP_VIEW_NONE
+                                    current_screen = "game"
+                                    CafeView = "MIDDLE"
+                                    manager.change_counters_pos("MIDDLE")
+                            elif manager.active_tab == "Machines" and tab_item.get("free") and tab_item.get("placed"):
+                                manager.set_message("Already placed on the counter!")
+                            else:
+                                manager.buy_shop_item(manager.active_tab, orig_index, player)
+
+                    continue  # Skip other click handling when interacting with the shop
+
+                # Recipe Menu mouse interaction
+                # Handles tab switching, page arrows, card clicks (view detail or
+                # unlock), and detail view dismissal while the recipe overlay is open.
+                # All click rects are redrawn each frame inside draw_recipe_screen().
+                if RecipeView != RECIPE_VIEW_NONE and event.button == 1:
+ 
+                    if RecipeView == RECIPE_VIEW_DETAIL:
+                        # Any click outside the detail box closes the detail view
+                        # and returns to the recipe menu
+                        RecipeView = RECIPE_VIEW_MENU
+                        manager.selected_recipe = None
+ 
+                    elif RecipeView == RECIPE_VIEW_MENU:
+                        # Tab clicks — switch active tab and reset to first page
+                        for tab_name, tab_rect in getattr(manager, "recipe_tab_rects", {}).items():
+                            if tab_rect.collidepoint(event.pos):
+                                manager.recipe_active_tab = tab_name
+                                manager.recipe_page       = 0
+ 
+                        # Left arrow — previous page
+                        if (getattr(manager, "recipe_arrow_left_rect", None) and
+                                manager.recipe_arrow_left_rect.collidepoint(event.pos) and
+                                manager.recipe_page > 0):
+                            manager.recipe_page -= 1
+ 
+                        # Right arrow — next page
+                        if manager.recipe_active_tab == "Unlocked":
+                            tab_recipes = list(RECIPES_UNLOCKED)
+                        else:
+                            tab_recipes = [r for r in ALL_RECIPES if r.locked]
+                        cards_per_page = manager.recipe_cards_per_row * manager.recipe_rows_per_page
+                        total_pages    = max(1, -(-len(tab_recipes) // cards_per_page))
+                        if (getattr(manager, "recipe_arrow_right_rect", None) and
+                                manager.recipe_arrow_right_rect.collidepoint(event.pos) and
+                                manager.recipe_page < total_pages - 1):
+                            manager.recipe_page += 1
+ 
+                        # Card clicks
+                        for card_i, card_rect in getattr(manager, "recipe_card_rects", {}).items():
+                            if card_rect.collidepoint(event.pos):
+                                recipe = manager.recipe_card_map.get(card_i)
+                                if recipe is None:
+                                    break
+ 
+                                if manager.recipe_active_tab == "Unlocked":
+                                    # Open the detail view for this recipe
+                                    manager.selected_recipe = recipe
+                                    RecipeView = RECIPE_VIEW_DETAIL
+ 
+                                else:
+                                    # Attempt to unlock the recipe for price * 2.5
+                                    unlock_cost = recipe.price * 2.5
+                                    if manager.money < unlock_cost:
+                                        manager.set_message(f"Need ${unlock_cost:.2f} to unlock {recipe.name}!")
+                                    else:
+                                        manager.money  -= unlock_cost
+                                        recipe.locked   = False
+                                        RECIPES_UNLOCKED.append(recipe)
+                                        manager.recipe_active_tab = "Unlocked"
+                                        manager.recipe_page       = 0
+                                        #manager.set_message(f"{placed_name} placed!", duration_ms=2000)
+                                break
+ 
+                    continue  # Skip other click handling when interacting with the recipe menu
+
+                # Machine placement — left-click in the MIDDLE view places the ghost machine
+                # on the back counter when the player has picked a free machine from the shop.
+                elif event.button == 1 and manager.placement_machine is not None and CafeView == "MIDDLE":
+                    COUNTER_Y       = 234
+                    MACHINE_W       = 150
+                    MACHINE_H       = 90
+                    BACK_COUNTER_XS = [193, 358, 522, 686, 850]
+                    mx, my = event.pos
+                    # Place only when the click lands inside one individual back counter
+                    clicked_x = None
+                    for cx in BACK_COUNTER_XS:
+                        if cx <= mx <= cx + MACHINE_W and COUNTER_Y - 60 <= my <= COUNTER_Y + MACHINE_H + 20:
+                            clicked_x = cx
+                            break
+                    occupied_xs = {m.x for m in machines if m.placed}
+                    if clicked_x is not None and clicked_x not in occupied_xs:
+                        placed_name = manager.placement_machine.name
+                        manager.placement_machine.move_to(clicked_x, COUNTER_Y)
+                        if manager.placement_machine not in machines:
+                            machines.append(manager.placement_machine)
+                        manager.placement_machine.placed = True
+                        if manager.placement_item is not None:
+                            manager.placement_item["placed"] = True
+                        manager.placement_machine = None
+                        manager.placement_item    = None
+                        # Reopen the shop on the Machines tab so the player can
+                        # see the item marked as placed without clicking Shop again.
+                        manager.active_tab   = "Machines"
+                        manager.shop_page    = 0
+                        ShopView             = SHOP_VIEW_MENU
+                        current_screen       = "shop"
 
                 elif event.button == 1 and recipe_button.is_clicked(event.pos):
                     current_screen = "recipes"
@@ -1235,8 +2074,11 @@ def main():
                     if camera_button_rect.collidepoint(mouse_pos):
                         if CafeView == "FRONT":
                             CafeView = "MIDDLE"
+                            player.rect.x, player.rect.y = 20, 520
                         elif CafeView == "MIDDLE":
                             CafeView = "FRONT"
+                            player.rect.x, player.rect.y = 1005, 520
+                            manager.change_counters_pos(CafeView)
 
                     #music button
                     elif music_button_rect.collidepoint(mouse_pos):
@@ -1343,10 +2185,18 @@ def main():
                                     manager.money += total
                                     manager.money_earned_today += total  
                                     manager.set_message(f"Delivered! ${base_pay:.2f} + ${tip:.2f} tip = ${total:.2f}", 2500)
+                                    correct_order.play()
+                                    print("correct order sound")
                                     nearby.start_drinking("correct")
                                 else:
                                     nearby.start_drinking("incorrect")
                                     manager.set_message("Customer rejected the order!", 2500)
+                                    try:
+                                        incorrect_order.play()
+                                        print("sound played")
+                                    except:
+                                        print("incorrect order sound didn't play")
+                                    
                                     manager.customers_unhappy_today += 1
 
                                 manager.active_orders.remove(customer_order)
@@ -1371,15 +2221,18 @@ def main():
                                                 if len(cup.contents) < cup.max_capacity:
                                                     print("ingredient added to current cup")
                                                     cup.contents.append(result)
+                                                    active_machine.collect_effect.play()
                                                     cup.update()
                                                 else:
                                                     manager.set_message("Output cannot be collected: Cup is Full Capacity")
                                                     active_machine.state = "ready" 
                                                     active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
+                                                    active_machine.error_effect.play()
                                             else:
                                                 if player.add_item_to_inv(result, Ingredient) is False:
                                                     active_machine.state = "ready"  
                                                     active_machine.contents.append(result)
+                                                    active_machine.error_effect.play()
                                                     manager.set_message("Output cannot be collected: Must Use A Cup")
                                         else:
                                             print("trying to add to empty cup")
@@ -1397,10 +2250,12 @@ def main():
                                                     curr_slot.append(pulled_cup) #add the cup back to the inventory
                                                     active_machine.state = "ready" 
                                                     active_machine.contents.append(result) #add the result back to the machine since it couldn't be collected
+                                                    active_machine.error_effect.play()
                                             else:
                                                 manager.set_message("Output cannot be collected with a cup.")
                                                 active_machine.state = "ready" 
                                                 active_machine.contents.append(result)
+                                                active_machine.error_effect.play()
         
 
                                     elif isinstance(curr_slot[0], Ingredient):
@@ -1416,6 +2271,7 @@ def main():
                                                 active_machine.state = "ready"
                                                 active_machine.contents.append(result)
                                                 manager.set_message("Output cannot be collected: Must Use A Cup")
+                                                active_machine.error_effect.play()
                                     else:
                                         print("player holding something else")
 
@@ -1461,9 +2317,18 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     if GameState == "MENU_SCREEN":
                         continue
+                    if manager.placement_machine is not None:
+                        manager.placement_machine = None
+                        manager.placement_item    = None
+                        continue
                     if RecipeView != RECIPE_VIEW_NONE:
-                        RecipeView = RECIPE_VIEW_NONE
-                        current_screen = "game"
+                        if RecipeView == RECIPE_VIEW_DETAIL:
+                            # ESC from detail view returns to the recipe menu, not all the way out
+                            RecipeView = RECIPE_VIEW_MENU
+                            manager.selected_recipe = None
+                        else:
+                            RecipeView = RECIPE_VIEW_NONE
+                            current_screen = "game"
                         continue
                     if ShopView != SHOP_VIEW_NONE:
                         ShopView = SHOP_VIEW_NONE
@@ -1486,6 +2351,7 @@ def main():
                 if event.key == pygame.K_s and GameState == "REGISTER":
                     if currentCust is None:
                         GameState = "PLAYING"
+                        customer_was_waiting = False
                         continue
 
                     active_count = sum(1 for o in manager.active_orders if o is not None)
@@ -1535,16 +2401,6 @@ def main():
 
                     GameState = "PLAYING"
 
-                # Placeholder shop purchases
-                if ShopView != SHOP_VIEW_NONE:
-                    if event.key == pygame.K_1:
-                        manager.buy_upgrade(0)
-                    elif event.key == pygame.K_2:
-                        manager.buy_upgrade(1)
-                    elif event.key == pygame.K_3:
-                        manager.buy_upgrade(2)
-                    continue
-
                 # Pause normal gameplay input while a menu is open
                 if RecipeView != RECIPE_VIEW_NONE or ShopView != SHOP_VIEW_NONE:
                     continue
@@ -1561,8 +2417,7 @@ def main():
                     # Create the customer using the key "customer" from your IMAGE_LIBRARY
                     '''Each customer we design will have a list of image keys. Eventually we will have s system to make
                     different customers spawn so when a customer is created here, it would not be defaultly set to the ladybug.'''
-                    currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED,
-                                            line_position=LINE_POSITIONS[index])
+                    currCustomer = Customer(spawn_x, spawn_y, ["ladybug_idle", "ladybug_sitting"], RECIPES_UNLOCKED, line_position=LINE_POSITIONS[index])
                     manager.num_customers_today += 1
                     
                     currCustomer.set_state("walking to line")
@@ -1605,7 +2460,7 @@ def main():
             manager.end_of_day_sequence(screen, font)
 
         elif GameState == "PAUSED":
-            frozen_keys = {k: False for k in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_ESCAPE]}  # no inputs while paused
+            frozen_keys = {k: False for k in [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN, pygame.K_ESCAPE, pygame.K_a, pygame.K_d, pygame.K_s, pygame.K_w]}  # no inputs while paused
             if CafeView == "FRONT":
                 manager.front_view_rendering(player, customers, font, frozen_keys, DebugMode, game_seconds)
             elif CafeView == "MIDDLE":
@@ -1617,6 +2472,9 @@ def main():
         elif GameState == "PLAYING":
             if RecipeView != RECIPE_VIEW_NONE:
                 manager.draw_recipe_screen(screen)
+                # Detail view draws on top of the recipe menu
+                if RecipeView == RECIPE_VIEW_DETAIL:
+                    manager.draw_recipe_detail(screen)
             elif ShopView != SHOP_VIEW_NONE:
                 manager.draw_shop_screen(screen)
             else:
@@ -1653,13 +2511,20 @@ def main():
         for m in machines:
             m.update()
 
-        if currentCust != None and currentCust.state == "waiting" and GameState == "PLAYING":
+        i = 0
+        if currentCust != None and currentCust.state == "waiting": # and GameState == "PLAYING":
             register1.set_waiting()
-
+            if customer_was_waiting is False:
+                register1.bell.play()
+                print("bell playing")
+                customer_was_waiting = True
+        else:
+            customer_was_waiting = False
+        
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
-        if GameState not in ("MENU_SCREEN","PAUSED", "LOAD_MENU"):
+        if GameState in ("PLAYING", "PAUSED"):
             for item in manager.active_orders:
                 if item is None:
                     manager.active_orders.remove(item)

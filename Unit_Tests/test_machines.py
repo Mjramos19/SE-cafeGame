@@ -106,14 +106,14 @@ class TestMachineAdd(unittest.TestCase):
         m = make_machine()
         player = MagicMock()
         m.add(MACHINE_INPUT, player)
-        player.popInventoryItem.assert_called_once()
+        player.pop_inv_item.assert_called_once()
 
     def test_wrong_ingredient_does_not_pop_inventory(self):
         """A failed add must not remove anything from the player's inventory."""
         m = make_machine()
         player = MagicMock()
         m.add('milk', player)
-        player.popInventoryItem.assert_not_called()
+        player.pop_inv_item.assert_not_called()
 
 
 class TestMachineRunMachine(unittest.TestCase):

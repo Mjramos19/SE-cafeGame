@@ -84,7 +84,7 @@ class shelf_spot(GameObject):
                 #remove box interaction zone since its going on shelf
                 item.interaction_zone = None
                 #clear hotbar/inventory spot
-                player.popInventoryItem(item, type(item))
+                player.pop_inv_item(item, type(item))
                 
 
     def remove_ingredient_box(self):
@@ -194,7 +194,7 @@ class IngredientBox(GameObject):
         if len(slot) == 0 or (not (isinstance(slot[0], Ingredient))) or self.quantity == 10:
             return
         
-        player.popInventoryItem(slot[0], type(slot[0]))
+        player.pop_inv_item(slot[0], type(slot[0]))
         self.quantity += 1
 
     def render(self, screen, font, DebugMode = False):

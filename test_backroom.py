@@ -28,7 +28,7 @@ class FakePlayer:
         self.added_items.append((item, item_type))
     
     #Keeps track of removed items and their type as a tuple
-    def popInventoryItem(self, item, item_type):
+    def pop_inv_item(self, item, item_type):
         self.removed_items.append((item, item_type))
         if item in self.inventory[self.selected_slot]:
             self.inventory[self.selected_slot].remove(item)

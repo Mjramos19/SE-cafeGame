@@ -1,0 +1,75 @@
+{
+    "name": "2",
+    "money": 0,
+    "day_num": 2,
+    "upgrades": [
+        {
+            "name": "More Hands I",
+            "cost": 50,
+            "tier": 1,
+            "purchased": false
+        },
+        {
+            "name": "More Hands II",
+            "cost": 100,
+            "tier": 2,
+            "purchased": false
+        },
+        {
+            "name": "More Hands III",
+            "cost": 150,
+            "tier": 3,
+            "purchased": false
+        },
+        {
+            "name": "Deeper Pockets I",
+            "cost": 50,
+            "tier": 1,
+            "purchased": false
+        },
+        {
+            "name": "Deeper Pockets II",
+            "cost": 100,
+            "tier": 2,
+            "purchased": false
+        },
+        {
+            "name": "Deeper Pockets III",
+            "cost": 200,
+            "tier": 3,
+            "purchased": false
+        },
+        {
+            "name": "Faster Grinder",
+            "cost": 75,
+            "tier": 1,
+            "purchased": false
+        },
+        {
+            "name": "Quick Brew",
+            "cost": 90,
+            "tier": 1,
+            "purchased": false
+        },
+        {
+            "name": "Extra Speed",
+            "cost": 125,
+            "tier": 1,
+            "purchased": false
+        }
+    ],
+    "machine_positions": [
+        [
+            193,
+            129
+        ],
+        [
+            358,
+            129
+        ],
+        [
+            520,
+            134
+        ]
+    ]
+}
