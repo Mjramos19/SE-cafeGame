@@ -167,11 +167,11 @@ backroom_shelves = []
 sink = Sink(1015, 234)
 
 grinder        = Machine(193, 234, "Coffee Grinder",   bag_coffee_beans, [ground_coffee], 1, 3, ["cg_empty", "cg_inprogress", "cg_ready"],
-                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (510, 480, 150, 70))
+                         ["Audio Files/coffeebeanspouring.mp3", "Audio Files/coffeebeansgrinding.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (510, 480, 150, 70))
 espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espresso_shot], 1, 5, ["em_empty","em_inprogress", "em_ready"],
-                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
+                         ["Audio Files/espressoInMachine.mp3", "Audio Files/espressobrewing.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
-                         ["Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
+                         ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
 
