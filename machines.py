@@ -38,7 +38,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.brewing_effect = pygame.mixer.Sound(self.sound_keys[1])
         self.ready_effect = pygame.mixer.Sound(self.sound_keys[2])
         self.collect_effect = pygame.mixer.Sound(self.sound_keys[3])
-        self.error_effect = pygame.mixer.Sound("Audio Files/error.wav")
+        self.error_effect = pygame.mixer.Sound("Audio Files/wrong_order.wav")
         
 
         try:
@@ -119,7 +119,6 @@ class Machine(GameObject, pygame.sprite.Sprite):
             if elapsed >= 1500:
                 self.state = "empty"
         elif self.state == "running":
-            self.brewing_effect.play()
             elapsed = pygame.time.get_ticks() - self.timer_start
             remaining = max(0, self.runtime - elapsed // 1000)
             prompt = font.render(f"Running... {remaining}s remaining", True, (255, 200, 0))
@@ -175,6 +174,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         """Captures start ticks and transitions machine to the running state."""
         self.timer_start = pygame.time.get_ticks()
         self.state = "running"
+        self.brewing_effect.play()
         print("machine running")
 
     def update(self):
