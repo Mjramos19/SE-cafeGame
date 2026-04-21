@@ -2,6 +2,7 @@ import unittest
 from items import *
 from recipes import *
 from game import *
+from customer import *
 
 class TestItemsAndRecipes(unittest.TestCase):
     """Unit tests for the Ingredient and Cup classes in items.py."""

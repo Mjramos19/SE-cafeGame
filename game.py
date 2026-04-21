@@ -2314,7 +2314,7 @@ def main():
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
-        if GameState not in ("MENU_SCREEN","PAUSED", "LOAD_MENU"):
+        if GameState in ("PLAYING", "PAUSED"):
             for item in manager.active_orders:
                 if item is None:
                     manager.active_orders.remove(item)
