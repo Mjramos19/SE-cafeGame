@@ -22,6 +22,9 @@ class GameManager:
         self.active_orders = []
         self.max_orders = 2 # Upgradable via shop later
         self.more_hands_tier = 0 # 0 = none bought, max = 3
+        self.music_menu_open = False
+        self.current_music_group = None
+        self.current_song_index = 0
 
         # Placeholder progression systems for Phase 3
         self.upgrades = [
@@ -167,12 +170,17 @@ class GameManager:
             quantNum = font.render(f"{player.inventory_quants[i]}", True, (255, 255, 255))
             screen.blit(quantNum, (INVENTORY_POSITIONS[i][0] + 5, INVENTORY_POSITIONS[i][1] + 5))
 
-
             # if that inventory slot has an item, draw that icon inside
-            if len(player.inventory[i]) > 0:
-                # placeholder for item pictures
-                tempItemPic = pygame.Rect(slot.center[0], slot.center[1], 10, 10)
-                pygame.draw.rect(screen, (255, 0, 0), tempItemPic)
+            if player.inventory_quants[i] > 0:
+                if isinstance(player.inventory[i][0], Ingredient):
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"{player.inventory[i][0].name}_icon"], (20, 20))
+                elif isinstance(player.inventory[i][0], IngredientBox):
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"best_box_ever"], (20, 20))
+                else:
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"placeholder_icon"], (20, 20))
+                icon_rect = small_icon.get_rect()
+                icon_rect.center = slot.center
+                screen.blit(small_icon, icon_rect)
 
             # if that inventory slot is selected, draw thick white border, else: draw thin black border
             if i == player.selected_slot:
@@ -181,9 +189,13 @@ class GameManager:
                 pygame.draw.rect(screen, (0, 0, 0), slot, 2)
 
             # if the players mouse is hovering over a slot that isn't empty, display that items name next to the slot
+            if slot.collidepoint(pygame.mouse.get_pos()):
+                if player.inventory_quants[i] > 0:
+                    screen.blit(font.render(f'{player.inventory[i][0].name}', True, (250, 0, 0)), (slot.x + 60, slot.y + 15))
+                    
             m_x, m_y = pygame.mouse.get_pos()
             if slot.collidepoint((m_x, m_y)):
-                if player.inventory[i] != None:
+                if player.inventory_quants[i] > 0:
                     spot_list = player.inventory[i]
                     if len(spot_list) > 0:
                         if spot_list[0].name != "Cup":
@@ -195,6 +207,23 @@ class GameManager:
                             else:
                                 text = font.render(f'Cup with {", ".join(o.name for o in spot_list[0].contents)}', True, (0, 0, 0), (255, 255, 255))
                                 screen.blit(text, (slot.x + 60, slot.y + 15))
+    
+    def draw_music_menu(self, screen, font):
+        if not self.music_menu_open:
+            return
+
+        # Background box
+        pygame.draw.rect(screen, (30, 30, 30), music_menu_rect)
+        pygame.draw.rect(screen, (255, 255, 255), music_menu_rect, 2)
+
+        options = ["Track 1", "Track 2", "Track 3"]
+
+        for i, rect in enumerate(music_option_rectangles):
+            pygame.draw.rect(screen, (60, 60, 60), rect)
+            pygame.draw.rect(screen, (255, 255, 255), rect, 1)
+
+            text = font.render(options[i], True, (255, 255, 255))
+            screen.blit(text, (rect.x + 5, rect.y + 5))
 
     def draw_recipe_screen(self, screen):
         """
@@ -411,6 +440,8 @@ class GameManager:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
         self.drawHotBar(player, font)
+        self.draw_music_and_camera_buttons(screen, font)
+
 
     def middle_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, middle_collisions)
@@ -452,15 +483,47 @@ class GameManager:
                 screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
 
         self.drawHotBar(player, font)
+        self.draw_music_and_camera_buttons(screen, font)
 
     def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
         screen.fill((0, 0, 0))
         for c in backroom_collisions:
             c.render(screen, font)
-            if isinstance(c, stockingShelf):
+            if DebugMode and isinstance(c, StockingShelf):
                 pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
 
         doorEntry2.render(screen)
         player.render(screen, DebugMode)
         self.drawHotBar(player, font)
+        self.draw_music_and_camera_buttons(screen, font)
+
+    def play_music_group(self, group_name):
+        """Helper function for making music selections"""
+        if group_name not in MUSIC_GROUPS:
+            return
+        
+        self.current_music_group = group_name
+        self.current_song_index = 0
+
+        song_list = MUSIC_GROUPS[group_name]
+        if len(song_list) > 0:
+            pygame.mixer.music.load(song_list[self.current_song_index])
+            pygame.mixer.music.play()
+    
+    def player_next_song(self):
+        """Helper function for playing the next song in playlist"""
+        if self.current_music_group is None:
+            return
+        
+        song_list = MUSIC_GROUPS[self.current_music_group]
+        if len(song_list) == 0:
+            return
+        
+        self.current_song_index += 1
+
+        if self.current_song_index >= len(song_list):
+            self.current_song_index = 0
+        
+        pygame.mixer.music.load(song_list[self.current_song_index])
+        pygame.mixer.music.play()

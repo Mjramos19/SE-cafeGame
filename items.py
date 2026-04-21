@@ -25,6 +25,8 @@ class Ingredient(GameObject):
         self.an_input = an_input
         self.quantity = quantity
         self.stackable = True
+        if f"{self.name}_icon" in IMAGE_LIBRARY:
+            self.icon = IMAGE_LIBRARY[f"{self.name}_icon"]
 
     def render(self, screen):
         """Blits the ingredient's sprite at its current coordinates."""

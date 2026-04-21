@@ -25,10 +25,10 @@ class StockingShelf(GameObject):
         super().__init__(x, y, w, h, (255,0,0))
         self.interaction_zone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
         self.spots = [
-            shelf_spot(self.rect.x + 60, self.rect.y + 55, 90, 100),
-            shelf_spot(self.rect.x + 340, self.rect. y + 55, 90, 100),
-            shelf_spot(self.rect.x + 60, self.rect.y + 170, 90, 100),
-            shelf_spot(self.rect.x + 340, self.rect.y + 170, 90, 100)
+            shelf_spot(self.rect.x + 60, self.rect.y + 55, 90, 100, "Shelf"),
+            shelf_spot(self.rect.x + 340, self.rect. y + 55, 90, 100, "Shelf"),
+            shelf_spot(self.rect.x + 60, self.rect.y + 170, 90, 100, "Shelf"),
+            shelf_spot(self.rect.x + 340, self.rect.y + 170, 90, 100, "Shelf")
             ]
         self.icon = IMAGE_LIBRARY["fireAhhShelf"]
     
@@ -39,7 +39,7 @@ class StockingShelf(GameObject):
             if i == num:
                 pass
         
-    def render(self, screen, font):
+    def render(self, screen, font, DebugMode):
         """
         Draws the shelf icon and triggers the render method for all nested spots.
         """
@@ -55,11 +55,12 @@ class shelf_spot(GameObject):
         open (bool): Whether the spot is currently empty.
         held_ingredient_box (ingredientBox): The box object currently stored in this spot.
     """
-    def __init__(self, x, y, w, h):
+    def __init__(self, x, y, w, h, parent):
         """Initializes an empty shelf spot."""
         super().__init__(x, y, w, h, (0, 0, 0))
         self.open = True
         self.held_ingredient_box = None
+        self.parent = parent
     
     def store_ingredient_box(self, player):
         """
@@ -98,7 +99,10 @@ class shelf_spot(GameObject):
         Renders its contained box if it is currently occupied.
         """
         if self.open == False:
-            self.held_ingredient_box.render(screen, font)
+            if self.parent == "Shelf":
+                self.held_ingredient_box.render(screen, font)
+            else:
+                return
 
 
 class IngredientBox(GameObject):
@@ -193,7 +197,7 @@ class IngredientBox(GameObject):
         player.popInventoryItem(slot[0], type(slot[0]))
         self.quantity += 1
 
-    def render(self, screen, font):
+    def render(self, screen, font, DebugMode = False):
         """
         Draws the box icon, ingredient icon, and interaction zone if applicable.
         """
@@ -201,7 +205,7 @@ class IngredientBox(GameObject):
         ingred_icon_rect.center = self.rect.center
         screen.blit(self.icon, self.rect)
         screen.blit(self.ingredient_icon, ingred_icon_rect)
-        if self.interaction_zone != None:
+        if self.interaction_zone != None and DebugMode:
             pygame.draw.rect(screen, (255, 255, 0), self.interaction_zone, 2)        
 
 class DoorEntry(GameObject):
@@ -235,8 +239,8 @@ class Refrigerator(StockingShelf):
         super(StockingShelf, self).__init__(x, y, w, h, (255, 0, 0))
         self.interaction_zone = pygame.Rect(self.x, self.y + 300, self.w, self.h - 200)
         self.spots = [
-            shelf_spot(self.rect.x + 7, self.rect.y + 75, 100, 200),
-            shelf_spot(self.rect.x + 121, self.rect.y + 75, 100, 200)
+            shelf_spot(self.rect.x + 7, self.rect.y + 75, 100, 200, "Fridge"),
+            shelf_spot(self.rect.x + 121, self.rect.y + 75, 100, 200, "Fridge")
         ]
         self.icon = IMAGE_LIBRARY["fridge"]
 

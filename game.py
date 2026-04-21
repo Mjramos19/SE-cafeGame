@@ -20,6 +20,33 @@ pygame.init()
 screen = pygame.display.set_mode((1366, 768))
 pygame.mixer.init()
 
+MUSIC_GROUPS = {
+    "Chill":[
+        "Audio Files/Chill/prettyjohn1-background-music-505061.mp3",
+        "Audio Files/Chill/sigmamusicart-jazz-lounge-relaxing-background-music-514554.mp3",
+        "Audio Files/Chill/ikoliks_aj-jazz-lounge-elevator-music-332339.mp3",
+        "Audio Files/Chill/hitslab-elevator-elevator-jazz-lounge-music-412339.mp3",
+        "Audio Files/Chill/sigmamusicart-jazz-lounge-relaxing-background-music-412597.mp3",
+        "Audio Files/Chill/music_for_video-waiting-music-116216.mp3",
+        "Audio Files/Chill/tunetank-soothing-cafe-music-349586.mp3"
+    ],
+    "Michaels Favorites":[
+        "Audio Files/Michaels Favorites/Radiohead - Nude (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/Basement - Are You The One (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/Clairo - 4EVER (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/Daniel Caesar - Who Knows (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/Radiohead - Lotus Flower (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/J. Cole - Bombs in the Ville Hit the Gas (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/SZA - Good Days (SPOTISAVER).mp3",
+        "Audio Files/Michaels Favorites/The Strokes - Selfless (SPOTISAVER).mp3"
+    ],
+    "Thuggin":[
+        "Audio Files/Thuggin/BAK Jay - Again (SPOTISAVER).mp3",
+        "Audio Files/Thuggin/Gunna - on one tonight (SPOTISAVER).mp3",
+        "Audio Files/Thuggin/Lil Yatchy, Veeze - Sorry Not Sorry (SPOTISAVER).mp3"
+    ]
+}
+
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.image.load("Cafe_Game_Art/player_idle_front.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_idle"] = pygame.image.load("Cafe_Game_Art/ladybug_idle.png").convert_alpha()
 constants.IMAGE_LIBRARY["ladybug_sitting"] = pygame.image.load("Cafe_Game_Art/ladybug_sitting.png").convert_alpha()
@@ -66,10 +93,9 @@ constants.IMAGE_LIBRARY["sunrise_window"] = pygame.image.load("Cafe_Game_Art/Sun
 constants.IMAGE_LIBRARY["Ice_icon"] = pygame.image.load("Cafe_Game_Art/IceIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Water_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.image.load("Cafe_Game_Art/CoffeeBeanIcon.png").convert_alpha()
-
-
-
-
+constants.IMAGE_LIBRARY["camera_icon"] = pygame.image.load("Cafe_Game_Art/CameraButton.png").convert_alpha()
+constants.IMAGE_LIBRARY["music_icon"] = pygame.image.load("Cafe_Game_Art/MusicIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["place_holder_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 
 # Pre-scale all images in the library them once
 constants.IMAGE_LIBRARY["player_idle_front"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["player_idle_front"], (120, 268))
@@ -109,11 +135,9 @@ constants.IMAGE_LIBRARY["sunrise_window"] = pygame.transform.smoothscale(constan
 constants.IMAGE_LIBRARY["Ice_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Ice_icon"], (40, 40))
 constants.IMAGE_LIBRARY["Water_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Water_icon"], (22, 40))
 constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Coffee Beans_icon"], (40, 40))
-
-
-
-
-
+constants.IMAGE_LIBRARY["camera_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["camera_icon"], (30, 30))
+constants.IMAGE_LIBRARY["music_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["music_icon"], (30, 30))
+constants.IMAGE_LIBRARY["place_holder_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["place_holder_icon"], (30, 30))
 
 # Defines all ingredients
 bag_coffee_beans = Ingredient("Coffee Beans", ["coffee_beans"], True, 18.35, 56)
@@ -215,6 +239,19 @@ pause_quit_button   = Button(483, 380, 400, 70, "Quit to Menu",      "QUIT",    
 next_day_button = Button(100, 100, 100, 100, "Next Day", "NEXT_DAY", None)
 quit_button = Button(266, 100, 100, 100, "Quit to Menu", "QUIT", None)
 
+#top right buttons
+camera_button_rect = pygame.Rect(750, 40, 40, 40)
+music_button_rect  = pygame.Rect(820, 40, 40, 40)
+
+#music dropdown options
+music_menu_rect = pygame.Rect(820, 85, 140, 120)
+
+music_option_rectangles = [
+    pygame.Rect(830, 95, 120, 30),
+    pygame.Rect(830, 130, 120, 30),
+    pygame.Rect(830, 165, 120, 30),
+]
+
 delete_save_button1 = Button(483, 320, 20, 20, "D", "DELETE_SAVE", None)
 delete_save_button2 = Button(483, 420, 20, 20, "D", "DELETE_SAVE", None)
 delete_save_button3 = Button(483, 520, 20, 20, "D", "DELETE_SAVE", None)
@@ -246,6 +283,9 @@ class GameManager:
         self.active_orders = []
         self.max_orders = 2 # Upgradable via shop later
         self.more_hands_tier = 0 # 0 = none bought, max = 3
+        self.music_menu_open = False
+        self.current_music_group = None
+        self.current_song_index = 0
 
         # day sequence variables
         self.money = 0
@@ -416,9 +456,15 @@ class GameManager:
 
             # if that inventory slot has an item, draw that icon inside
             if player.inventory_quants[i] > 0:
-                # placeholder for item pictures
-                temp_item_pic = pygame.Rect(slot.center[0], slot.center[1], 10, 10)
-                pygame.draw.rect(screen, (255, 0, 0), temp_item_pic)
+                if isinstance(player.inventory[i][0], Ingredient):
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"{player.inventory[i][0].name}_icon"], (20, 20))
+                elif isinstance(player.inventory[i][0], IngredientBox):
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"best_box_ever"], (20, 20))
+                else:
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"placeholder_icon"], (20, 20))
+                icon_rect = small_icon.get_rect()
+                icon_rect.center = slot.center
+                screen.blit(small_icon, icon_rect)
 
             # if that inventory slot is selected, draw thick white border, else: draw thin black border
             if i == player.selected_slot:
@@ -613,6 +659,55 @@ class GameManager:
         delete_save_button1.draw(screen)
         delete_save_button2.draw(screen)
         delete_save_button3.draw(screen)
+    
+    def draw_music_menu(self, screen, font):
+        """Draw the music menu overlay"""
+        if not self.music_menu_open:
+            return
+
+        #background box
+        pygame.draw.rect(screen, (255, 255, 255), music_menu_rect)
+        pygame.draw.rect(screen, (0, 0, 0), music_menu_rect, 2)
+
+        options = ["Chill", "Michaels Favorites", "Thuggin"]
+
+        for i in range(len(music_option_rectangles)):
+            r = music_option_rectangles[i]
+            if r.collidepoint(pygame.mouse.get_pos()):
+                pygame.draw.rect(screen, (60, 60, 60), r)
+                pygame.draw.rect(screen, (0, 0, 0), r, 2)
+            else:
+                pygame.draw.rect(screen, (60, 60, 60), r)
+                pygame.draw.rect(screen, (0, 0, 0), r, 1)
+            
+            text = font.render(options[i], True, (255, 255, 255))
+            screen.blit(text, (r.x + 5, r.y + 5))
+    
+    def draw_music_and_camera_buttons(self, screen, font):
+        """Draw buttons for camera view and music"""
+        #camera button
+        if camera_button_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, (255, 255, 255), camera_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), camera_button_rect, 2)
+        else:
+            pygame.draw.rect(screen, (255, 255, 255), camera_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), camera_button_rect, 1)
+        icon = constants.IMAGE_LIBRARY["camera_icon"]
+        icon_rect = icon.get_rect(center = camera_button_rect.center)
+        screen.blit(icon, icon_rect)
+
+        #music button
+        if music_button_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, (255, 255, 255), music_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), music_button_rect, 2)
+        else:
+            pygame.draw.rect(screen, (255, 255, 255), music_button_rect)
+            pygame.draw.rect(screen, (0, 0, 0), music_button_rect, 1)
+        icon = constants.IMAGE_LIBRARY["music_icon"]
+        icon_rect = icon.get_rect(center = music_button_rect.center)
+        screen.blit(icon, icon_rect)
+
+        self.draw_music_menu(screen, font)
 
     def change_counters_pos(self, view):
         if view == "MIDDLE":
@@ -693,6 +788,7 @@ class GameManager:
                 pygame.draw.rect(screen, (255, 255, 0), c, 2)
 
         self.drawHotBar(player, font)
+        self.draw_music_and_camera_buttons(screen, font)
 
 
     def middle_view_rendering(self, player, font, keys, DebugMode):
@@ -735,6 +831,7 @@ class GameManager:
                 screen.blit(label, (m.rect.centerx - label.get_width() // 2, m.rect.top - 24))
 
         self.drawHotBar(player, font)
+        self.draw_music_and_camera_buttons(screen, font)
 
     def back_view_rendering(self, player, font, keys, DebugMode):
         player.handle_movement(keys, backroom_collisions)
@@ -742,8 +839,8 @@ class GameManager:
         for c in backroom_collisions:
 
             if c != back_wall_rect:
-                c.render(screen, font)
-                if isinstance(c, StockingShelf):
+                c.render(screen, font, DebugMode)
+                if isinstance(c, StockingShelf) and DebugMode:
                     pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
         
         
@@ -754,7 +851,7 @@ class GameManager:
         doorEntry2.render(screen)
         player.render(screen, DebugMode)
         self.drawHotBar(player, font)
-
+        self.draw_music_and_camera_buttons(screen, font)
 
     def save_game(self, filename):
         """Save the current game state to a JSON file."""
@@ -825,7 +922,6 @@ class GameManager:
         else:
             print("No save file to delete.")
 
-
     def end_of_day_sequence(self, screen, font):
 
         screen.fill((0, 0, 0))
@@ -843,9 +939,35 @@ class GameManager:
 
         next_day_button.draw(screen)
         quit_button.draw(screen)
+    
+    def play_music_group(self, group_name):
+        if group_name not in MUSIC_GROUPS:
+            return
         
+        self.current_music_group = group_name
+        self.current_song_index = 0
 
+        song_list = MUSIC_GROUPS[group_name]
+        if len(song_list) > 0:
+            pygame.mixer.music.load(song_list[self.current_song_index])
+            pygame.mixer.music.play()
+    
+    def player_next_song(self):
+        if self.current_music_group is None:
+            return
+        
+        song_list = MUSIC_GROUPS[self.current_music_group]
+        if len(song_list) == 0:
+            return
+        
+        self.current_song_index += 1
 
+        if self.current_song_index >= len(song_list):
+            self.current_song_index = 0
+        
+        pygame.mixer.music.load(song_list[self.current_song_index])
+        pygame.mixer.music.play()
+        
 def main():
     global Customer, currentCust
     pygame.display.set_caption("Cafe")
@@ -878,6 +1000,8 @@ def main():
     SPAWN_EVENT = pygame.USEREVENT + 1
     BOX_SPAWN_EVENT = pygame.USEREVENT + 2 #this will change once boxes spawn after being bought, for now they are automatic
     pygame.time.set_timer(BOX_SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
+    MUSIC_END_EVENT = pygame.USEREVENT + 10
+    pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
 
         
     all_sprites = pygame.sprite.Group()
@@ -933,6 +1057,8 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+            if event.type == MUSIC_END_EVENT:
+                manager.player_next_song()
 
             if manager.name_input_active:
                 if event.type == pygame.KEYDOWN:
@@ -977,7 +1103,7 @@ def main():
                 if event.button == 1 and GameState == "MENU_SCREEN":
                     if menu_start_button.is_clicked(event.pos):
                         GameState = "LOAD_MENU"
-                    
+                
 
                 elif event.button == 1 and GameState == "LOAD_MENU" and GameState != "MENU_SCREEN":
                     def check_save(save, data):
@@ -1071,7 +1197,7 @@ def main():
                         if active_machine.ingredient and active_machine.ingredient_rect.collidepoint((m_x, m_y)):
                             is_dragging = True
 
-                elif CafeView == "BACKROOM":
+                elif event.button == 1 and CafeView == "BACKROOM":
                     #loops through all backroom objects looking for shelves
                     for obj in backroom_collisions:
                         #if shelf
@@ -1101,6 +1227,36 @@ def main():
                                                     break
                                             if shelf_spot.held_ingredient_box != None:
                                                 shelf_spot.held_ingredient_box.grab_ingredient(player)
+
+                if event.button == 1 and GameState == "PLAYING":
+                    mouse_pos = pygame.mouse.get_pos()
+
+                    #camera button
+                    if camera_button_rect.collidepoint(mouse_pos):
+                        if CafeView == "FRONT":
+                            CafeView = "MIDDLE"
+                        elif CafeView == "MIDDLE":
+                            CafeView = "FRONT"
+
+                    #music button
+                    elif music_button_rect.collidepoint(mouse_pos):
+                        if manager.music_menu_open:
+                            manager.music_menu_open = False
+                        else:
+                            manager.music_menu_open = True
+
+                    #music menu options
+                    elif manager.music_menu_open:
+                        if music_option_rectangles[0].collidepoint(mouse_pos):
+                            manager.play_music_group("Chill")
+                        elif music_option_rectangles[1].collidepoint(mouse_pos):
+                            manager.play_music_group("Michaels Favorites")
+                        elif music_option_rectangles[2].collidepoint(mouse_pos):
+                            manager.play_music_group("Thuggin")
+
+                        '''for rect in (music_option_rectangles):
+                            if rect.collidepoint(mouse_pos):
+                                print(f"Selected {rect}")'''
 
 
             if event.type == pygame.MOUSEBUTTONUP:
