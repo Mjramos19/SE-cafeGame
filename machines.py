@@ -38,7 +38,7 @@ class Machine(GameObject, pygame.sprite.Sprite):
         self.brewing_effect = pygame.mixer.Sound(self.sound_keys[1])
         self.ready_effect = pygame.mixer.Sound(self.sound_keys[2])
         self.collect_effect = pygame.mixer.Sound(self.sound_keys[3])
-        self.error_effect = pygame.mixer.Sound("Audio Files/error.wav")
+        self.error_effect = pygame.mixer.Sound("Audio Files/wrong_order.wav")
         
 
         try:
