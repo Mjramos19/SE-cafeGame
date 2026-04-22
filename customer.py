@@ -49,6 +49,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.drink_start_time = None
         self.drink_duration = 1500  # milliseconds
         self.serve_result = None
+        self.assigned_cup = None
 
     def pick_item(self):
         """
@@ -192,6 +193,9 @@ class Customer(GameObject, pygame.sprite.Sprite):
     def _update_wait_bar(self):
         """Decrements the wait bar while seated or waiting; triggers leaving when empty."""
         if self.wait_bar_length == 0:
+            # Free the seat if the customer is leaving due to timer expiry
+            if self.state == "seated" and self.target_seat is not None:
+                self.target_seat.open_seat()
             self.state = "leaving"
         else:
             self.wait_bar_length -= 0.5
