@@ -74,6 +74,15 @@ constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WB0Ready.
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
 constants.IMAGE_LIBRARY["coffee_beans"] = pygame.image.load("Cafe_Game_Art/coffee_beans.png").convert_alpha()
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+# Adding these to fix crash 
+constants.IMAGE_LIBRARY["Ground Coffee_icon"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+constants.IMAGE_LIBRARY["Espresso Shot_icon"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+constants.IMAGE_LIBRARY["Espresso Double Shot_icon"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+constants.IMAGE_LIBRARY["Hot Water_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Steamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Foamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
 
 
 # All Recipes Images
@@ -623,13 +632,14 @@ class GameManager:
 
             # if that inventory slot has an item, draw that icon inside
             if player.inventory_quants[i] > 0:
-                if isinstance(player.inventory[i][0], Ingredient):
-                    name = player.inventory[i][0].name.lower().replace(" ", "_")
-                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"{name}_icon"], (20, 20))
-                elif isinstance(player.inventory[i][0], IngredientBox):
-                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"best_box_ever"], (20, 20))
+                item = player.inventory[i][0]
+                if isinstance(item, Ingredient):
+                    src = item.icon if item.icon is not None else constants.IMAGE_LIBRARY["placeholder_icon"]
+                    small_icon = pygame.transform.smoothscale(src, (20, 20))
+                elif isinstance(item, IngredientBox):
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["best_box_ever"], (20, 20))
                 else:
-                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"placeholder_icon"], (20, 20))
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["placeholder_icon"], (20, 20))
                 icon_rect = small_icon.get_rect()
                 icon_rect.center = slot.center
                 screen.blit(small_icon, icon_rect)
