@@ -155,14 +155,20 @@ class IngredientBox(GameObject):
                 break
         backroomCollisions.pop(backRoomIndex)
     
-    def pick_ingredient(ingredients_list):
+    def pick_ingredient(ingredients_list, slot_index=None):
         """
-        Returns the 'Coffee Beans' ingredient from a list (currently hardcoded logic).
+        Returns a guaranteed ingredient per slot so essential items always spawn.
+        Slot assignments:
+            0 -> Coffee Beans (index 0)
+            1 -> Water        (index 3)
+            2 -> Ice          (index 5)
+            3 -> Milk         (index 6)
+            4 -> Cocoa Powder (index 9)
         """
-        num = None
-        while num != 0 and num != 3 and num != 5:
-            num = random.randint(0, len(ingredients_list) - 1)
-        return ingredients_list[num]
+        slot_map = {0: 0, 1: 3, 2: 5, 3: 6, 4: 9}
+        if slot_index is not None and slot_index in slot_map:
+            return ingredients_list[slot_map[slot_index]]
+        return ingredients_list[random.randint(0, len(ingredients_list) - 1)]
     
     def set_spot(self, spot):
         """
@@ -194,7 +200,7 @@ class IngredientBox(GameObject):
         if len(slot) == 0 or (not (isinstance(slot[0], Ingredient))) or self.quantity == 10:
             return
         
-        player.pop_inv_item(slot[0], type(slot[0]))
+        player.inventory[player.selected_slot].pop(0)
         self.quantity += 1
 
     def render(self, screen, font, DebugMode = False):

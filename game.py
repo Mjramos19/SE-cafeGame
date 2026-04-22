@@ -80,9 +80,10 @@ constants.IMAGE_LIBRARY["Espresso Shot_icon"] = pygame.image.load("Cafe_Game_Art
 constants.IMAGE_LIBRARY["Espresso Double Shot_icon"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
 constants.IMAGE_LIBRARY["Hot Water_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
-constants.IMAGE_LIBRARY["Steamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
-constants.IMAGE_LIBRARY["Foamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
-constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.image.load("Cafe_Game_Art/ground_coffee.png").convert_alpha()
+constants.IMAGE_LIBRARY["Steamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Foamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 
 
 # All Recipes Images
@@ -201,6 +202,9 @@ RECIPES_UNLOCKED = []
 counter3_rect = pygame.Rect(0, 590, 983, 50)
 wall_rect2 = pygame.Rect(0, 293, 1400, 10)
 
+# Backroom right wall collision
+backroom_right_wall = pygame.Rect(1280, 0, 100, 800)
+
 # Behind counter / middle collision rects
 counter1_rect = pygame.Rect(187, 336, 983, 50)
 counter2_rect = pygame.Rect(187, 718, 983, 50)
@@ -237,7 +241,7 @@ current_screen = "game"
 # all collision lists for handling perspectives
 front_collisions = [menu_rect, counter3_rect, wall_rect2]
 middle_collisions = [menu_rect, counter1_rect, counter2_rect, wall_rect]
-backroom_collisions = [StockingShelf(50, 90, 500, 300), Refrigerator(700, 90, 225, 300), back_wall_rect, menu_rect]
+backroom_collisions = [StockingShelf(50, 90, 500, 300), Refrigerator(700, 90, 225, 300), back_wall_rect, backroom_right_wall]
 
 # all interactable spots each scene (counters, register, sink, chairs, doors)
 front_counters = [c1, c2, c3, c4, c5, register1, s1, s2, s3, s4, s5, s6]
@@ -1544,7 +1548,7 @@ class GameManager:
         screen.blit(constants.IMAGE_LIBRARY["best_backroom_ever"], (0, 0))
         player.animate()
         for c in backroom_collisions:
-            if c != back_wall_rect and c!= menu_rect:
+            if c != back_wall_rect and c!= menu_rect and c != backroom_right_wall:
                 c.render(screen, font, DebugMode)
                 if isinstance(c, StockingShelf) and DebugMode:
                     pygame.draw.rect(screen, (255, 255, 255), c.interaction_zone, 2)
@@ -1694,7 +1698,7 @@ def main():
     # Other entities (Customers)
     customers = []
     customersWaiting = []
-    ingredient_boxes = [None, None, None, None]
+    ingredient_boxes = [None, None, None, None, None]
     numBoxes = 0
 
 
@@ -1808,15 +1812,16 @@ def main():
                 
 
                 elif event.button == 1 and GameState == "LOAD_MENU" and GameState != "MENU_SCREEN":
+                    save = None
+                    loaded_data = None
                     def check_save(save, data):
                         if data is None or data.get("day_num", 1) == 1:
                             manager.reset_new_game()
                         else:
-                            # Sync the manager's variables with the loaded file
                             manager.save_name = data.get("name", "Unnamed Save")
-                            manager.money = loaded_data.get("money", 0)
-                            manager.day_num = loaded_data.get("day_num", 1)
-                            manager.upgrades = loaded_data.get("upgrades", manager.upgrades)
+                            manager.money = data.get("money", 0)
+                            manager.day_num = data.get("day_num", 1)
+                            manager.upgrades = data.get("upgrades", manager.upgrades)
                         return save
                             
                     if save1_button.is_clicked(event.pos):
@@ -1845,15 +1850,12 @@ def main():
                         print("file deleted for slot 3")
                         break
                         
-                        
-                    current_save_file = save
-                    #print(f"Current save file set to: {current_save_file}, data: {loaded_data}, GameState: {GameState}")
-
-                    if loaded_data is None or loaded_data.get("day_num", 1) == 1:
-                        manager.name_input_active = True
-                    else:
-                        GameState = "PLAYING"
-
+                    if save is not None:
+                        current_save_file = save
+                        if loaded_data is None or loaded_data.get("day_num", 1) == 1:
+                            manager.name_input_active = True
+                        else:
+                            GameState = "PLAYING"    
 
                 elif event.button == 1 and GameState == "PAUSED":
                     if pause_resume_button.is_clicked(event.pos):
@@ -2051,36 +2053,44 @@ def main():
                         if active_machine.ingredient and active_machine.ingredient_rect.collidepoint((m_x, m_y)):
                             is_dragging = True
 
-                elif event.button == 1 and CafeView == "BACKROOM":
-                    #loops through all backroom objects looking for shelves
+                elif event.button in (1, 3) and CafeView == "BACKROOM":
                     for obj in backroom_collisions:
-                        #if shelf
                         if isinstance(obj, StockingShelf) or isinstance(obj, Refrigerator):
                             if player.get_foot_rect().colliderect(obj.interaction_zone):
                                 for shelf_spot in obj.spots:
-                                    if shelf_spot.rect.collidepoint(pygame.mouse.get_pos()) and event.button == 1:
+                                    if shelf_spot.rect.collidepoint(pygame.mouse.get_pos()):
                                         if isinstance(obj, Refrigerator):
-                                            slot = player.inventory[player.selected_slot]
-                                            if len(slot) != 0:
-                                                if isinstance(slot[0], IngredientBox) and shelf_spot.open and slot[0].name == "Ice Box":
+                                            if event.button == 1:
+                                                slot = player.inventory[player.selected_slot]
+                                                if len(slot) != 0 and isinstance(slot[0], IngredientBox) and shelf_spot.open and slot[0].name == "Ice Box":
                                                     shelf_spot.store_ingredient_box(player)
                                                     break
-                                                elif isinstance(slot[0], Ingredient) and shelf_spot.open == False and slot[0].name == "Ice":
+                                                elif shelf_spot.held_ingredient_box is not None:
+                                                    shelf_spot.held_ingredient_box.grab_ingredient(player)
+                                            elif event.button == 3:
+                                                slot = player.inventory[player.selected_slot]
+                                                if (len(slot) != 0
+                                                        and isinstance(slot[0], Ingredient)
+                                                        and shelf_spot.open == False
+                                                        and slot[0].name == shelf_spot.held_ingredient_box.ingredient.name):
                                                     shelf_spot.held_ingredient_box.place_ingredient_in_box(player)
                                                     break
-                                            if shelf_spot.held_ingredient_box != None:
-                                                shelf_spot.held_ingredient_box.grab_ingredient(player)
                                         else:
-                                            slot = player.inventory[player.selected_slot]
-                                            if len(slot) != 0 : 
-                                                if isinstance(slot[0], IngredientBox) and shelf_spot.open == True:
+                                            if event.button == 1:
+                                                slot = player.inventory[player.selected_slot]
+                                                if len(slot) != 0 and isinstance(slot[0], IngredientBox) and shelf_spot.open == True:
                                                     shelf_spot.store_ingredient_box(player)
                                                     break
-                                                elif isinstance(slot[0], Ingredient) and shelf_spot.open == False:
+                                                elif shelf_spot.held_ingredient_box is not None:
+                                                    shelf_spot.held_ingredient_box.grab_ingredient(player)
+                                            elif event.button == 3:
+                                                slot = player.inventory[player.selected_slot]
+                                                if (len(slot) != 0
+                                                        and isinstance(slot[0], Ingredient)
+                                                        and shelf_spot.open == False
+                                                        and slot[0].name == shelf_spot.held_ingredient_box.ingredient.name):
                                                     shelf_spot.held_ingredient_box.place_ingredient_in_box(player)
                                                     break
-                                            if shelf_spot.held_ingredient_box != None:
-                                                shelf_spot.held_ingredient_box.grab_ingredient(player)
 
                 if event.button == 1 and GameState == "PLAYING":
                     mouse_pos = pygame.mouse.get_pos()
@@ -2457,7 +2467,7 @@ def main():
                     for i in range(MAX_INGREDIENT_BOXES):
                         if ingredient_boxes[i] is None:
                             x, y = BOX_POSITIONS[i]
-                            ingredBox = IngredientBox(x, y, IngredientBox.pick_ingredient(INGREDIENTS))
+                            ingredBox = IngredientBox(x, y, IngredientBox.pick_ingredient(INGREDIENTS, i))
                             ingredient_boxes[i] = ingredBox
                             backroom_collisions.append(ingredBox)
                             numBoxes += 1

@@ -56,12 +56,11 @@ class Customer(GameObject, pygame.sprite.Sprite):
         self.foot_w, self.foot_h = (18 * 4), (8 * 4)
         self.waitBar_length = 10000
 
-        self.waitBar_length = 10000
-
         # Drinking / leaving behavior
         self.drink_start_time = None
         self.drink_duration = 1500  # milliseconds
         self.serve_result = None
+        self.assigned_cup = None
 
     def pickItem(self):
         """

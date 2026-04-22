@@ -53,8 +53,8 @@ DAY_END = 64800
 EIGHT_PM = 72000
 
 # Back room ingredients box positions
-MAX_INGREDIENT_BOXES = 4
-BOX_POSITIONS = [(625, 660), (750, 660), (875, 660), (1000, 660)]
+MAX_INGREDIENT_BOXES = 5
+BOX_POSITIONS = [(625, 660), (750, 660), (875, 660), (1000, 660), (1125, 660)]
 
 # Inventory constants
 NUM_SLOTS = 4
