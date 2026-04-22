@@ -165,7 +165,7 @@ class IngredientBox(GameObject):
             3 -> Milk         (index 6)
             4 -> Cocoa Powder (index 9)
         """
-        slot_map = {0: 0, 1: 3, 2: 5, 3: 6, 4: 9}
+        slot_map = {0: 0, 1: 9, 2: 0, 3: 9}
         if slot_index is not None and slot_index in slot_map:
             return ingredients_list[slot_map[slot_index]]
         return ingredients_list[random.randint(0, len(ingredients_list) - 1)]

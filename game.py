@@ -82,6 +82,7 @@ constants.IMAGE_LIBRARY["Hot Water_icon"] = pygame.image.load("Cafe_Game_Art/Wat
 constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Steamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["Chocolate Mix_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Foamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 
@@ -181,9 +182,10 @@ milk = Ingredient("Milk",["water"], True, 3.28, 16)
 steamed_milk = Ingredient("Steamed Milk",["water"])
 foamed_milk = Ingredient("Foamed Milk",["water"])
 cocoa_powder = Ingredient("Cocoa Powder",["water"], True, 9.40, 64)
+chocolate_mix = Ingredient("Chocolate Mix", ["ground_coffee"])
 
 # Ingredients List
-INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water, ice, milk, steamed_milk, foamed_milk, cocoa_powder]
+INGREDIENTS = [bag_coffee_beans, ground_coffee, espresso_shot, water, hot_water, ice, milk, steamed_milk, foamed_milk, cocoa_powder, chocolate_mix]
 
 # Defines all Recipes
 Espresso = Recipe("Espresso Shot" ,[espresso_shot],6.50, "N/A", False)
@@ -191,7 +193,7 @@ Iced_Coffee = Recipe("Iced Coffee" ,[espresso_shot, ice],6.50, "N/A")
 Americano = Recipe("Americano" ,[hot_water, espresso_shot],7.50, "N/A", False)
 Latte = Recipe("Latte" ,[espresso_shot, steamed_milk],6.50, "N/A")
 Iced_Latte = Recipe("Iced Latte" ,[espresso_shot, ice, milk],6.50, "N/A")
-Hot_Chocolate = Recipe("Hot Chocolate" ,[hot_water, cocoa_powder, steamed_milk],6.50, "N/A")
+Hot_Chocolate = Recipe("Hot Chocolate" ,[hot_water, chocolate_mix],6.50, "N/A", False)
 
 # Recipes Lists
 ALL_RECIPES = [Espresso, Iced_Coffee, Americano, Latte, Iced_Latte, Hot_Chocolate]
@@ -256,8 +258,10 @@ espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espres
                          ["Audio Files/espressoInMachine.mp3", "Audio Files/espressobrewing.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
                          ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
+cocoa_station  =  Machine(686, 234, "Cocoa Station",    cocoa_powder,      [chocolate_mix], 1, 3, ["wb_empty","wb_inprogress","wb_ready"], \
+                         ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
 
-ALL_MACHINES = [grinder, espresso_mach, water_boiler] # when a machine is bought, append to this list
+ALL_MACHINES = [grinder, espresso_mach, water_boiler, cocoa_station] # when a machine is bought, append to this list
 
 machines = []  # starts empty; free machines are added when the player places them from the shop
 
@@ -358,6 +362,7 @@ class GameManager:
                 {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 0, "tier": 1, "purchased": False, "free": True, "placed": False},
                 # Slide 1 — purchasable machines (require money)
                 {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
@@ -419,7 +424,7 @@ class GameManager:
             "money": self.money,
             "day_num": self.day_num,
             "upgrades": self.upgrades,
-            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)]
+            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y), (cocoa_station.rect.x, cocoa_station.rect.y)],
         }
 
 
@@ -938,6 +943,7 @@ class GameManager:
             ("Coffee Beans", "Coffee Grinder", "Ground Coffee"),
             ("Ground Coffee", "Espresso Machine", "Espresso Shot"),
             ("Water", "Water Boiler", "Hot Water"),
+            ("Cocoa Powder", "Cocoa Station", "Chocolate Mix"),
         ]
  
         recipe = self.selected_recipe
@@ -1565,7 +1571,7 @@ class GameManager:
             "money": self.money,
             "day_num": self.day_num,
             "upgrades": self.upgrades,
-            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)]
+            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y), (cocoa_station.rect.x, cocoa_station.rect.y)],
         }
         with open(filename, 'w') as f:
             json.dump(data_to_save, f, indent=4)
@@ -1597,7 +1603,7 @@ class GameManager:
         self.day_num = 1
         self.upgrades = [{"name": upgrade["name"], "cost": upgrade["cost"], "tier": upgrade["tier"], "purchased": False} for upgrade in self.upgrades]
 
-        ALL_MACHINES = [grinder, espresso_mach, water_boiler]
+        ALL_MACHINES = [grinder, espresso_mach, water_boiler, cocoa_station]
         for machine in ALL_MACHINES:
             machine.state = "empty"
             machine.x = -300        # puts machine off screen until bought and placed by player, will change to actual position once placed.
@@ -1611,7 +1617,7 @@ class GameManager:
             "money": self.money,
             "day_num": self.day_num,
             "upgrades": self.upgrades,
-            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)],
+            "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y), (cocoa_station.rect.x, cocoa_station.rect.y)],
         }
 
         return self.data   # Return the reset data for any additional handling if needed
@@ -1639,7 +1645,7 @@ class GameManager:
                 "money": self.money,
                 "day_num": self.day_num,
                 "upgrades": self.upgrades,
-                "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y)],
+                "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y), (cocoa_station.rect.x, cocoa_station.rect.y)],
             }
 
         next_day_button.draw(screen)
@@ -1897,6 +1903,7 @@ def main():
                         "Coffee Grinder":  grinder,
                         "Espresso Machine": espresso_mach,
                         "Water Boiler":    water_boiler,
+                        "Cocoa Station":   cocoa_station,
                     }
                     for row_i, item_rect in getattr(manager, "shop_item_rects", {}).items():
                         if item_rect.collidepoint(event.pos):
