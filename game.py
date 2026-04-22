@@ -624,7 +624,8 @@ class GameManager:
             # if that inventory slot has an item, draw that icon inside
             if player.inventory_quants[i] > 0:
                 if isinstance(player.inventory[i][0], Ingredient):
-                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"{player.inventory[i][0].name}_icon"], (20, 20))
+                    name = player.inventory[i][0].name.lower().replace(" ", "_")
+                    small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"{name}_icon"], (20, 20))
                 elif isinstance(player.inventory[i][0], IngredientBox):
                     small_icon = pygame.transform.smoothscale(constants.IMAGE_LIBRARY[f"best_box_ever"], (20, 20))
                 else:
