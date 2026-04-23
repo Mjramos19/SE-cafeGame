@@ -1,3 +1,20 @@
+"""
+Unit Tests: Backroom objects/system
+
+Runs against the REAL backroom class with the help of a mock player class for simplified actions
+
+Requirements covered:
+  Req24 - Initialize stocking shelf upon game start
+  Req25 - Store ingredient box from players selected slot
+  Req26 - Don't store an ingredient box when selected slot is empty
+  Req27 - Update box position upon storing box
+  Req28 - Decrease box ingredient quantity upon grabbing ingredient
+  Req29 - Remove ingredient box from spot when quantity reaches 0
+  Req30 - Don't allow player to store ingredient in box when box is full
+  Req31 - Create each shelf spot in an open state upon initialization
+  Req32 - Initialize refrigerator upon game start
+  Req33 - Initialize door entry mat upon game start
+"""
 import unittest
 import pygame
 import backroom
@@ -48,6 +65,8 @@ class TestBackroom(unittest.TestCase):
         backroom.IMAGE_LIBRARY["fridge"] = pygame.Surface((120, 200))
         backroom.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.Surface((20, 20))
         backroom.IMAGE_LIBRARY["Milk_icon"] = pygame.Surface((20, 20))
+        backroom.IMAGE_LIBRARY["coffee_beans"] = pygame.Surface((20,20))
+        backroom.IMAGE_LIBRARY["milk"] = pygame.Surface((20,20))
 
         self.screen = pygame.Surface((800, 600))
         self.font = pygame.font.SysFont(None, 24)
@@ -56,7 +75,7 @@ class TestBackroom(unittest.TestCase):
         self.milk = Ingredient("Milk", ["milk"], True, 3.28, 16)
 
     def test_stocking_shelf(self):
-        """Tests StockingShelf initialization"""
+        """Req24 - Tests StockingShelf initialization"""
         shelf = backroom.StockingShelf(100, 200, 500, 400)
 
         self.assertEqual(shelf.x, 100)
@@ -68,7 +87,7 @@ class TestBackroom(unittest.TestCase):
         self.assertEqual(shelf.icon, backroom.IMAGE_LIBRARY["fireAhhShelf"])
 
     def test_shelf_spot(self):
-        """Tests shelf_spot initialization"""
+        """Req31 - Tests shelf_spot initialization"""
         spot = backroom.shelf_spot(50, 60, 90, 100, "Shelf")
 
         self.assertTrue(spot.open)
@@ -90,7 +109,7 @@ class TestBackroom(unittest.TestCase):
         self.assertIsNotNone(box.interaction_zone)
 
     def test_update_position(self):
-        """Tests IngredientBox position update"""
+        """Req27 - Tests IngredientBox position update"""
         box = backroom.IngredientBox(25, 35, self.coffee_beans)
         box.update_position((200, 300))
 
@@ -108,7 +127,7 @@ class TestBackroom(unittest.TestCase):
         self.assertEqual(box.spot, spot)
 
     def test_store_ingredient_box(self):
-        """Tests storing an ingredient box onto a shelf spot"""
+        """Req25 - Tests storing an ingredient box onto a shelf spot"""
         spot = backroom.shelf_spot(50, 60, 90, 100, "Shelf")
         box = backroom.IngredientBox(0, 0, self.coffee_beans)
         player = DummyPlayer([[box]], 0)
@@ -122,7 +141,7 @@ class TestBackroom(unittest.TestCase):
         self.assertEqual(player.items_removed[0][0], box)
 
     def test_store_ingredient_box_empty_slot(self):
-        """Tests that nothing happens if selected inventory slot is empty"""
+        """Req26 - Tests that nothing happens if selected inventory slot is empty"""
         spot = backroom.shelf_spot(50, 60, 90, 100, "Shelf")
         player = DummyPlayer([[]], 0)
 
@@ -145,7 +164,7 @@ class TestBackroom(unittest.TestCase):
         self.assertIsNone(spot.held_ingredient_box)
 
     def test_grab_ingredient(self):
-        """Tests grabbing one ingredient from a box"""
+        """Req28 - Tests grabbing one ingredient from a box"""
         box = backroom.IngredientBox(25, 35, self.coffee_beans)
         player = DummyPlayer([[]], 0)
         spot = backroom.shelf_spot(50, 60, 90, 100, "Shelf")
@@ -159,7 +178,7 @@ class TestBackroom(unittest.TestCase):
         self.assertFalse(spot.open)  # spot should still stay occupied
 
     def test_grab_last_ingredient(self):
-        """Tests grabbing the last ingredient from a box empties the shelf spot"""
+        """Req29 - Tests grabbing the last ingredient from a box empties the shelf spot"""
         box = backroom.IngredientBox(25, 35, self.coffee_beans)
         player = DummyPlayer([[]], 0)
         spot = backroom.shelf_spot(50, 60, 90, 100, "Shelf")
@@ -187,7 +206,7 @@ class TestBackroom(unittest.TestCase):
         self.assertEqual(player.items_removed[0][0], self.coffee_beans)
 
     def test_place_ingredient_in_box_full(self):
-        """Tests that no ingredient is added if the box is already full"""
+        """Req30- Tests that no ingredient is added if the box is already full"""
         box = backroom.IngredientBox(25, 35, self.coffee_beans)
         player = DummyPlayer([[self.coffee_beans]], 0)
 
@@ -198,7 +217,7 @@ class TestBackroom(unittest.TestCase):
         self.assertEqual(len(player.items_removed), 0)
 
     def test_door_entry(self):
-        """Tests DoorEntry initialization"""
+        """Req32 - Tests DoorEntry initialization"""
         door = backroom.DoorEntry(300, 400, 100, 50)
 
         self.assertEqual(door.x, 300)
@@ -208,7 +227,7 @@ class TestBackroom(unittest.TestCase):
         self.assertEqual(door.icon, backroom.IMAGE_LIBRARY["sick_rug"])
 
     def test_refrigerator(self):
-        """Tests Refrigerator initialization"""
+        """Req33 - Tests Refrigerator initialization"""
         fridge = backroom.Refrigerator(200, 100, 250, 500)
 
         self.assertEqual(fridge.x, 200)
