@@ -70,7 +70,7 @@ constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WB0Empty.
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WB0InProgress.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WB0Ready.png").convert_alpha()
 constants.IMAGE_LIBRARY["hcm_empty"] = pygame.image.load("Cafe_Game_Art/hcm_empty.png").convert_alpha()
-constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.image.load("Cafe_Game_Art/hcm_inPprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.image.load("Cafe_Game_Art/hcm_inprogress.png").convert_alpha()
 constants.IMAGE_LIBRARY["hcm_ready"] = pygame.image.load("Cafe_Game_Art/hcm_ready.png").convert_alpha()
 
 # All Ingredient Images
@@ -378,7 +378,7 @@ class GameManager:
                 {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 # Slide 1 — purchasable machines (require money)
-                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 180, "tier": 1, "purchased": False, "free": True, "placed": False},
+                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
             ],
