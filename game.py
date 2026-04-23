@@ -1611,7 +1611,7 @@ class GameManager:
         for machine in ALL_MACHINES:
             machine.state = "empty"
 
-    def reset_new_game(self):
+    def reset_new_game(self, player):
         """Reset the entire game state for starting a new game."""
         self.save_name = "Empty Slot"
         self.money = 0
@@ -1635,12 +1635,14 @@ class GameManager:
             "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y), (cocoa_station.rect.x, cocoa_station.rect.y)],
         }
 
+        player.x, player.y = 40, 600
+
         return self.data   # Return the reset data for any additional handling if needed
 
-    def delete_save_file(self, save):
+    def delete_save_file(self, save, player):
         """Delete the current save file if it exists."""
         if save is not None and os.path.exists(save["file"]):
-            data = self.reset_new_game()  # Get the reset game data
+            data = self.reset_new_game(player)  # Get the reset game data
             file = save["file"]
             with open(file, 'w') as f:
                 json.dump(data, f, indent=4)
@@ -1761,7 +1763,7 @@ def main():
         minutes = int((game_seconds % 3600) // 60)
 
         # Set the customer spawn timer to start at 8:00 AM and stop at 6:00 PM
-        if int(game_seconds) == DAY_START:
+        if int(game_seconds) == (SEVEN_AM-2000):
             pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
         if int(game_seconds) == DAY_END:
             pygame.time.set_timer(SPAWN_EVENT, 0)
@@ -1837,7 +1839,7 @@ def main():
                     loaded_data = None
                     def check_save(save, data):
                         if data is None or data.get("day_num", 1) == 1:
-                            manager.reset_new_game()
+                            manager.reset_new_game(player)
                         else:
                             manager.save_name = data.get("name", "Unnamed Save")
                             manager.money = data.get("money", 0)
@@ -1859,15 +1861,15 @@ def main():
 
 
                     if delete_save_button1.is_clicked(event.pos):
-                        manager.delete_save_file(save_game1)
+                        manager.delete_save_file(save_game1, player)
                         print("file deleted for slot 1")
                         break
                     elif delete_save_button2.is_clicked(event.pos):
-                        manager.delete_save_file(save_game2)
+                        manager.delete_save_file(save_game2, player)
                         print("file deleted for slot 2")
                         break 
                     elif delete_save_button3.is_clicked(event.pos):
-                        manager.delete_save_file(save_game3)
+                        manager.delete_save_file(save_game3, player)
                         print("file deleted for slot 3")
                         break
                         
@@ -1882,7 +1884,14 @@ def main():
                     if pause_resume_button.is_clicked(event.pos):
                         GameState = "PLAYING"
                     elif pause_quit_button.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
+                        game_seconds = DAY_START
+                        manager.reset_day(player)
+                        customers.clear()
+                        customersWaiting.clear()
+                        player.x, player.y = 40, 600
                         GameState = "MENU_SCREEN"
+
                     continue
 
 
@@ -2047,17 +2056,16 @@ def main():
                     ShopView = SHOP_VIEW_MENU
 
                 elif event.button == 1 and GameState == "END_OF_DAY":
+                    pygame.mixer.music.stop()
+                    game_seconds = DAY_START
+                    manager.reset_day(player)
+                    customers.clear()
+                    customersWaiting.clear()
                     if next_day_button.is_clicked(event.pos):
-                        pygame.mixer.music.stop()
                         GameState = "PLAYING"
-                        game_seconds = DAY_START
-                        manager.reset_day(player)
-                        customers.clear()
-                        customersWaiting.clear()
                         manager.set_message(f"New Day | {manager.day_num}")
                         print(f"Starting next day, data: {manager.data}, GameState: {GameState}")
                     elif quit_button.is_clicked(event.pos):
-                        pygame.mixer.music.stop()
                         GameState = "MENU_SCREEN"
 
 
@@ -2577,9 +2585,12 @@ def main():
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
-        if GameState not in ("MENU_SCREEN","PAUSED", "LOAD_MENU"):
+        if GameState in ("PLAYING", "PAUSED"):
             manager.active_orders = [o for o in manager.active_orders if o is not None]
-            orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
+            if RecipeView != RECIPE_VIEW_NONE or ShopView != SHOP_VIEW_NONE:
+                orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (0, 0, 0))
+            else:
+                orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
             screen.blit(orders_text, (10, 25))
             screen.blit(clock_text, (1202, 35))

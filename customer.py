@@ -198,7 +198,7 @@ class Customer(GameObject, pygame.sprite.Sprite):
                 self.target_seat.open_seat()
             self.state = "leaving"
         else:
-            self.wait_bar_length -= 0.5
+            self.wait_bar_length -= 0.3
 
     def _handle_walking_to_line(self):
         """Walks the customer from off-screen to their line position."""
