@@ -1,0 +1,203 @@
+d3b8354 Delete commit_log.txt
+d349954 Delete classes.py
+736ea36 Delete manager.py
+a4445c8 Rename playerclass.py to player.py
+ca197c1 updated backroom test file
+2358539 fixed a couple bugs i saw
+b036346 Finallyyyyyyy added the coco-station and it works plus it purchasable
+5a0e37a Added sound effects to the coco machine
+931c1c3 Added the code for images for hot chocolate machine
+2ca8c39 added coco machine and art to code
+633e6b2 add hot cocoa machine art files to Cafe_Game_Art
+0745295 adding the art files in the cafe_game_art file
+211c34e hot chocolate machine art
+6953e45 Added the coco station, it uses the water boiler art for now. And its free so i could test it, but once we get the actual art we can make it be purchasbale
+4b934a6 Fixed the ingredient boxes spawning so they spawn the same item in the same spot. I gotta get rid of the other ones still (Ice, water, and milk). I also added left click for collectin item from box and right click to deposit it back into the box
+5b02e08 fixed the crashing with ingredients icons
+b533ef7 added zone.identifier to .gitignore
+c185d5f updated unit testing file
+e5d67b1 Fixed customer order tracking. It uses (customer, recipe) tuples in active_orders to prevent duplicate order removal
+daa5821 completed backroom, all backroom art,  day cycles (day, night, sunrise, sunset), item icons, bug fixes, fridge, camera view button, music button, music  menu with working music
+8adcb0a increased customer waitbar and decresed amount it ticks down as they wait to avoid bug
+e1656eb added simple animation to player and tested that sound effects play correctly
+9b13be2 Sound effect bug? Line 41? otherwise no change
+68fe9c1 Just changed/added the code for 3 machines sound effects
+67e6fe3 Added sound effects for machines
+236658f pushing what i have but save/load is broken
+66f1428 updated machine and player keys logic after finding bug
+0d97eb8 added sound places for machines
+6284e8d Just changed the water boiler image code
+bd11f66 Added new images for water boiler and fixed the height and width
+6e99ad5 added more options for movement keys, added bell and order delivered sounds
+d2dd31e added end of day music
+b496b8b Added the slider to machines for free machines and extra machines
+4e3b0ce Added the machine placing logic on the counter
+9ccf0d7 Added machine placing logic
+ee04b5e .
+fd15f7e Redid the recipe menu, with two tabs locked and unlocked. You can click an unlocked recipe to see a detailed view on how to make it. NOTE: Some of the ingredients are not yet hooked up to MACHINE_STEPS in draw_recipe_detail. So those will need to be added once we're ready
+57bef24 Redid the shop menu, all the upgrades are working and implemented, adding new stuff to the shop is easy whether its more tabs or actual items to buy.
+b8b4fa6 added missing files from main
+7233d26 moved to testing folder
+ab76794 completed save and load logic on main. also updated the pause+main menu. game can now save a name for save slot, will save all data after the day ends, begin a reset next day. there are acouple new debug keys for passin time as well.
+1884191 fixed time accumulation during menu screens
+bc4382b Added unittests for machines
+9759fb1 fixed code errors from report for player class (changed variables for other files too)
+c1e0840 Uploaded unit tests for items and recipes
+af6ac2c completed items+recips unit tests
+b5dc7b8 added unit tests folder with economy/shop unit tests. Also fixed an issue where pressing esc would crash the game
+51d17f3 Fixed all issues related to customer class from code errors report. Also fixed some stuff in furniture, others, items, game, and manager. But everything was customer related.
+b7050e3 updated small things in the items class and completed unti tests for items. Next=Recipes
+3684a38 fixed imports and rendering is working again
+5fde9f2 added back manager
+5a42e60 Add files via upload
+e07eb04 renamed the audio files
+9d4a0f2 added some audio files
+997e07d fixed imports
+aebf360 Delete Developement Documentation/Code_Errors_Report.pdf
+829ad55 Add files via upload
+9067834 Rename Code_Erros_Report.pdf to Code_Errors_Report.pdf
+cae0fda Update README.md
+33de422 Revised README
+e1a9f12 refactor: Deleted classes.py (all classes inside have been moved)
+e16a9e7 refactor: moved manager to its own file
+e63734b Refactored constants (removed ingredients, added counter)
+1505c90 refactored ingredient and cup
+24ae355 refactored register and sink (children of counter)
+a8d1f12 refactored table and seat
+f953083 refactored customer class
+63e2a4f refactored player class
+1b3ca78 refactored the game manager
+dc43486 Add files via upload
+8181d43 Add files via upload
+d762ebe Created a new folder for storing files from developmental tools
+2e065c6 backroom changes and assets
+acf7052 Added necessary docstrings for all files
+c31cbba added michael's backroom art
+e059312 merged michael's backroom and fixed a couple rendering and inventory bugs
+c9ffaef final touches where I fixed bugs that either arose from merging or I missed
+207e5dd updated machine and sink interaction zones and machine start buttons
+8b7b3d5 Update game.py
+8c5bc03 Updated check_match method to work with cups
+27746ce Merged game.py with taylor/delivery logic
+f9f2576 Refactor Player and Customer classes with inventory updates from trying to merge
+ad907f8 Add files via upload
+08f86d9 Delete Cafe_Game_Art/cafe_bg_2.png
+7ddde7c Changes to machine
+be8e23e Updated the upgrades shop to allow buying 'more hands', allowing the player to hold more than two orders at once. Also got rid of the time sleep when accepting an order
+baa98ec Fixed the issue where you can accept infinite orders, the max is now two
+35ffda0 Updated the order taking screen
+44ca5ba Added debug delivery system with tip calculation based on customer wait time. You press P while in debug mode to instantly deliver the correct order. Tip is calculated as a percentage of the time left over multiplied by the base pay. EX: 50% wait bar left, with a 0 order, gives 0 base pay plus  dollar tip.
+8bc8c74 Fixed the customer line and them walking in line
+74d9b97 fixed the issue where the game would crash when customers wait timer expired and they left
+d2b0bcc Added a start game menu to the game
+fedf440 Adding some machine art but not implemented them yet
+f88bb62 fixed all bugs I could find in the inventory system and with cups. added assets for the machines we have right now. next step is delivering.
+d82bf8d updated the inventory system using michaels quantity stacking. inventory is working well with machines and cups now.
+a0ae66b added some assets and fixed register interaction bug
+11c2dc3 changed player inventory logic to implement item stacking in hotbar, added dedicated player functions for adding and removing items from inventory, and fixed  some other shi
+aed2210 test
+9b9ec33 got rid of machine art folder, put those images in the cafe_game_art folder
+2fbb698 combined mario and michaels code
+9e57746 Delete DONT_USE_THIS_FOLDER directory
+aa2960f Delete button.py
+2174b80 Delete classes.py
+e743db1 Delete game.py
+1090f11 Delete machines.py
+2df225d Delete constants.py
+66448e3 Delete recipes.py
+b89d653 Added functional back room, simple cup logic, customer wait bars, and cleaned up main game file
+ebef367 Added a tooltip for switching views
+945b387 Added a register tooltip, added text to the register menu. Changed the tooltips to have white text and black background
+a997bf6 polished up the UI a lil bit
+f3d5002 There was an extra folder called Cafe_Game that had duplicates of our files and looked like the normal directory, I think this may have caused confusion and people may have worked within that folder instead of the real files
+ad6e074 Refactored game.py by creaing a game manager class that holds game-wide progression and UI state. Our game.py was turning into a real crazy bowl of spagehtti code so i figured this would help. I also added a Shop/Upgrades menu.
+6021f34 got a very basic economy system, you earn 5 bucks with every succesfull serve and 0 for incorrect serves
+aaeb220 Added simple backroom, fully implemented hotbar/inventory, and reduced redundant code in main loop
+a611159 Made it so the player can walk through customers
+0687e8e Fixed an issue where clicking 'r' to reset didnt fully reset inventory/cup slots.
+ee9cc98 Added a gameplay loop so you can now take orders, create drinks and serve them. This is a very simple first iteration, all machines make the same thing right now, black coffee and that is also all the customers order.
+bfc791a Fixed an issue where customers would teleport to their seats, now they walk to them. Made it so the customers get closer to the counter as they get closer to the register.
+79a8691 Fixed an issue where you could take infinite orders once all seats were full.
+d7fc8ef No changes
+cdee11b Fixing merge conflits
+e3d60d4 Added new class and new image for machines
+89cb9ea New images for the machines
+dbbf42c No changes
+31211a6 Adding this file to lavisha/machines branch
+cf5b2e1 No changes
+7428037 No changes
+51c7ec4 Added new manchine images
+2a6fc29 Added new classes and images for machines
+1006dcc Added images for three machines
+3252f56 added a new handle_time function in game and some variables to make a working clock for day cycle/ level management.
+d131ac9 updated some logic to make the error red light only last a couple seconds
+072c7c1 added some ladybug assets - idle + sitting. these are integrated in game.py by creating the customer object using a list of image keys now. we can update logic once more assets are done for customers to spawn with a random image_keys list. the Customer class now has new logic to update the sprite based on state and the seat's num (a new variable in seat).
+7db9d84 one line change to get rid of pylance errors
+6bf66f4 OMG i got itgit add .!
+6397359 Trying to fix this stuff lol
+f6b46fa done a lot of work in machines and game to make the minigame logic. Look closely at all machine variables + functions. In game I moved some logic to the bottom to reduce clutter in the running loop. Also changed a little about the Ingredient class.
+c223cd1 Completely re-updated recipes.py Updated orders variable to be called orders_list Changed line 343 in game.py to display recipe name once ordered
+3dd979e I have had to re set up my version control
+54cab0d Added recipe menu button
+14ff04f Added recipe button
+73e2d4b Added recipe button
+0281abc Added recipe menu
+85876d1 assets
+8037cc3 Clean up game.py by removing unused code
+d1ec115 fixed register stuff
+1bdfd78 deleted zone identifier stuff
+588086a Added recipe button
+1064fc6 Recipe button added. Not finished yet
+7194fb7 small fix
+9d5c06e Removed pycache from repo
+30bb03e Delete entities.py
+48309ef Delete base.py
+e1cf706 Delete player1.py - old code that has been updated
+74b6894 small fix
+a2d2c83 Added menu button class
+d526102 my recent work on these files
+8f203cc Delete Coffeegrinder_art/maingrinder.png.png
+e9457df Delete Coffeegrinder_art/beanholder.png.png
+bd26f89 Delete Coffeegrinder_art/Time pannel.png.png
+c2d2f48 Delete Coffeegrinder_art/Coffeebeanslayer.png.png
+e5a6425 Add files via upload
+6707617 Machines.py 3 machines working yet
+5ebd6b0 Added my changes for machines.py to work and labled as LAVISHA...
+5f557fd No changes to this file
+04b74c5 I took the ingredents list and INGREDIENTS from taylors constant.py
+b2a8d6b fixed a small syntax error
+830a4b8 Fixed a couple bugs and combined basic serving with updated visuals
+e7660ab added recipe logic to game.py. Haven't merged with main
+dc98b0c My additions to the constants file. Can push to main when ready
+55501cb My edits to the game.py file from main to add recipe logic
+8b3c88a ingredients class
+c98417f trying to update the code
+3146dc9 clearing unnecessary stuff
+ef043e1 began framework of machine class logic
+797ff88 deleted like one empty line I think
+f56524e Adds logic for images for each recipe
+caaf16a Expanded Recipes class
+0f970e8 idk
+d2c6617 uploading the combined work from me and Michael
+b6c7832 Rename cafe_bg_top.png to Cafe_Game_Art/cafe_bg_top.png
+da33109 Rename cafe_bg_2_top.png to Cafe_Game_Art/cafe_bg_2_top.png
+6ce58cc Rename cafe_bg.png to Cafe_Game_Art/cafe_bg.png
+0c9251f Rename Customer.png to Cafe_Game_Art/Customer.png
+c8b5a72 added more assets
+55cd8a4 Added basic oven/food preparation class. Implemented basic food serving
+1605be4 Added to customer/line functionality
+6e14beb added some assets: player, background2
+3db4652 New changes
+1b895e9 Deleted empty base.py
+b31d271 Register class, seat class and logic,  register interaction zone, updated NPC AI
+0695581 added machines.py
+73899f1 made a player sprite w/o animation
+0139e3b added sprite image and footbox collision logic, needs revision
+ca918bd added game.py and entities.py
+3a82bec Recipes class created
+8122049 made player1 file and put player class in it
+a533daa began player class framework and base game mechanics
+0d316a3 test2
+3c5f26f testing out git, disregard
+67df5bc Update project title in README
+84e3dcb Initial commit
