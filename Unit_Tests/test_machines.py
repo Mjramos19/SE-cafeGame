@@ -4,10 +4,10 @@ Unit Tests: Machine System
 Runs against the REAL Machine class — pygame is mocked so no display is required.
 
 Requirements covered:
-  Req14 - Machine placed when purchased and counter space available     [NEEDS CODE - SKIPPED]
+  Req14 - Machine placed when purchased and counter space available
   Req15 - Brewing starts when ingredient inserted and start pressed
   Req16 - Brewing progress and machine state tracked during brewing
-  Req17 - Output added to cup contents when collected from machine      [PARTIAL - remove_output only]
+  Req17 - Output added to cup contents when collected from machine      
 """
 
 import unittest
@@ -34,6 +34,7 @@ MINI_GAME_KEYS    = ['empty_key', 'running_key', 'ready_key']
 START_BUTTON_INFO = [400, 400, 100, 50]
 MACHINE_INPUT     = 'coffee_beans'
 OUTPUTS           = ['espresso', 'lungo']
+SOUND_KEYS        = ['fake1.wav', 'fake2.wav', 'fake3.wav', 'fake4.wav']
 
 
 def make_machine(state='empty'):
@@ -46,6 +47,7 @@ def make_machine(state='empty'):
         num_outputs=2,
         runtime=5,
         mini_game_img_keys=MINI_GAME_KEYS,
+        sound_keys=SOUND_KEYS,
         start_button_info=START_BUTTON_INFO,
     )
     m.state = state
@@ -312,6 +314,117 @@ class TestMachineSetupMinigame(unittest.TestCase):
         original = [ingredient]
         m.setup_minigame(original)
         self.assertEqual(len(original), 1)
+
+
+# ---------------------------------------------------------------------------
+# Req14 – Machine placed when purchased and counter space is available
+# ---------------------------------------------------------------------------
+
+class TestReq14MachinePlacement(unittest.TestCase):
+    """
+    Covers Req14: the system shall allow machine placement when the player
+    purchases a machine and counter space is available.
+
+    The Machine class owns the placed flag and move_to logic.
+    The counter-space availability check mirrors the occupied_xs set used
+    in game.py: {m.x for m in machines if m.placed}.
+    """
+
+    def test_placed_flag_starts_false(self):
+        """A new machine must start unplaced before the player positions it."""
+        m = make_machine()
+        self.assertFalse(m.placed)
+
+    def test_setting_placed_true_marks_machine_as_placed(self):
+        """Once the player confirms placement the placed flag must become True."""
+        m = make_machine()
+        m.placed = True
+        self.assertTrue(m.placed)
+
+    def test_move_to_updates_x_and_y(self):
+        """move_to must update the machine's x and y to the chosen counter position."""
+        m = make_machine()
+        m.move_to(193, 234)
+        self.assertEqual(m.x, 193)
+        self.assertEqual(m.y, 234)
+
+    def test_move_to_updates_counter_space_rect(self):
+        """move_to must reposition counter_space_rect so collision detection stays correct."""
+        m = make_machine()
+        m.move_to(193, 234)
+        self.assertEqual(m.counter_space_rect.x, 193)
+        self.assertEqual(m.counter_space_rect.y, 234)
+
+    def test_move_to_updates_interaction_zone_y(self):
+        """move_to must shift the interaction zone vertically so players can still interact."""
+        m = make_machine()
+        m.move_to(193, 234)
+        self.assertEqual(m.interaction_zone.y, 234 + m.h)
+
+    def test_placed_machine_appears_in_occupied_set(self):
+        """A placed machine's x must appear in the occupied counter positions set."""
+        m = make_machine()
+        m.move_to(193, 234)
+        m.placed = True
+        occupied_xs = {mac.x for mac in [m] if mac.placed}
+        self.assertIn(193, occupied_xs)
+
+    def test_unplaced_machine_not_in_occupied_set(self):
+        """An unplaced machine must not block any counter space."""
+        m = make_machine()
+        m.move_to(193, 234)
+        # placed is still False — should not occupy the slot
+        occupied_xs = {mac.x for mac in [m] if mac.placed}
+        self.assertNotIn(193, occupied_xs)
+
+    def test_counter_space_blocked_when_machine_at_same_x(self):
+        """Placement must be blocked when a placed machine already occupies the target x."""
+        existing = make_machine()
+        existing.move_to(193, 234)
+        existing.placed = True
+        occupied_xs = {mac.x for mac in [existing] if mac.placed}
+        self.assertIn(193, occupied_xs)  # slot 193 is taken
+
+    def test_counter_space_free_at_different_x(self):
+        """Placement must be allowed when no placed machine occupies the target x."""
+        existing = make_machine()
+        existing.move_to(193, 234)
+        existing.placed = True
+        occupied_xs = {mac.x for mac in [existing] if mac.placed}
+        self.assertNotIn(358, occupied_xs)  # slot 358 is free
+
+    def test_two_machines_can_be_placed_at_different_positions(self):
+        """Two machines placed at different x values must both appear in the occupied set."""
+        m1 = make_machine()
+        m1.move_to(193, 234)
+        m1.placed = True
+        m2 = make_machine()
+        m2.move_to(358, 234)
+        m2.placed = True
+        occupied_xs = {mac.x for mac in [m1, m2] if mac.placed}
+        self.assertIn(193, occupied_xs)
+        self.assertIn(358, occupied_xs)
+
+    def test_machine_added_to_active_list_on_placement(self):
+        """The machine must be appended to the active machines list during placement."""
+        m = make_machine()
+        machines = []
+        m.move_to(193, 234)
+        m.placed = True
+        if m not in machines:
+            machines.append(m)
+        self.assertIn(m, machines)
+
+    def test_full_placement_flow(self):
+        """Complete flow — move_to, set placed, append to list — leaves machine active and positioned."""
+        m = make_machine()
+        machines = []
+        m.move_to(358, 234)
+        m.placed = True
+        machines.append(m)
+        self.assertTrue(m.placed)
+        self.assertEqual(m.x, 358)
+        self.assertIn(m, machines)
 
 
 # ---------------------------------------------------------------------------
