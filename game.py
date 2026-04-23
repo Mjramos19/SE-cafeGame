@@ -84,7 +84,12 @@ constants.IMAGE_LIBRARY["Espresso Double Shot_icon"] = pygame.image.load("Cafe_G
 constants.IMAGE_LIBRARY["Hot Water_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/WaterIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Steamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
-constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
+constants.IMAGE_LIBRARY["cocoa_powder_img"] = pygame.image.load("Cafe_Game_Art/cocoa_powder.png").convert_alpha()
+constants.IMAGE_LIBRARY["cocoa_powder_img"] = pygame.image.load("Cafe_Game_Art/cocoa_powder.png").convert_alpha()
+constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.image.load("Cafe_Game_Art/cocoa_powder.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_empty"] = pygame.image.load("Cafe_Game_Art/hcm_empty.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.image.load("Cafe_Game_Art/hcm_inprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_ready"] = pygame.image.load("Cafe_Game_Art/hcm_ready.png").convert_alpha()
 constants.IMAGE_LIBRARY["Chocolate Mix_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Foamed Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
 constants.IMAGE_LIBRARY["Milk_icon"] = pygame.image.load("Cafe_Game_Art/PlaceHolderIcon.png").convert_alpha()
@@ -168,7 +173,11 @@ constants.IMAGE_LIBRARY["Coffee Beans_icon"] = pygame.transform.smoothscale(cons
 constants.IMAGE_LIBRARY["camera_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["camera_icon"], (30, 30))
 constants.IMAGE_LIBRARY["music_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["music_icon"], (30, 30))
 constants.IMAGE_LIBRARY["placeholder_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["placeholder_icon"], (30, 30))
-
+constants.IMAGE_LIBRARY["hcm_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_empty"], (150, 200))
+constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_inprogress"], (150, 200))
+constants.IMAGE_LIBRARY["hcm_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_ready"], (150, 200))
+constants.IMAGE_LIBRARY["cocoa_powder_img"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["cocoa_powder_img"], (348, 330))
+constants.IMAGE_LIBRARY["Cocoa Powder_icon"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["Cocoa Powder_icon"], (40, 40))
 
 # Sounds
 correct_order = pygame.mixer.Sound("Audio Files/correct_order.wav")
@@ -187,7 +196,7 @@ ice = Ingredient("Ice",["water"])
 milk = Ingredient("Milk",["water"], True, 3.28, 16)
 steamed_milk = Ingredient("Steamed Milk",["water"])
 foamed_milk = Ingredient("Foamed Milk",["water"])
-cocoa_powder = Ingredient("Cocoa Powder",["water"], True, 9.40, 64)
+cocoa_powder = Ingredient("Cocoa Powder",["cocoa_powder_img"], True, 9.40, 64)
 chocolate_mix = Ingredient("Chocolate Mix", ["ground_coffee"])
 
 # Ingredients List
