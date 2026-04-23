@@ -6,7 +6,6 @@ including shelving units, individual shelf spots, and ingredient containers.
 """
 
 import pygame
-from classes import *
 from items import *
 
 class StockingShelf(GameObject):

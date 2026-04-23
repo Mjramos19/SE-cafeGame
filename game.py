@@ -1,11 +1,10 @@
 import json
 import os
 
-from classes import *
 from furniture import *
 from items import *
 from others import *
-from playerclass import *
+from player import *
 from customer import *
 from machines import *
 import constants
@@ -69,9 +68,6 @@ constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Cafe_Game_Art/EMready.p
 constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WB0Empty.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WB0InProgress.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WB0Ready.png").convert_alpha()
-constants.IMAGE_LIBRARY["hcm_empty"] = pygame.image.load("Cafe_Game_Art/hcm_empty.png").convert_alpha()
-constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.image.load("Cafe_Game_Art/hcm_inprogress.png").convert_alpha()
-constants.IMAGE_LIBRARY["hcm_ready"] = pygame.image.load("Cafe_Game_Art/hcm_ready.png").convert_alpha()
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
@@ -150,9 +146,6 @@ constants.IMAGE_LIBRARY["em_ready"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_empty"], (150, 190))
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (150, 190))
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (150, 190))
-constants.IMAGE_LIBRARY["hcm_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_empty"], (160, 190))
-constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_inprogress"], (160, 190))
-constants.IMAGE_LIBRARY["hcm_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_ready"], (160, 190))
 constants.IMAGE_LIBRARY["water"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["water"], ((348, 330)))
 constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["coffee_beans"], ((348, 330)))
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ground_coffee"], ((348, 330)))
@@ -274,7 +267,7 @@ espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espres
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
                          ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
 cocoa_station  =  Machine(686, 234, "Cocoa Station",    cocoa_powder,      [chocolate_mix], 1, 3, ["hcm_empty","hcm_inprogress","hcm_ready"], \
-                         ["Audio Files/pouring_cocoPowder1.mp3", "Audio Files/cocomix_ready1.mp3", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (550, 380, 100, 40))
+                         ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (580, 380, 50, 70))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler, cocoa_station] # when a machine is bought, append to this list
 
@@ -377,8 +370,8 @@ class GameManager:
                 {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
+                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 0, "tier": 1, "purchased": False, "free": True, "placed": False},
                 # Slide 1 — purchasable machines (require money)
-                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
             ],
@@ -1611,7 +1604,7 @@ class GameManager:
         for machine in ALL_MACHINES:
             machine.state = "empty"
 
-    def reset_new_game(self, player):
+    def reset_new_game(self):
         """Reset the entire game state for starting a new game."""
         self.save_name = "Empty Slot"
         self.money = 0
@@ -1635,14 +1628,12 @@ class GameManager:
             "machine_positions": [(grinder.rect.x, grinder.rect.y), (espresso_mach.rect.x, espresso_mach.rect.y), (water_boiler.rect.x, water_boiler.rect.y), (cocoa_station.rect.x, cocoa_station.rect.y)],
         }
 
-        player.x, player.y = 40, 600
-
         return self.data   # Return the reset data for any additional handling if needed
 
-    def delete_save_file(self, save, player):
+    def delete_save_file(self, save):
         """Delete the current save file if it exists."""
         if save is not None and os.path.exists(save["file"]):
-            data = self.reset_new_game(player)  # Get the reset game data
+            data = self.reset_new_game()  # Get the reset game data
             file = save["file"]
             with open(file, 'w') as f:
                 json.dump(data, f, indent=4)
@@ -1763,7 +1754,7 @@ def main():
         minutes = int((game_seconds % 3600) // 60)
 
         # Set the customer spawn timer to start at 8:00 AM and stop at 6:00 PM
-        if int(game_seconds) == (SEVEN_AM-2000):
+        if int(game_seconds) == DAY_START:
             pygame.time.set_timer(SPAWN_EVENT, CUSTOMER_SPAWN_EVERY_MS)
         if int(game_seconds) == DAY_END:
             pygame.time.set_timer(SPAWN_EVENT, 0)
@@ -1839,7 +1830,7 @@ def main():
                     loaded_data = None
                     def check_save(save, data):
                         if data is None or data.get("day_num", 1) == 1:
-                            manager.reset_new_game(player)
+                            manager.reset_new_game()
                         else:
                             manager.save_name = data.get("name", "Unnamed Save")
                             manager.money = data.get("money", 0)
@@ -1861,15 +1852,15 @@ def main():
 
 
                     if delete_save_button1.is_clicked(event.pos):
-                        manager.delete_save_file(save_game1, player)
+                        manager.delete_save_file(save_game1)
                         print("file deleted for slot 1")
                         break
                     elif delete_save_button2.is_clicked(event.pos):
-                        manager.delete_save_file(save_game2, player)
+                        manager.delete_save_file(save_game2)
                         print("file deleted for slot 2")
                         break 
                     elif delete_save_button3.is_clicked(event.pos):
-                        manager.delete_save_file(save_game3, player)
+                        manager.delete_save_file(save_game3)
                         print("file deleted for slot 3")
                         break
                         
@@ -1884,14 +1875,7 @@ def main():
                     if pause_resume_button.is_clicked(event.pos):
                         GameState = "PLAYING"
                     elif pause_quit_button.is_clicked(event.pos):
-                        pygame.mixer.music.stop()
-                        game_seconds = DAY_START
-                        manager.reset_day(player)
-                        customers.clear()
-                        customersWaiting.clear()
-                        player.x, player.y = 40, 600
                         GameState = "MENU_SCREEN"
-
                     continue
 
 
@@ -2056,16 +2040,17 @@ def main():
                     ShopView = SHOP_VIEW_MENU
 
                 elif event.button == 1 and GameState == "END_OF_DAY":
-                    pygame.mixer.music.stop()
-                    game_seconds = DAY_START
-                    manager.reset_day(player)
-                    customers.clear()
-                    customersWaiting.clear()
                     if next_day_button.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
                         GameState = "PLAYING"
+                        game_seconds = DAY_START
+                        manager.reset_day(player)
+                        customers.clear()
+                        customersWaiting.clear()
                         manager.set_message(f"New Day | {manager.day_num}")
                         print(f"Starting next day, data: {manager.data}, GameState: {GameState}")
                     elif quit_button.is_clicked(event.pos):
+                        pygame.mixer.music.stop()
                         GameState = "MENU_SCREEN"
 
 
@@ -2585,12 +2570,9 @@ def main():
         clock.tick(FPS)
 
         # Handles all text + rendering (skip HUD on menu/pause)
-        if GameState in ("PLAYING", "PAUSED"):
+        if GameState not in ("MENU_SCREEN","PAUSED", "LOAD_MENU"):
             manager.active_orders = [o for o in manager.active_orders if o is not None]
-            if RecipeView != RECIPE_VIEW_NONE or ShopView != SHOP_VIEW_NONE:
-                orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (0, 0, 0))
-            else:
-                orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
+            orders_text = font.render(f'Orders: {", ".join(o[1].name for o in manager.active_orders)}', True, (250, 0, 0), (255, 255, 255))
             clock_text = clock_font.render(manager.handle_time(hours, minutes), True, 'black')
             screen.blit(orders_text, (10, 25))
             screen.blit(clock_text, (1202, 35))

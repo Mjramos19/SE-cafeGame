@@ -114,3 +114,29 @@ class Counter(GameObject):
         super().__init__(x, y, w, h, color)
         self.x, self.y = x, y
         self.placeable = True
+
+class Window(GameObject):
+    def __init__(self, x, y, w, h):
+        super().__init__(x, y, w, h, color = WHITE)
+        self.icons = {"DAY" : IMAGE_LIBRARY["day_window"], "NIGHT" : IMAGE_LIBRARY["night_window"],
+                      "SUNRISE" : IMAGE_LIBRARY["sunrise_window"], "SUNSET" : IMAGE_LIBRARY["sunset_window"]}
+        self.current_image = None
+    
+    def update_current_image(self, day_type):
+        self.current_image = self.icons[day_type]
+
+    def render(self, screen, game_seconds):
+        if  game_seconds > DAY_START and game_seconds < EIGHT_AM:
+            #sunrise
+            self.update_current_image("SUNRISE")
+        elif game_seconds > EIGHT_AM and game_seconds < EIGHT_PM:
+            #daytime
+            self.update_current_image("DAY")
+        elif game_seconds < EIGHT_PM and game_seconds > DAY_END:
+            #sunset
+            self.update_current_image("SUNSET")
+        else:
+            #nighttime
+            self.update_current_image("NIGHT")
+            
+        screen.blit(self.current_image, self.rect)
