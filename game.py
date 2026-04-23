@@ -69,6 +69,9 @@ constants.IMAGE_LIBRARY["em_ready"] = pygame.image.load("Cafe_Game_Art/EMready.p
 constants.IMAGE_LIBRARY["wb_empty"] = pygame.image.load("Cafe_Game_Art/WB0Empty.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.image.load("Cafe_Game_Art/WB0InProgress.png").convert_alpha()
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.image.load("Cafe_Game_Art/WB0Ready.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_empty"] = pygame.image.load("Cafe_Game_Art/hcm_empty.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.image.load("Cafe_Game_Art/hcm_inPprogress.png").convert_alpha()
+constants.IMAGE_LIBRARY["hcm_ready"] = pygame.image.load("Cafe_Game_Art/hcm_ready.png").convert_alpha()
 
 # All Ingredient Images
 constants.IMAGE_LIBRARY["water"] = pygame.image.load("Cafe_Game_Art/water.png").convert_alpha()
@@ -142,6 +145,9 @@ constants.IMAGE_LIBRARY["em_ready"] = pygame.transform.smoothscale(constants.IMA
 constants.IMAGE_LIBRARY["wb_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_empty"], (150, 190))
 constants.IMAGE_LIBRARY["wb_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_inprogress"], (150, 190))
 constants.IMAGE_LIBRARY["wb_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["wb_ready"], (150, 190))
+constants.IMAGE_LIBRARY["hcm_empty"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_empty"], (160, 190))
+constants.IMAGE_LIBRARY["hcm_inprogress"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_inprogress"], (160, 190))
+constants.IMAGE_LIBRARY["hcm_ready"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["hcm_ready"], (160, 190))
 constants.IMAGE_LIBRARY["water"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["water"], ((348, 330)))
 constants.IMAGE_LIBRARY["coffee_beans"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["coffee_beans"], ((348, 330)))
 constants.IMAGE_LIBRARY["ground_coffee"] = pygame.transform.smoothscale(constants.IMAGE_LIBRARY["ground_coffee"], ((348, 330)))
@@ -258,8 +264,8 @@ espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espres
                          ["Audio Files/espressoInMachine.mp3", "Audio Files/espressobrewing.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (490, 255, 65, 50))
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
                          ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
-cocoa_station  =  Machine(686, 234, "Cocoa Station",    cocoa_powder,      [chocolate_mix], 1, 3, ["wb_empty","wb_inprogress","wb_ready"], \
-                         ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
+cocoa_station  =  Machine(686, 234, "Cocoa Station",    cocoa_powder,      [chocolate_mix], 1, 3, ["hcm_empty","hcm_inprogress","hcm_ready"], \
+                         ["Audio Files/pouring_cocoPowder1.mp3", "Audio Files/cocomix_ready1.mp3", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (550, 380, 100, 40))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler, cocoa_station] # when a machine is bought, append to this list
 
@@ -362,8 +368,8 @@ class GameManager:
                 {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
-                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 0, "tier": 1, "purchased": False, "free": True, "placed": False},
                 # Slide 1 — purchasable machines (require money)
+                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 180, "tier": 1, "purchased": False, "free": True, "placed": False},
                 {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
             ],
