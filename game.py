@@ -267,7 +267,7 @@ espresso_mach  = Machine(358, 234, "Espresso Machine", ground_coffee,    [espres
 water_boiler   =  Machine(520, 234, "Water Boiler",     water,             [hot_water], 1, 4, ["wb_empty","wb_inprogress","wb_ready"], 
                          ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (500, 200, 50, 70))
 cocoa_station  =  Machine(686, 234, "Cocoa Station",    cocoa_powder,      [chocolate_mix], 1, 3, ["hcm_empty","hcm_inprogress","hcm_ready"], \
-                         ["Audio Files/FillingWater.mp3", "Audio Files/waterboiling2.wav", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (580, 380, 50, 70))
+                         ["Audio Files/pouring_cocoPowder1.mp3", "Audio Files/cocomix_ready1.mp3", "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"], (580, 380, 50, 70))
 
 ALL_MACHINES = [grinder, espresso_mach, water_boiler, cocoa_station] # when a machine is bought, append to this list
 
@@ -370,8 +370,9 @@ class GameManager:
                 {"name": "Coffee Grinder",        "desc": "Grind coffee beans",             "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Espresso Machine",       "desc": "Pull espresso shots",            "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
                 {"name": "Water Boiler",           "desc": "Heat water for drinks",          "cost": 0,   "tier": 1, "purchased": False, "free": True,  "placed": False},
-                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 0, "tier": 1, "purchased": False, "free": True, "placed": False},
+                
                 # Slide 1 — purchasable machines (require money)
+                {"name": "Cocoa Station",          "desc": "Make hot chocolate and mochas",  "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Extra Espresso Machine", "desc": "Adds a second espresso machine", "cost": 200, "tier": 1, "purchased": False, "free": False, "placed": False},
                 {"name": "Second Grinder",         "desc": "Adds a second coffee grinder",   "cost": 180, "tier": 1, "purchased": False, "free": False, "placed": False},
             ],
