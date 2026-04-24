@@ -1298,7 +1298,7 @@ class GameManager:
         title_font = pygame.font.SysFont(None, 90)
         sub_font   = pygame.font.SysFont(None, 30)
 
-        title = title_font.render("Cafe", True, (220, 180, 120))
+        title = title_font.render("Web & Brew Cafe", True, (220, 180, 120))
         screen.blit(title, (constants.WIDTH // 2 - title.get_width() // 2, 160))
 
         hint = sub_font.render("A cozy cafe management game", True, (160, 130, 90))
