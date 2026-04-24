@@ -1,34 +1,48 @@
 """
 Unit Tests: Machine System
 
-Runs against the REAL Machine class — pygame is mocked so no display is required.
+Runs against the real Machine class with headless pygame.
 
 Requirements covered:
   Req14 - Machine placed when purchased and counter space available
   Req15 - Brewing starts when ingredient inserted and start pressed
   Req16 - Brewing progress and machine state tracked during brewing
-  Req17 - Output added to cup contents when collected from machine      
+  Req17 - Output added to cup contents when collected from machine
 """
 
 import unittest
 from unittest.mock import MagicMock
 import sys
+import os
 
-# Mock pygame before importing anything that depends on it
-mock_pygame = MagicMock()
-mock_pygame.sprite.Sprite = object  # must be a real type so class bodies can inherit from it
-sys.modules['pygame'] = mock_pygame
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
-# Populate IMAGE_LIBRARY with test keys before importing machines
-import constants
-constants.IMAGE_LIBRARY.update({
-    'empty_key':   MagicMock(),
-    'running_key': MagicMock(),
-    'ready_key':   MagicMock(),
-})
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+os.environ["SDL_AUDIODRIVER"] = "dummy"
+
+import pygame
+pygame.init()
+# Stub mixer.Sound before importing machines so Machine.__init__
+# never tries to open real audio files regardless of mixer state.
+pygame.mixer.Sound = MagicMock(return_value=MagicMock())
+
+# Patch IMAGE_LIBRARY in every module that references it.
+# We create a new dict subclass with __missing__ and assign it
+# directly to each module's namespace since "from constants import *"
+# gives each module its own reference to the object.
+class _FakeImageLib(dict):
+    def __missing__(self, key):
+        return pygame.Surface((10, 10))
+
+import constants, items
+_fake = _FakeImageLib(constants.IMAGE_LIBRARY)
+constants.IMAGE_LIBRARY = _fake
+items.IMAGE_LIBRARY = _fake
+
+import machines
+machines.IMAGE_LIBRARY = _fake
 
 from machines import Machine
-
 
 MINI_GAME_KEYS    = ['empty_key', 'running_key', 'ready_key']
 START_BUTTON_INFO = [400, 400, 100, 50]
@@ -54,8 +68,10 @@ def make_machine(state='empty'):
     return m
 
 
+# --- Initial State ---
+
 class TestMachineInitialState(unittest.TestCase):
-    """Verify that a newly constructed Machine starts with the correct default values."""
+    """Verify a newly constructed Machine starts with correct default values."""
 
     def test_initial_state_is_empty(self):
         """A new machine should begin in the 'empty' state before any ingredient is added."""
@@ -63,7 +79,7 @@ class TestMachineInitialState(unittest.TestCase):
         self.assertEqual(m.state, 'empty')
 
     def test_initial_contents_is_empty(self):
-        """Contents list should be empty on construction — no outputs exist yet."""
+        """Contents list should be empty on construction."""
         m = make_machine()
         self.assertEqual(m.contents, [])
 
@@ -83,10 +99,12 @@ class TestMachineInitialState(unittest.TestCase):
         self.assertEqual(m.num_outputs, 2)
 
     def test_stores_runtime(self):
-        """The machine must store the brewing duration (in seconds) for timer calculations."""
+        """The machine must store the brewing duration in seconds."""
         m = make_machine()
         self.assertEqual(m.runtime, 5)
 
+
+# --- Machine.add() ---
 
 class TestMachineAdd(unittest.TestCase):
     """Tests for Machine.add() — loading an ingredient into the machine."""
@@ -118,6 +136,8 @@ class TestMachineAdd(unittest.TestCase):
         player.pop_inv_item.assert_not_called()
 
 
+# --- Machine.run_machine() ---
+
 class TestMachineRunMachine(unittest.TestCase):
     """Tests for Machine.run_machine() — pressing the start button."""
 
@@ -136,17 +156,17 @@ class TestMachineRunMachine(unittest.TestCase):
     def test_run_machine_transitions_to_running_when_full(self):
         """Pressing start on a loaded machine must move state to 'running'."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 1000
         m.run_machine()
         self.assertEqual(m.state, 'running')
 
     def test_run_machine_sets_selected_output(self):
         """Pressing start must choose and record which output will be produced."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 1000
         m.run_machine()
         self.assertEqual(m.selected_output, OUTPUTS[0])
 
+
+# --- Machine.update() ---
 
 class TestMachineUpdate(unittest.TestCase):
     """Tests for Machine.update() — the per-frame timer check during brewing."""
@@ -155,16 +175,15 @@ class TestMachineUpdate(unittest.TestCase):
         """Once elapsed time exceeds runtime, state must become 'ready'."""
         m = make_machine(state='running')
         m.selected_output = 'espresso'
-        m.timer_start = 0
-        mock_pygame.time.get_ticks.return_value = 6000  # 6s > 5s runtime
+        m.timer_start = pygame.time.get_ticks() - 6000
         m.update()
         self.assertEqual(m.state, 'ready')
 
     def test_update_does_not_transition_before_timer_expires(self):
         """State must remain 'running' while elapsed time is still under the runtime."""
         m = make_machine(state='running')
-        m.timer_start = 0
-        mock_pygame.time.get_ticks.return_value = 3000  # 3s < 5s runtime
+        m.selected_output = 'espresso'
+        m.timer_start = pygame.time.get_ticks()
         m.update()
         self.assertEqual(m.state, 'running')
 
@@ -172,9 +191,8 @@ class TestMachineUpdate(unittest.TestCase):
         """On completion, contents must be filled with num_outputs copies of the selected output."""
         m = make_machine(state='running')
         m.selected_output = 'espresso'
-        m.timer_start = 0
         m.num_outputs = 2
-        mock_pygame.time.get_ticks.return_value = 6000
+        m.timer_start = pygame.time.get_ticks() - 6000
         m.update()
         self.assertEqual(m.contents, ['espresso', 'espresso'])
 
@@ -185,14 +203,15 @@ class TestMachineUpdate(unittest.TestCase):
         self.assertEqual(m.state, 'empty')
 
 
+# --- Machine.select_output() ---
+
 class TestMachineSelectOutput(unittest.TestCase):
     """Tests for Machine.select_output() — choosing which item will be produced."""
 
     def test_select_output_returns_first_output(self):
         """select_output must return the first item from the outputs list."""
         m = make_machine()
-        result = m.select_output(0)
-        self.assertEqual(result, OUTPUTS[0])
+        self.assertEqual(m.select_output(0), OUTPUTS[0])
 
     def test_select_output_ignores_index_always_returns_first(self):
         """The index argument is currently unused — any index returns the first output."""
@@ -200,15 +219,16 @@ class TestMachineSelectOutput(unittest.TestCase):
         self.assertEqual(m.select_output(0), m.select_output(1))
 
 
+# --- Machine.remove_output() ---
+
 class TestMachineRemoveOutput(unittest.TestCase):
     """Tests for Machine.remove_output() — collecting a finished item from the machine."""
 
     def test_remove_output_returns_item_when_ready(self):
         """A ready machine with contents must return one of those items."""
         m = make_machine(state='ready')
-        m.contents = ['espresso', 'espresso']
-        result = m.remove_output()
-        self.assertEqual(result, 'espresso')
+        m.contents = ['espresso']
+        self.assertEqual(m.remove_output(), 'espresso')
 
     def test_remove_output_decreases_contents(self):
         """Each collection must remove exactly one item from contents."""
@@ -220,53 +240,54 @@ class TestMachineRemoveOutput(unittest.TestCase):
     def test_remove_output_returns_none_when_not_ready(self):
         """Collecting from a non-ready machine must return None."""
         m = make_machine(state='full')
-        result = m.remove_output()
-        self.assertIsNone(result)
+        self.assertIsNone(m.remove_output())
 
     def test_remove_output_returns_none_when_empty_state(self):
         """Collecting from an empty machine must return None."""
         m = make_machine(state='empty')
-        result = m.remove_output()
-        self.assertIsNone(result)
+        self.assertIsNone(m.remove_output())
 
     def test_remove_output_returns_none_when_contents_empty(self):
         """Collecting from a ready machine with no contents must return None."""
         m = make_machine(state='ready')
         m.contents = []
-        result = m.remove_output()
-        self.assertIsNone(result)
+        self.assertIsNone(m.remove_output())
 
+
+# --- Machine.get_sprite() ---
 
 class TestMachineGetSprite(unittest.TestCase):
-    """Tests for Machine.get_sprite() — selecting the correct visual based on state."""
+    """Tests for Machine.get_sprite() — sprite key selection by state."""
 
     def test_get_sprite_uses_empty_key_when_empty(self):
-        """An empty machine must use the first sprite key (empty state image)."""
+        """An empty machine must use the first sprite key."""
         m = make_machine(state='empty')
         m.get_sprite()
-        self.assertEqual(m.sprite, 'empty_key')
+        self.assertEqual(m.sprite, MINI_GAME_KEYS[0])
 
     def test_get_sprite_uses_running_key_when_running(self):
-        """A running machine must use the second sprite key (in-progress image)."""
+        """A running machine must use the second sprite key."""
         m = make_machine(state='running')
         m.get_sprite()
-        self.assertEqual(m.sprite, 'running_key')
+        self.assertEqual(m.sprite, MINI_GAME_KEYS[1])
 
     def test_get_sprite_uses_ready_key_when_ready(self):
-        """A ready machine must use the third sprite key (done image)."""
+        """A ready machine must use the third sprite key."""
         m = make_machine(state='ready')
         m.get_sprite()
-        self.assertEqual(m.sprite, 'ready_key')
+        self.assertEqual(m.sprite, MINI_GAME_KEYS[2])
 
     def test_get_sprite_uses_empty_key_when_full(self):
-        """A full (loaded but not started) machine must use the empty sprite key."""
+        """A full but not started machine must use the empty sprite key."""
         m = make_machine(state='full')
         m.get_sprite()
-        self.assertEqual(m.sprite, 'empty_key')
+        self.assertEqual(m.sprite, MINI_GAME_KEYS[0])
 
+
+# --- Machine.is_player_nearby() ---
 
 class TestMachineIsPlayerNearby(unittest.TestCase):
-    """Tests for Machine.is_player_nearby() — proximity detection for interaction."""
+    """Tests for Machine.is_player_nearby() — proximity detection."""
 
     def test_returns_true_when_player_in_zone(self):
         """Must return True when the player's foot rect overlaps the interaction zone."""
@@ -283,15 +304,17 @@ class TestMachineIsPlayerNearby(unittest.TestCase):
         self.assertFalse(m.is_player_nearby(player))
 
 
+# --- Machine.setup_minigame() ---
+
 class TestMachineSetupMinigame(unittest.TestCase):
-    """Tests for Machine.setup_minigame() — preparing the ingredient for the minigame UI."""
+    """Tests for Machine.setup_minigame() — preparing the ingredient for display."""
 
     def test_sets_ingredient_from_list(self):
         """The last item in the list must be assigned as the machine's active ingredient."""
         m = make_machine()
-        ingredient = MagicMock()
-        m.setup_minigame([ingredient])
-        self.assertEqual(m.ingredient, ingredient)
+        ing = MagicMock()
+        m.setup_minigame([ing])
+        self.assertEqual(m.ingredient, ing)
 
     def test_sets_none_when_list_is_empty(self):
         """An empty list must result in ingredient being set to None."""
@@ -302,33 +325,24 @@ class TestMachineSetupMinigame(unittest.TestCase):
     def test_sets_ingredient_position(self):
         """The ingredient must be repositioned to the fixed minigame display coordinates."""
         m = make_machine()
-        ingredient = MagicMock()
-        m.setup_minigame([ingredient])
-        self.assertEqual(ingredient.x, 20)
-        self.assertEqual(ingredient.y, 500)
+        ing = MagicMock()
+        m.setup_minigame([ing])
+        self.assertEqual(ing.x, 20)
+        self.assertEqual(ing.y, 500)
 
     def test_does_not_modify_original_list(self):
         """setup_minigame must work on a copy and leave the caller's list intact."""
         m = make_machine()
-        ingredient = MagicMock()
-        original = [ingredient]
+        ing = MagicMock()
+        original = [ing]
         m.setup_minigame(original)
         self.assertEqual(len(original), 1)
 
 
-# ---------------------------------------------------------------------------
-# Req14 – Machine placed when purchased and counter space is available
-# ---------------------------------------------------------------------------
+# --- Req14: Machine Placement ---
 
 class TestReq14MachinePlacement(unittest.TestCase):
-    """
-    Covers Req14: the system shall allow machine placement when the player
-    purchases a machine and counter space is available.
-
-    The Machine class owns the placed flag and move_to logic.
-    The counter-space availability check mirrors the occupied_xs set used
-    in game.py: {m.x for m in machines if m.placed}.
-    """
+    """Req14 - Machine placed when purchased and counter space is available."""
 
     def test_placed_flag_starts_false(self):
         """A new machine must start unplaced before the player positions it."""
@@ -373,7 +387,6 @@ class TestReq14MachinePlacement(unittest.TestCase):
         """An unplaced machine must not block any counter space."""
         m = make_machine()
         m.move_to(193, 234)
-        # placed is still False — should not occupy the slot
         occupied_xs = {mac.x for mac in [m] if mac.placed}
         self.assertNotIn(193, occupied_xs)
 
@@ -383,7 +396,7 @@ class TestReq14MachinePlacement(unittest.TestCase):
         existing.move_to(193, 234)
         existing.placed = True
         occupied_xs = {mac.x for mac in [existing] if mac.placed}
-        self.assertIn(193, occupied_xs)  # slot 193 is taken
+        self.assertIn(193, occupied_xs)
 
     def test_counter_space_free_at_different_x(self):
         """Placement must be allowed when no placed machine occupies the target x."""
@@ -391,7 +404,7 @@ class TestReq14MachinePlacement(unittest.TestCase):
         existing.move_to(193, 234)
         existing.placed = True
         occupied_xs = {mac.x for mac in [existing] if mac.placed}
-        self.assertNotIn(358, occupied_xs)  # slot 358 is free
+        self.assertNotIn(358, occupied_xs)
 
     def test_two_machines_can_be_placed_at_different_positions(self):
         """Two machines placed at different x values must both appear in the occupied set."""
@@ -416,7 +429,7 @@ class TestReq14MachinePlacement(unittest.TestCase):
         self.assertIn(m, machines)
 
     def test_full_placement_flow(self):
-        """Complete flow — move_to, set placed, append to list — leaves machine active and positioned."""
+        """Complete flow: move_to, set placed, append to list — leaves machine active and positioned."""
         m = make_machine()
         machines = []
         m.move_to(358, 234)
@@ -427,106 +440,72 @@ class TestReq14MachinePlacement(unittest.TestCase):
         self.assertIn(m, machines)
 
 
-# ---------------------------------------------------------------------------
-# Req15 – Brewing starts when ingredient inserted AND start button pressed
-# ---------------------------------------------------------------------------
+# --- Req15: Brewing Start ---
 
 class TestReq15BrewingStart(unittest.TestCase):
-    """
-    Covers Req15: the system shall start brewing only when BOTH conditions are met —
-    the correct ingredient has been inserted AND the start button has been pressed.
-    """
+    """Req15 - Brewing starts only when ingredient inserted AND start button pressed."""
 
     def test_inserting_ingredient_then_pressing_start_begins_brewing(self):
         """Combined flow: correct ingredient added then start pressed → state is 'running'."""
         m = make_machine(state='empty')
-        player = MagicMock()
-        mock_pygame.time.get_ticks.return_value = 1000
-
-        m.add(MACHINE_INPUT, player)  # player inserts ingredient
-        m.run_machine()               # player presses start button
-
+        m.add(MACHINE_INPUT, MagicMock())
+        m.run_machine()
         self.assertEqual(m.state, 'running')
 
     def test_inserting_ingredient_alone_does_not_start_brewing(self):
         """Start button is required — inserting ingredient alone must not begin brewing."""
         m = make_machine(state='empty')
-        player = MagicMock()
-
-        m.add(MACHINE_INPUT, player)  # ingredient inserted, start NOT pressed
-
+        m.add(MACHINE_INPUT, MagicMock())
         self.assertNotEqual(m.state, 'running')
 
     def test_pressing_start_without_ingredient_does_not_start_brewing(self):
         """Ingredient is required — pressing start on an empty machine must not begin brewing."""
         m = make_machine(state='empty')
-
-        m.run_machine()  # start pressed, ingredient NOT inserted
-
+        m.run_machine()
         self.assertNotEqual(m.state, 'running')
 
 
-# ---------------------------------------------------------------------------
-# Req16 – Brewing progress and machine state are tracked once brewing begins
-# ---------------------------------------------------------------------------
+# --- Req16: Brewing Tracking ---
 
 class TestReq16BrewingTracking(unittest.TestCase):
-    """
-    Covers Req16: once brewing begins the system must record a timer start point,
-    maintain 'running' state throughout, and transition to 'ready' with correct
-    contents when the runtime elapses.
-    """
+    """Req16 - Brewing progress and machine state tracked once brewing begins."""
 
     def test_timer_start_is_captured_when_brewing_begins(self):
-        """timer_start must be set to the current tick so elapsed time can be calculated."""
+        """timer_start must be recorded when brewing begins."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 3000
-
+        before = pygame.time.get_ticks()
         m.run_machine()
-
-        self.assertEqual(m.timer_start, 3000)
+        after = pygame.time.get_ticks()
+        self.assertGreaterEqual(m.timer_start, before)
+        self.assertLessEqual(m.timer_start, after)
 
     def test_state_is_running_immediately_after_start(self):
         """Machine state must be 'running' right after the start button is pressed."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 1000
-
         m.run_machine()
-
         self.assertEqual(m.state, 'running')
 
     def test_state_remains_running_while_timer_has_not_expired(self):
         """Machine must stay in 'running' state while elapsed time is less than runtime."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 1000
         m.run_machine()
-
-        mock_pygame.time.get_ticks.return_value = 3000  # 2s elapsed < 5s runtime
         m.update()
-
         self.assertEqual(m.state, 'running')
 
     def test_state_transitions_to_ready_when_timer_expires(self):
         """Machine must move to 'ready' once elapsed time reaches or exceeds runtime."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 1000
         m.run_machine()
-
-        mock_pygame.time.get_ticks.return_value = 7000  # 6s elapsed > 5s runtime
-        m.selected_output = OUTPUTS[0]
+        m.timer_start = pygame.time.get_ticks() - 6000
         m.update()
-
         self.assertEqual(m.state, 'ready')
 
     def test_contents_populated_with_correct_output_on_completion(self):
         """On completion, contents must hold num_outputs copies of the selected output."""
         m = make_machine(state='full')
-        mock_pygame.time.get_ticks.return_value = 1000
         m.run_machine()
-
-        mock_pygame.time.get_ticks.return_value = 7000
+        m.timer_start = pygame.time.get_ticks() - 6000
         m.update()
-
         self.assertEqual(m.contents, [OUTPUTS[0]] * m.num_outputs)
 
 

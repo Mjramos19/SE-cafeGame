@@ -1914,20 +1914,45 @@ def main():
                         "Water Boiler":    water_boiler,
                         "Cocoa Station":   cocoa_station,
                     }
+                    # Purchasable machines that duplicate an existing machine type
+                    _purchasable_machine_factory = {
+                        "Extra Espresso Machine": lambda: Machine(
+                            0, 0, "Extra Espresso Machine", ground_coffee, [espresso_shot], 1, 5,
+                            ["em_empty", "em_inprogress", "em_ready"],
+                            ["Audio Files/espressoInMachine.mp3", "Audio Files/espressobrewing.wav",
+                            "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"],
+                            (490, 255, 65, 50)
+                        ),
+                        "Second Grinder": lambda: Machine(
+                            0, 0, "Second Grinder", bag_coffee_beans, [ground_coffee], 1, 3,
+                            ["cg_empty", "cg_inprogress", "cg_ready"],
+                            ["Audio Files/coffeebeanspouring.mp3", "Audio Files/coffeebeansgrinding.wav",
+                            "Audio Files/machinereadystate.mp3", "Audio Files/FillingWater.mp3"],
+                            (510, 480, 150, 70)
+                        ),
+                    }
                     for row_i, item_rect in getattr(manager, "shop_item_rects", {}).items():
                         if item_rect.collidepoint(event.pos):
                             orig_index = manager.shop_item_orig_idx.get(row_i, row_i)
                             tab_item   = manager.shop_tabs[manager.active_tab][orig_index]
-                            if manager.active_tab == "Machines" and tab_item.get("free") and not tab_item.get("placed"):
-                                # Enter placement mode: close shop, show ghost in MIDDLE view
-                                machine_obj = _free_machine_lookup.get(tab_item["name"])
-                                if machine_obj:
-                                    manager.placement_machine = machine_obj
-                                    manager.placement_item    = tab_item
-                                    ShopView = SHOP_VIEW_NONE
-                                    current_screen = "game"
-                                    CafeView = "MIDDLE"
-                                    manager.change_counters_pos("MIDDLE")
+                            if manager.active_tab == "Machines" and not tab_item.get("placed"):
+                                if not tab_item.get("free"):
+                                    manager.buy_shop_item(manager.active_tab, orig_index, player)
+                                # Only enter placement if now purchased or free
+                                if tab_item.get("purchased") or tab_item.get("free"):
+                                    machine_obj = _free_machine_lookup.get(tab_item["name"])
+                                    # For purchasable machines, create a new instance
+                                    if machine_obj is None:
+                                        factory = _purchasable_machine_factory.get(tab_item["name"])
+                                        if factory:
+                                            machine_obj = factory()
+                                    if machine_obj:
+                                        manager.placement_machine = machine_obj
+                                        manager.placement_item    = tab_item
+                                        ShopView = SHOP_VIEW_NONE
+                                        current_screen = "game"
+                                        CafeView = "MIDDLE"
+                                        manager.change_counters_pos("MIDDLE")
                             elif manager.active_tab == "Machines" and tab_item.get("free") and tab_item.get("placed"):
                                 manager.set_message("Already placed on the counter!")
                             else:
